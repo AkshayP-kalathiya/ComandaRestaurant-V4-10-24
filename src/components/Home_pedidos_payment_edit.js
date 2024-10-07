@@ -168,7 +168,8 @@ const Home_pedidos_payment_edit = ({ item }) => {
         try {
             const response = await axios.post(`${apiUrl}/sector/getWithTable`);
             let sectors = response.data.data;
-
+                console.log(sectors);
+                
             const sectorWithTable = sectors.find(v =>
                 v.tables.some(a => a.order_id == id)
             );
@@ -184,6 +185,8 @@ const Home_pedidos_payment_edit = ({ item }) => {
             );
         }
     };
+    console.log(table);
+    
 
     const getOrderStatus = async () => {
         try {
@@ -899,7 +902,7 @@ const Home_pedidos_payment_edit = ({ item }) => {
 
                             </Tab>
 
-                            <Tab eventKey="profile" title="Detalles" className='b_border ' style={{ marginTop: "2px" }}>
+                            <Tab eventKey="profile" title="Información del cliente" className='b_border ' style={{ marginTop: "2px" }}>
                                 <div className='b-bg-color1'>
                                     {orderData?.reason &&
                                         <div className='text-white ms-4 pt-4' >
@@ -907,28 +910,27 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                             <textarea type="text" className="form-control bg-gray border-0 mt-4 py-2" id="inputPassword2" placeholder={orderData?.reason != null ? orderData?.reason : "Estaba sin sal"} style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled></textarea>
                                         </div>
                                     }
-
                                     <div className='text-white ms-4 pt-4' >
                                         <h5 className='bj-delivery-text-15'>Información pedido</h5>
                                     </div>
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                                         <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Sector</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Mesa</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table?.name} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table && `${table?.name}  (${table?.id})`} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                     </div>
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                                         <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Cliente</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Personas</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                     </div>
 

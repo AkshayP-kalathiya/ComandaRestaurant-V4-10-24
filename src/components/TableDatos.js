@@ -377,6 +377,7 @@ const TableDatos = () => {
 
     return `${minutes} min ${seconds} seg`;
   };
+  
   useEffect(
     () => {
       if (tableData.length > 0 && tableData[0].created_at) {

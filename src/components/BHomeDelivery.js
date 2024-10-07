@@ -800,7 +800,7 @@ const BHomeDelivery = () => {
 
           <div className="b-date-time d-flex align-items-center justify-content-end text-white">
             <FaCalendarAlt />
-            <p className="mb-0 ms-2 me-3">{new Date().toDateString()}</p>
+            <p className="mb-0 ms-2 me-3">{new Date().toLocaleDateString('en-GB')}</p>
             <MdOutlineAccessTimeFilled />
             <p className="mb-0 ms-2">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
           </div>
@@ -998,7 +998,7 @@ const BHomeDelivery = () => {
           <Modal.Body className="border-0">
             <div className="text-center">
               <img
-                className="j-trash-img-late"
+                // className="j-trash-img-late"
                 src={require("../Image/trash-outline-secondary.png")}
                 alt=""
               />

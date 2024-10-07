@@ -154,7 +154,6 @@ export default function Home_Pedidos_paymet() {
   useEffect(() => {
     getOrder();
     getItems();
-    getSector();
     getOrderStatus();
     getRole();
     getFamily();
@@ -164,6 +163,7 @@ export default function Home_Pedidos_paymet() {
   useEffect(() => {
     if (orderData && items.length > 0) {
       handleOrderDetails();
+      getSector();
     }
     if (orderData?.user_id) {
       getUser();
@@ -184,6 +184,8 @@ export default function Home_Pedidos_paymet() {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log(response);
+      
       setOrderData(response.data[0]);
     } catch (error) {
       console.error(
@@ -216,16 +218,22 @@ export default function Home_Pedidos_paymet() {
   const getSector = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${apiUrl}/sector/getWithTable`);
+      const response = await axios.post(`${apiUrl}/sector/getWithTable`,{admin_id: admin_id}, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
       let sectors = response.data.data;
 
       const sectorWithTable = sectors.find(v =>
-        v.tables.some(a => a.order_id == id)
+        v.tables.some(a => a.id == orderData.table_id)
       );
 
+      // console.log(sectors);
+      
       if (sectorWithTable) {
         setSector(sectorWithTable);
-        setTable(sectorWithTable.tables.find(a => a.order_id == id));
+        setTable(sectorWithTable.tables.find(a => a.id == orderData.table_id));
       }
     } catch (error) {
       console.error(
@@ -235,6 +243,8 @@ export default function Home_Pedidos_paymet() {
     }
     setIsProcessing(false);
   };
+  // console.log(table);
+  
 
   const getOrderStatus = async () => {
     setIsProcessing(true);
@@ -676,7 +686,6 @@ export default function Home_Pedidos_paymet() {
               )} */}
             </div>
 
-
             <Tabs
               activeKey={activeTab}
               onSelect={handleTabSelect}
@@ -734,7 +743,6 @@ export default function Home_Pedidos_paymet() {
                                   )}
                                 </div> */}
                                 <div style={{ marginBottom: "68px", cursor: "pointer" }}>
-
                                 {v.notes === null ? (
                                     <div key={v.id}>
                                       {visibleInputId !== v.id ? (
@@ -774,9 +782,6 @@ export default function Home_Pedidos_paymet() {
                                   )}
                                 </div>
                                 )}
-
-
-
                                   {/* {editingNote === index ? (
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                       <span className='j-nota-blue ms-4'>Nota:</span>
@@ -818,7 +823,6 @@ export default function Home_Pedidos_paymet() {
                         <div className='fw-bold fs-5'>
                           Datos
                         </div>
-
                         {/* <div className='btn a_btn_lightjamun my-3 bj-delivery-text-2 ' style={{ borderRadius: "10px" }}><span style={{ fontWeight: "600" }}>{orderData?.order_type}</span></div><br /> */}
                         <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
                               ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
@@ -865,33 +869,30 @@ export default function Home_Pedidos_paymet() {
                     </div>
                   </div>
                 </div>
-
               </Tab>
-
-              <Tab eventKey="profile" title="Informaction del cliente" className='b_border ' style={{ marginTop: "2px" }}>
+              <Tab eventKey="profile" title="Información del cliente" className='b_border ' style={{ marginTop: "2px" }}>
                 <div className='b-bg-color1'>
                   <div className='text-white ms-4 pt-4' >
                     <h5>Información pedido</h5>
                   </div>
-
                   <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                     <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Sector</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                     </div>
                     <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2">Mesa</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table?.name} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table?.name && `${table?.name}  (${table?.id})`} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                     </div>
                   </div>
                   <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                     <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Cliente</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                     </div>
                     <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2">Personas</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                     </div>
                   </div>
 
@@ -930,7 +931,6 @@ export default function Home_Pedidos_paymet() {
             </Tabs>
           </div>
         </div>
-
 
         <Modal
           show={show1Prod}

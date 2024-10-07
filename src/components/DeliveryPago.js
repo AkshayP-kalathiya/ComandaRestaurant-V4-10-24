@@ -790,7 +790,7 @@ const DeliveryPago = () => {
 
                   <div className="b-date-time b_date_time2 d-flex align-items-center justify-content-end text-white">
                     <FaCalendarAlt />
-                    <p className="mb-0 ms-2 me-3">{new Date().toDateString()}</p>
+                    <p className="mb-0 ms-2 me-3">{new Date().toLocaleDateString('en-GB')}</p>
                     <MdOutlineAccessTimeFilled />
                     <p className="mb-0 ms-2">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>

@@ -105,7 +105,6 @@ const Homeinfomation_payment_edit = ({ item }) => {
     useEffect(() => {
         getOrder();
         getItems();
-        getSector();
         getOrderStatus();
         getRole();
         getFamily();
@@ -116,6 +115,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
     useEffect(() => {
         if (orderData && items.length > 0) {
             handleOrderDetails();
+            getSector();
         }
         if (orderData?.user_id) {
             console.log(orderData?.user_id);
@@ -167,12 +167,12 @@ const Homeinfomation_payment_edit = ({ item }) => {
             let sectors = response.data.data;
 
             const sectorWithTable = sectors.find(v =>
-                v.tables.some(a => a.order_id == id)
+                v.tables.some(a => a.id == orderData.table_id)
             );
 
             if (sectorWithTable) {
                 setSector(sectorWithTable);
-                setTable(sectorWithTable.tables.find(a => a.order_id == id));
+                setTable(sectorWithTable.tables.find(a => a.id == orderData.table_id));
             }
         } catch (error) {
             console.error(
@@ -709,10 +709,8 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                         </Button>
                                     </Modal.Footer>
                                 </Modal>
-
                             </div>
                         </div>
-
 
                         <Tabs
                             activeKey={activeTab}
@@ -831,18 +829,14 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                 <div className='fw-bold fs-5'>
                                                     Datos
                                                 </div>
-
                                                 <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
                                                     ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
                                                     {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : ' '}
                                                 </div>
-
                                                 <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
                                                      ${orderData?.order_type.toLowerCase() === 'local' ? 'b_indigo' : orderData?.order_type.toLowerCase() === 'order now' ? 'b_ora ' : orderData?.order_type.toLowerCase() === 'delivery' ? 'b_blue' : orderData?.order_type.toLowerCase() === 'uber' ? 'b_ora text-danger' : orderData?.order_type.toLowerCase().includes("with") ? 'b_purple' : 'b_ora text-danger'}`}>
                                                     {orderData?.order_type.toLowerCase() === 'local' ? 'Local' : orderData?.order_type.toLowerCase().includes("with") ? 'Retiro ' : orderData?.order_type.toLowerCase() === 'delivery' ? 'Entrega' : orderData?.order_type.toLowerCase() === 'uber' ? 'Uber' : orderData?.order_type}
                                                 </div>
-
-
                                                 {/* <div className='btn a_btn_lightjamun my-3 bj-delivery-text-2 ' style={{ borderRadius: "10px" }}><span style={{ fontWeight: "600" }}>{orderData?.order_type}</span></div><br />
                                                 <div className='btn sj_btn_lightgreen my-3 bj-delivery-text-2 ' style={{ borderRadius: "10px" }}><span style={{ fontWeight: "600" }}>Uber</span></div> */}
                                                 <div className='d-flex justify-content-end align-items-center mb-4 mt-3'>
@@ -880,10 +874,9 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                         </div>
                                     </div>
                                 </div>
-
                             </Tab>
 
-                            <Tab eventKey="profile" title="Detalles" className='b_border ' style={{ marginTop: "2px" }}>
+                            <Tab eventKey="profile" title="Información del cliente" className='b_border ' style={{ marginTop: "2px" }}>
                                 <div className='b-bg-color1'>
                                     <div className='text-white ms-4 pt-4' >
                                         <h5 className='bj-delivery-text-15'>Nota anulación</h5>
@@ -896,21 +889,21 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                                         <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Sector</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Mesa</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table?.name} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table && `${table?.name}  (${table?.id})`} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                     </div>
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                                         <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Cliente</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Personas</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                     </div>
 
@@ -925,7 +918,6 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                     <th>Hora </th>
                                                     <th>Usuario</th>
                                                     <th>Estado</th>
-
                                                 </tr>
                                             </thead>
                                             <tbody className='text-white b_btnn '>

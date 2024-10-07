@@ -155,7 +155,14 @@ const DeliveryDots = () => {
 
   const [showEditFamDel, setShowEditFamDel] = useState(false);
   const handleCloseEditFamDel = () => setShowEditFamDel(false);
-  const handleShowEditFamDel = () => setShowEditFamDel(true);
+  
+  const handleShowEditFamDel = () => {
+    setShowEditFamDel(true);
+    setTimeout(() => {
+        setShowEditFamDel(false);
+      }, 2000);
+  }
+   
 
   const [showEditFam, setShowEditFam] = useState(false);
   const handleCloseEditFam = () => setShowEditFam(false);
@@ -878,7 +885,7 @@ console.log(data)
 
                                     <div className="b-date-time b_date_time2 d-flex align-items-center justify-content-end text-white">
                                         <FaCalendarAlt />
-                                        <p className="mb-0 ms-2 me-3">{new Date().toDateString()}</p>
+                                        <p className="mb-0 ms-2 me-3">{new Date().toLocaleDateString('en-GB')}</p>
                                         <MdOutlineAccessTimeFilled />
                                         <p className="mb-0 ms-2">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
@@ -1090,7 +1097,7 @@ console.log(data)
                                                     <Modal.Body className="border-0">
                                                         <div className="text-center">
                                                             <img
-                                                                className="j-trash-img-late"
+                                                                // className="j-trash-img-late"
                                                                 src={require("../Image/trash-outline-secondary.png")}
                                                                 alt=""
                                                             />
@@ -1147,66 +1154,6 @@ console.log(data)
                                                 </Modal>
                                             </div>
                                         )}
-                                        <Modal
-                                            show={showEditFam}
-                                            onHide={handleCloseEditFam}
-                                            backdrop={true}
-                                            keyboard={false}
-                                            className="m_modal jay-modal"
-                                        >
-                                            <Modal.Header closeButton className="border-0" />
-                                            <Modal.Body className="border-0">
-                                                <div className="text-center">
-                                                    <img
-                                                        className="j-trash-img-late"
-                                                        src={require("../Image/trash-outline-secondary.png")}
-                                                        alt=""
-                                                    />
-                                                    <p className="mb-0 mt-2 j-kds-border-card-p">
-                                                        Seguro deseas eliminar este pedido
-                                                    </p>
-                                                </div>
-                                            </Modal.Body>
-                                            <Modal.Footer className="border-0 justify-content-center">
-                                                <Button
-                                                    className="j-tbl-btn-font-1 b_btn_close"
-                                                    variant="danger"
-                                                    onClick={() => handleDeleteConfirmation(itemToDelete)}
-                                                >
-                                                    Si, seguro
-                                                </Button>
-                                                <Button
-                                                    className="j-tbl-btn-font-1 "
-                                                    variant="secondary"
-                                                    onClick={() => {
-                                                        handleCloseEditFam();
-                                                    }}
-                                                >
-                                                    No, cancelar
-                                                </Button>
-                                            </Modal.Footer>
-                                        </Modal>
-
-                                        <Modal
-                                            show={showEditFamDel}
-                                            onHide={handleCloseEditFamDel}
-                                            backdrop={true}
-                                            keyboard={false}
-                                            className="m_modal jay-modal"
-                                        >
-                                            <Modal.Header closeButton className="border-0" />
-                                            <Modal.Body>
-                                                <div className="j-modal-trash text-center">
-                                                    <img src={require("../Image/trash-outline.png")} alt="" />
-                                                    <p className="mb-0 mt-3 h6 j-tbl-pop-1">
-                                                        Pedido eliminado
-                                                    </p>
-                                                    <p className="opacity-75 j-tbl-pop-2">
-                                                        El Pedido ha sido eliminado correctamente
-                                                    </p>
-                                                </div>
-                                            </Modal.Body>
-                                        </Modal>
                                     </div>
                                 </div>
                             </div>
