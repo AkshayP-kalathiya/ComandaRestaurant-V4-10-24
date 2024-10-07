@@ -200,7 +200,7 @@ const Informacira = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false); // State for delete confirmation modal
   const [showDelModal, setShowDelModal] = useState(false); // State for delete confirmation modal
   const [isProcessing, setIsProcessing] = useState(false);
-  const [allpayments, setAllpayments] =useState([]);
+  const [allpayments, setAllpayments] = useState([]);
 
   const navigate = useNavigate();
   const handleEdit = (box) => {
@@ -322,11 +322,11 @@ const Informacira = () => {
     }
     setIsProcessing(false);
   };
-  const fetchAllpayment = async() =>{
+  const fetchAllpayment = async () => {
     setIsProcessing(true);
     try {
       const response = await axios.post(
-        `${apiUrl}/get-payments`,{admin_id:admin_id},
+        `${apiUrl}/get-payments`, { admin_id: admin_id },
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -916,30 +916,30 @@ const Informacira = () => {
         const orderIds = item.order_master_id.split(','); // Split by comma
         const orderDiscounts = orderIds.map(id => {
           // console.log(id);
-          
-          const order = allOrder.find(order =>order.id == id); // Find order in allOrder
+
+          const order = allOrder.find(order => order.id == id); // Find order in allOrder
           // console.log(id, order);
 
-          return { id, discount: order?.discount ?  parseFloat(order?.discount):  0}; // Ensure discount is a number
+          return { id, discount: order?.discount ? parseFloat(order?.discount) : 0 }; // Ensure discount is a number
         });
-        totalDiscount = orderDiscounts.reduce((sum, v) => sum + v.discount, 0)? orderDiscounts.reduce((sum, v) => sum + v.discount, 0): 0 ; // Sum all discounts
+        totalDiscount = orderDiscounts.reduce((sum, v) => sum + v.discount, 0) ? orderDiscounts.reduce((sum, v) => sum + v.discount, 0) : 0; // Sum all discounts
         // console.log(orderIds,orderDiscounts,totalDiscount);
 
       }
       if (item.payment_id) {
         const paymentIds = item.payment_id.split(','); // Split by comma
         const paymentDetails = paymentIds.map(id => {
-        const payment = allpayments.find(payment => payment.id == parseInt(id)); // Find payment in allpayments
+          const payment = allpayments.find(payment => payment.id == parseInt(id)); // Find payment in allpayments
           if (payment) {
             const tax = parseFloat(payment.tax) || 0; // Ensure tax is a number
             totalTax += tax; // Sum the tax
             // console.log(totalTax);
-            
+
             // Store type and amount from the payment
             const paymentType = payment.type; // Store the payment type
             const paymentAmount = parseFloat(payment.amount); // Store the payment amount as a number
             // console.log(paymentType,paymentAmount);
-            
+
 
             // Create or update the total for the payment type
             if (!totalPaymentByType[paymentType]) {
@@ -953,7 +953,7 @@ const Informacira = () => {
         return { id: item.id, totalTax, totalPaymentByType };
       }
 
-      return { id: item.id, totalDiscount : totalDiscount ? totalDiscount: 0 , totalTax ,totalPaymentByType}; 
+      return { id: item.id, totalDiscount: totalDiscount ? totalDiscount : 0, totalTax, totalPaymentByType };
     });
 
     try {
@@ -976,23 +976,23 @@ const Informacira = () => {
     const discountData = results.find(result => result.id === boxId);
     return discountData ? { discount: discountData.totalDiscount, tax: discountData.totalTax, type: discountData.totalPaymentByType } : { discount: 0, tax: 0 }; // Return discount and tax or 0 if not found
   };
-  const [showpay ,setShowpay] = useState(false);
+  const [showpay, setShowpay] = useState(false);
 
-  const handleClosepay = () =>{
+  const handleClosepay = () => {
     setShowpay(true);
     setTimeout(() => {
       setShowpay(false);
     }, 2000);
-    
+
   }
 
   const handleorderRecipt = (data) => {
 
-    const payament = allpayments.some((v)=>v.order_master_id == data.id)
+    const payament = allpayments.some((v) => v.order_master_id == data.id)
     console.log(payament);
-    if(payament){
+    if (payament) {
       setShowModalOrder(true)
-    }else{
+    } else {
       handleClosepay()
     }
   }
@@ -1367,7 +1367,7 @@ const Informacira = () => {
                               className="btn j-btn-primary text-white j-caja-text-1 me-2"
                               onClick={handleSaveChanges}
                             >
-                              Guardar combios
+                              Guardar cambios
                             </Button>
                             <Button
                               className="btn j-btn-White text-white j-caja-text-1"
@@ -1588,7 +1588,7 @@ const Informacira = () => {
                             />
                             <p className="mb-0 mt-2 h6 j-tbl-pop-1">Caja</p>
                             <p className="opacity-75 j-tbl-pop-2">
-                              Cierre de caja exitosamente
+                              Informe generado exitosamente
                             </p>
                           </div>
                         </Modal.Body>
@@ -2021,7 +2021,7 @@ const Informacira = () => {
                           className="j-caja-border-bottom p-0 m-3 mb-0 pb-3"
                         >
                           <Modal.Title className="modal-title j-caja-pop-up-text-1">
-                            Detalles cajao
+                          Detalles de caja
 
                           </Modal.Title>
                         </Modal.Header>
@@ -2309,7 +2309,7 @@ const Informacira = () => {
                       />
                     </div>
                   </div> */}
-                    <div className="j-table-information-body">
+                  <div className="j-table-information-body">
                     <form className="j_ti_form">
                       <div className="row">
                         <div className="col-6 mb-3 ">
@@ -2349,7 +2349,7 @@ const Informacira = () => {
                             htmlFor="exampleFormControlInput1"
                             className="form-label text-white j-tbl-font-11"
                           >
-                           Cuantas aperturas
+                            Cuantas aperturas
                           </label>
                           <input
                             type="text"
@@ -2380,7 +2380,7 @@ const Informacira = () => {
                     </form>
                   </div>
                 </Tab>
-                
+
 
                 <Tab
                   eventKey="longer-tab"
@@ -2453,7 +2453,7 @@ const Informacira = () => {
                                   </button>
                                 </td>
                                 <td>
-                                  <Link to={`/home_Pedidos/paymet/${user.id}}`}>
+                                  <Link to={`/home_Pedidos/paymet/${user.id}`}>
                                     <button className="sjSky px-2 j-tbl-font-3">
                                       Ver detalles
                                     </button>
@@ -2464,7 +2464,7 @@ const Informacira = () => {
                                   {user.status === "delivered" ? (
                                     <>
 
-                                      <button className="bg-transparent border-0" onClick={() => {setSelectedOrder(user);handleorderRecipt(user) }}> {/* Update to show modal */}
+                                      <button className="bg-transparent border-0" onClick={() => { setSelectedOrder(user); handleorderRecipt(user) }}> {/* Update to show modal */}
                                         <svg
                                           className="sj-button-xise"
                                           aria-hidden="true"

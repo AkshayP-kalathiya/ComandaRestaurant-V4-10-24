@@ -20,8 +20,9 @@ export default function ProductionCenter() {
   const apiUrl = process.env.REACT_APP_API_URL;
   const API = process.env.REACT_APP_IMAGE_URL;
   const [token] = useState(sessionStorage.getItem("token"));
+  const [role] = useState(sessionStorage.getItem("role"));
   // const [isLoading, setIsLoading] = useState(true);
-const admin_id = sessionStorage.getItem("admin_id");
+  const admin_id = sessionStorage.getItem("admin_id");
   const [productionCenters, setProductionCenters] = useState([]);
   const [prodName, setProdName] = useState("");
   const [printerCode, setPrinterCode] = useState("");
@@ -76,36 +77,57 @@ const admin_id = sessionStorage.getItem("admin_id");
     }
   };
   // Add these handlers
+  // const handleEditNameChange = (e) => {
+  //   setCurrentProdCenter({
+  //     ...currentProdCenter,
+  //     name: e.target.value
+  //   });
+  //   if (e.target.value.trim()) {
+  //     setEditNameError("");
+  //   }
+  // };
   const handleEditNameChange = (e) => {
     setCurrentProdCenter({
       ...currentProdCenter,
       name: e.target.value
     });
+    setProdName(e.target.value);
     if (e.target.value.trim()) {
-      setEditNameError("");
+      setProdNameError("");
     }
   };
+
+  // const handleEditPrinterCodeChange = (e) => {
+  //   setCurrentProdCenter({
+  //     ...currentProdCenter,
+  //     printer_code: e.target.value
+  //   });
+  //   if (e.target.value.trim()) {
+  //     setEditPrinterCodeError("");
+  //   }
+  // };
 
   const handleEditPrinterCodeChange = (e) => {
     setCurrentProdCenter({
       ...currentProdCenter,
       printer_code: e.target.value
     });
+    setPrinterCode(e.target.value);
     if (e.target.value.trim()) {
-      setEditPrinterCodeError("");
+      setPrinterCodeError("");
     }
   };
 
   const validateProductionCenter = () => {
     let isValid = true;
 
-    if (!prodName.trim()) {
+    if (!prodName?.trim()) {
       setProdNameError("El nombre es requerido");
       isValid = false;
     } else {
       setProdNameError("");
     }
-    if (!printerCode.trim()) {
+    if (!printerCode?.trim()) {
       setPrinterCodeError("El código de impresora es requerido");
       isValid = false;
     } else if (isNaN(printerCode)) {
@@ -144,6 +166,8 @@ const admin_id = sessionStorage.getItem("admin_id");
     setShowCreate(false);
     setProdName("");
     setPrinterCode("");
+    setProdNameError("");
+    setPrinterCodeError("");
   };
   const handleShowCreate = () => setShowCreate(true);
 
@@ -178,7 +202,13 @@ const admin_id = sessionStorage.getItem("admin_id");
 
   // edit family
   const [showEditProduction, setShowEditProduction] = useState(false);
-  const handleCloseEditProduction = () => setShowEditProduction(false);
+  const handleCloseEditProduction = () => {
+    setShowEditProduction(false);
+    setProdNameError("");
+    setPrinterCodeError("");
+    setProdName("");
+    setPrinterCode("");
+  }
   const handleShowEditProduction = () => setShowEditProduction(true);
 
   // edit family Success
@@ -329,7 +359,7 @@ const admin_id = sessionStorage.getItem("admin_id");
   // get menu
   const fetchMenuData = async () => {
     try {
-      const response = await axios.post(`${apiUrl}/item/getProducationdata`, {admin_id},
+      const response = await axios.post(`${apiUrl}/item/getProducationdata`, { admin_id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -346,7 +376,7 @@ const admin_id = sessionStorage.getItem("admin_id");
   // get menu item
   const fetchMenuItemData = async () => {
     try {
-      const response = await axios.post(`${apiUrl}/item/getProducationdata`, {admin_id},
+      const response = await axios.post(`${apiUrl}/item/getProducationdata`, { admin_id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -367,9 +397,11 @@ const admin_id = sessionStorage.getItem("admin_id");
   const fetchFamilyData = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/family/getFamily`,{  headers: {
-        Authorization: `Bearer ${token}`,
-      }});
+      const response = await axios.get(`${apiUrl}/family/getFamily`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       setParentCheck(response.data);
     } catch (error) {
       console.error(
@@ -384,9 +416,11 @@ const admin_id = sessionStorage.getItem("admin_id");
   const fetchSubFamilyData = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`,{  headers: {
-        Authorization: `Bearer ${token}`,
-      }});
+      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       setChildCheck(response.data);
     } catch (error) {
       console.error(
@@ -401,7 +435,7 @@ const admin_id = sessionStorage.getItem("admin_id");
   const getProductionCenters = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${apiUrl}/production-centers`,{admin_id}, {
+      const response = await axios.post(`${apiUrl}/production-centers`, { admin_id }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -417,9 +451,11 @@ const admin_id = sessionStorage.getItem("admin_id");
   const fetchAllItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`,{  headers: {
-        Authorization: `Bearer ${token}`,
-      }});
+      const response = await axios.get(`${apiUrl}/item/getAll`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       setObj1(response.data.items);
       setFilteredItemsMenu(response.data.items);
       setItems(response.data.items);
@@ -442,7 +478,8 @@ const admin_id = sessionStorage.getItem("admin_id");
           `${apiUrl}/create/production-centers`,
           {
             name: prodName,
-            printer_code: printerCode
+            printer_code: printerCode,
+            admin_id,
           },
           {
             headers: {
@@ -482,6 +519,8 @@ const admin_id = sessionStorage.getItem("admin_id");
       name: prodCenter.name,
       printer_code: prodCenter.printer_code
     });
+    setProdName(prodCenter.name)
+    setPrinterCode(prodCenter.printer_code)
     handleShowEditProduction();
   };
 
@@ -543,36 +582,43 @@ const admin_id = sessionStorage.getItem("admin_id");
   // };
 
   const updateProductionCenter = async () => {
-    try {
-      handleCloseEditProduction(); // Close the modal first
-      setIsProcessing(true); // Then show the loader
+    if (validateProductionCenter()) {
+      try {
+        handleCloseEditProduction(); // Close the modal first
+        setIsProcessing(true); // Then show the loader
 
-      const updatedData = {
-        name: currentProdCenter.name,
-        // Only include printer_code if it has changed
-        ...(currentProdCenter.printer_code && {
-          printer_code: currentProdCenter.printer_code
-        })
-      };
+        const updatedData = {
+          name: currentProdCenter.name,
+          // Only include printer_code if it has changed
+          ...(currentProdCenter.printer_code && {
+            printer_code: currentProdCenter.printer_code
+          })
+        };
 
-      const response = await axios.post(
-        `${apiUrl}/update/production-centers/${currentProdCenter.id}`,
-        {updatedData},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
+        console.log(updatedData);
+        
+
+        const response = await axios.post(
+          `${apiUrl}/update/production-centers/${currentProdCenter.id}`,
+          { ...updatedData,admin_id },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
-      console.log("Production center updated:", response.data);
-      fetchMenuData()
-      fetchMenuItemData();
-      getProductionCenters();
-      handleShowEditProductionSuc();
-    } catch (error) {
-      console.error("Error updating production center:", error);
-    } finally {
-      setIsProcessing(false);
+        );
+        console.log("Production center updated:", response.data);
+        fetchMenuData()
+        fetchMenuItemData();
+        getProductionCenters();
+        handleShowEditProductionSuc();
+        setProdName("");
+        setPrinterCode("");
+      } catch (error) {
+        console.error("Error updating production center:", error);
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
 
@@ -701,7 +747,7 @@ const admin_id = sessionStorage.getItem("admin_id");
   };
 
   console.log(itemstoUpdate[0]);
-  
+
   // ...
 
   const handleAddMenu = async () => {
@@ -907,15 +953,17 @@ const admin_id = sessionStorage.getItem("admin_id");
                         Centros de Producción
                       </p>
                       <div>
-                        <div>
-                          <Button
-                            variant="primary"
-                            className="mb-3 m12 b_btn_pop"
-                            onClick={handleShowCreate}
-                          >
-                            + Crear Centro
-                          </Button>
-                        </div>
+                        {(role == "admin") &&
+                          <div>
+                            <Button
+                              variant="primary"
+                              className="mb-3 m12 b_btn_pop"
+                              onClick={handleShowCreate}
+                            >
+                              + Crear Centro
+                            </Button>
+                          </div>
+                        }
                       </div>
                     </div>
                   </div>
@@ -1043,13 +1091,15 @@ const admin_id = sessionStorage.getItem("admin_id");
                               <p className="text-white mb-0">{item.name}</p>
                             </label>
                           </div>
-                          <div
-                            className="text-white  "
-                            style={{ cursor: "pointer" }}
-                            onClick={() => handleEditClick(item)}
-                          >
-                            <BsThreeDots className="j-tbl-dot-color" />
-                          </div>
+                          {(role == "admin") &&
+                            <div
+                              className="text-white  "
+                              style={{ cursor: "pointer" }}
+                              onClick={() => handleEditClick(item)}
+                            >
+                              <BsThreeDots className="j-tbl-dot-color" />
+                            </div>
+                          }
                         </div>
                       </div>
                     ))}
@@ -1090,6 +1140,11 @@ const admin_id = sessionStorage.getItem("admin_id");
                             value={currentProdCenter.name}
                             onChange={handleEditNameChange}
                           />
+                          {prodNameError && (
+                            <div className="text-danger errormessage">
+                              {prodNameError}
+                            </div>
+                          )}
                         </div>
                         <div className="mb-3">
                           <label
@@ -1106,6 +1161,11 @@ const admin_id = sessionStorage.getItem("admin_id");
                             value={currentProdCenter.printer_code}
                             onChange={handleEditPrinterCodeChange}
                           />
+                          {printerCodeError && (
+                            <div className="text-danger errormessage">
+                              {printerCodeError}
+                            </div>
+                          )}
                         </div>
                       </Modal.Body>
                       <Modal.Footer className="border-0 pt-0">
@@ -1243,13 +1303,13 @@ const admin_id = sessionStorage.getItem("admin_id");
                         </Dropdown.Toggle>
 
                         <Dropdown.Menu className="m14  m_filter">
-                          <p
+                          {/* <p
                             className="px-3 py-1 fw-500 mb-0 text-end"
                             style={{ color: "#2D8EEC", cursor: "pointer" }}
                             onClick={handleResetFilters}
                           >
                             Restaurar
-                          </p>
+                          </p> */}
 
                           {/* {parentCheck.map((ele) => (
                               <div
@@ -1303,8 +1363,8 @@ const admin_id = sessionStorage.getItem("admin_id");
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
-                      {/* add product */}
-                      {selectedMenus.length == 1 &&
+                    {/* add product */}
+                    {(selectedMenus.length == 1 && role == "admin") &&
                       <div>
                         <Button
                           variant="primary text-nowrap"
@@ -1674,7 +1734,7 @@ const admin_id = sessionStorage.getItem("admin_id");
                                             onClick={() => handleClick(ele.id, ele.image, ele.name, ele.sale_price, ele.code)}
                                           >
                                             <FaCartPlus />{" "}
-                                            <span className="ms-1">Añadir al contador</span>
+                                            <span className="ms-1">Agregar al mostrador</span>
                                           </a>
                                         </div>
                                       </div>

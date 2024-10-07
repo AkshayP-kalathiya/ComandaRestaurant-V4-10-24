@@ -1932,7 +1932,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   ))} */}
-                  {popularData.map((item, index) => (
+                  {popularData?.map((item, index) => (
                     <div
                       key={item.id} // Ensure each item has a unique key
                       className="j-summary-body-data scrollbox d-flex align-items-center justify-content-between"

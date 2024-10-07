@@ -360,6 +360,8 @@ const Counter_finalP = () => {
       notes: item.note ? item.note.replace(/^Nota:\s*/i, "").trim() : "",
       admin_id: admin_id
     }));
+    
+    
     const orderData = {
       order_details: orderDetails,
       admin_id: admin_id,
@@ -381,6 +383,7 @@ const Counter_finalP = () => {
         transaction_code: true,
       }
     };
+    console.log(orderData);
     let order_master_id;
 
     setIsProcessing(true);
@@ -416,6 +419,7 @@ const Counter_finalP = () => {
         localStorage.removeItem("currentOrder");
         localStorage.removeItem("payment");
         setIsSubmitted(true);
+        setIsProcessing(false);
         handleShow11();
         setIsProcessing(false);
         handlePrint();
