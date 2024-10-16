@@ -27,7 +27,7 @@ export default function Home_crear({ item }) {
     const navigate = useNavigate()
     const { state } = useLocation();
     console.log(state);
-
+    const [orderUser, setOrderUser] = useState([]);
     console.log(id);
     // const [counts, setCounts] = useState(item ? { [item.id]: 0 } : {});
     // const [counts, setCounts] = useState(item ? { [item.id]: 0 } : {});
@@ -236,13 +236,14 @@ export default function Home_crear({ item }) {
         getAllorder();
         getItems();
         fetchUserPayment();
+        fetchPaymentUser();
 
-    }, [id, visibleInputId, deleteProductId]);
+    }, [id, deleteProductId]);
 
     useEffect(() => {
         fetchUser();
         handleOrderDetails();
-    }, [orderAlldata, items, visibleInputId, deleteProductId]);
+    }, [orderAlldata, items, deleteProductId]);
 
     //    -------- Edite order Qyt ----
     const initialCounts = orderDetails?.reduce((acc, item) => {
@@ -262,7 +263,7 @@ export default function Home_crear({ item }) {
             });
             setCounts(initialCounts);
         }
-    }, [orderDetails, visibleInputId, deleteProductId]);
+    }, [orderDetails, deleteProductId]);
 
 
     const getAllorder = async () => {
@@ -524,6 +525,8 @@ export default function Home_crear({ item }) {
                 // setSavedNote(noteValues);
                 setNoteValues('');
                 setVisibleInputId(null);
+                getAllorder();
+                handleOrderDetails();
             } catch (error) {
                 console.error(
                     "Error adding note:",
@@ -633,7 +636,10 @@ export default function Home_crear({ item }) {
                     setShowcreditfinal(true);
                     setTimeout(() => {
                         setShowcreditfinal(false);
-                        navigate("/home/client/detail", { state });
+                        let use = {user : {...orderUser}  }; // if you need to modify user later
+                        navigate("/home/client/detail", {
+                            state: state ? state : use
+                        });
                     }, 2000);
                 } else {
                     console.error("Error: The request was successful, but the response indicates a failure.");
@@ -643,7 +649,51 @@ export default function Home_crear({ item }) {
             }
         }
     };
+    const fetchPaymentUser = async () => {
+        setIsProcessing(true);
+        try {
+            const response = await axios.post(`${apiUrl}/get-payments`, { admin_id: admin_id }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
+            console.log(response.data.result);
+
+            // Group users and collect their order_master_ids
+            const groupedUsers = groupUsersByDetails(response.data.result);
+            console.log(groupedUsers);
+
+            //   console.log(id);
+            setOrderUser(groupedUsers.find(v => v.orderIds.some(a => a == id)));
+            //   console.log(groupedUsers.find(v => v.orderIds.some(a=>a == id)));
+
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+        setIsProcessing(false);
+    }
+    //   console.log(orderUser);
+
+
+    const groupUsersByDetails = (users) => {
+        setIsProcessing(true);
+        const groupedUsers = {};
+
+        users.forEach(user => {
+            const key = `${user.firstname}|${user.business_name}|${user.email}`;
+
+            if (!groupedUsers[key]) {
+                groupedUsers[key] = {
+                    ...user,
+                    orderIds: [user.order_master_id]
+                };
+            } else {
+                groupedUsers[key].orderIds.push(user.order_master_id);
+            }
+        });
+        setIsProcessing(false);
+
+        return Object.values(groupedUsers);
+    }
 
     return (
         <div className="m_bg_black">
@@ -718,6 +768,7 @@ export default function Home_crear({ item }) {
                                                                                             className="me-4  custom-checkbox"
                                                                                             style={{ marginTop: "22px" }}
                                                                                             onClick={() => handleReturnItems(item)}
+                                                                                            checked={selectedItems.some((v) => v.id == item.id)}
                                                                                         />
                                                                                         <img src={`${API}/images/${item.image}`} alt="pic" height={60} width={60} />
                                                                                         <div className="ms-4">
@@ -769,8 +820,25 @@ export default function Home_crear({ item }) {
                                                                                     )}
                                                                                 </div>
                                                                             ) : (
-                                                                                <div className='a_home_addnote ms-4' >
-                                                                                    {item.notes}
+                                                                                < div key={item.id}>
+                                                                                    {visibleInputId != item.id ? (
+                                                                                        <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(item.id)}>
+                                                                                            <span className='j-nota-blue ms-4'>{item.notes}</span>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                                            <span className='j-nota-blue ms-4'>Nota:</span>
+                                                                                            <input
+                                                                                                type="text"
+                                                                                                className='j-note-input'
+                                                                                                // placeholder={v.notes}
+                                                                                                value={noteValues}
+                                                                                                onChange={(e) => handleNoteChange(item.id, e)}
+                                                                                                onKeyDown={handleNoteKeyDown(item.id)}
+                                                                                            // onBlur={console.log("blur")}
+                                                                                            />
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             )}
                                                                         </div>
@@ -1022,7 +1090,7 @@ export default function Home_crear({ item }) {
                                                                             <div>${selectedItems?.reduce((total, v) => total + v.amount * v.quantity, 0)}</div>
                                                                         </div>
                                                                     </div> */}
-                                                                     <div className='b_bborder my-3 p-4'>
+                                                                    <div className='b_bborder my-3 p-4'>
                                                                         <h5>Tipos de pago</h5>
                                                                         <div className='d-flex justify-content-between'>
                                                                             <div className='mt-3'>

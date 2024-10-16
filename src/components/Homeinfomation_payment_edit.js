@@ -47,7 +47,6 @@ const Homeinfomation_payment_edit = ({ item }) => {
     console.log(state);
 
 
-
     // =============new==========
     const [obj1, setObj1] = useState([]);
     const [orderData, setOrderData] = useState(null);
@@ -110,12 +109,13 @@ const Homeinfomation_payment_edit = ({ item }) => {
         getFamily();
         getSubFamily();
         setActiveTab(state ? state : "home")
-    }, [noteValues, show1Prod, deleteProductId]);
+    }, [show1Prod, deleteProductId]);
 
     useEffect(() => {
         if (orderData && items.length > 0) {
             handleOrderDetails();
             getSector();
+
         }
         if (orderData?.user_id) {
             console.log(orderData?.user_id);
@@ -131,7 +131,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
 
     const getOrder = async () => {
         try {
-            const response = await axios.post(`${API_URL}/order/getSingle/${id}`,{admin_id: admin_id}, {
+            const response = await axios.post(`${API_URL}/order/getSingle/${id}`, { admin_id: admin_id }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -147,9 +147,11 @@ const Homeinfomation_payment_edit = ({ item }) => {
 
     const getItems = async () => {
         try {
-            const response = await axios.get(`${API_URL}/item/getAll`,{headers: {
-                Authorization: `Bearer ${token}`
-              }});
+            const response = await axios.get(`${API_URL}/item/getAll`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setItems(response.data.items);
             setObj1(response.data.items);
             setFilteredItemsMenu(response.data.items);
@@ -163,7 +165,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
 
     const getSector = async () => {
         try {
-            const response = await axios.post(`${API_URL}/sector/getWithTable`);
+            const response = await axios.post(`${API_URL}/sector/getWithTable`, { admin_id: admin_id }, { headers: { Authorization: `Bearer ${token}` } });
             let sectors = response.data.data;
 
             const sectorWithTable = sectors.find(v =>
@@ -235,7 +237,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
 
     const getuserRole = () => {
         if (user && roles.length > 0) {
-            const role = roles.find((v) => v.id === user[0].role_id);
+            const role = roles.find((v) => v.id === user[0]?.role_id);
             if (role) {
                 setUserRole(role.name);
             }
@@ -244,9 +246,11 @@ const Homeinfomation_payment_edit = ({ item }) => {
 
     const getFamily = async () => {
         try {
-            const response = await axios.get(`${API_URL}/family/getFamily`,{headers: {
-                Authorization: `Bearer ${token}`
-              }});
+            const response = await axios.get(`${API_URL}/family/getFamily`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setParentCheck(response.data);
         } catch (error) {
             console.error(
@@ -257,9 +261,11 @@ const Homeinfomation_payment_edit = ({ item }) => {
     }
     const getSubFamily = async () => {
         try {
-            const response = await axios.get(`${API_URL}/subfamily/getSubFamily`,{headers: {
-                Authorization: `Bearer ${token}`
-              }});
+            const response = await axios.get(`${API_URL}/subfamily/getSubFamily`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             setChildCheck(response.data);
         } catch (error) {
             console.error(
@@ -352,23 +358,27 @@ const Homeinfomation_payment_edit = ({ item }) => {
 
     // // ==== select items section ====
     const handleAddItem = (item) => {
-        console.log(item, "safasf");
-        if (!selectedItemsMenu.some((v) => v.item_id == item.id)) {
-            console.log(selectedItemsMenu);
-            const obj = {
-                item_id: item.id,
-                quantity: 1,
-            }
-            setSelectedItemsMenu((prevArray) => [...prevArray, obj]);
-            console.log(selectedItemsMenu);
-            setSelectedItemsCount(selectedItemsCount + 1);
-            // setItemId((prevArray) => [...prevArray, item.id]);
+        setSelectedItemsMenu((prevArray) => {
+            const itemIndex = prevArray.findIndex((v) => v.item_id === item.id);
 
-            // Perform any other action here when adding an item
-            console.log(`Added item ${item.id}`);
-        } else {
-            console.log(`Item ${item.id} already added`);
-        }
+            if (itemIndex !== -1) {
+                // Item exists, so remove it
+                const newArray = [...prevArray];
+                newArray.splice(itemIndex, 1);
+                setSelectedItemsCount(prevCount => prevCount - 1);
+                console.log(`Removed item ${item.id}`);
+                return newArray;
+            } else {
+                // Item doesn't exist, so add it
+                const newItem = {
+                    item_id: item.id,
+                    quantity: 1,
+                };
+                setSelectedItemsCount(prevCount => prevCount + 1);
+                console.log(`Added item ${item.id}`);
+                return [...prevArray, newItem];
+            }
+        });
     };
 
     // // ==== select items section ====
@@ -423,31 +433,31 @@ const Homeinfomation_payment_edit = ({ item }) => {
         setNoteValues(e.target.value);
     };
 
-    const handleNoteKeyDown = (id) => async (e) => {
-        if (e.key === 'Enter') {
-            console.log(id);
-            try {
-                const response = await axios.post(
-                    `${API_URL}/order/addNote/${id}`,
-                    { notes: noteValues },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-                console.log("Note added successfully:", response.data);
+    const handleNoteKeyDown = async (id) => {
+        console.log(id)
+        try {
+            const response = await axios.post(
+                `${API_URL}/order/addNote/${id}`,
+                { notes: noteValues },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            // console.log("Note added successfully:", response.data);
 
-                // setSavedNote(noteValues);
-                setNoteValues('');
-                setVisibleInputId(null);
-            } catch (error) {
-                console.error(
-                    "Error adding note:",
-                    error.response ? error.response.data : error.message
-                );
-            }
+            // setSavedNote(noteValues);
+            setNoteValues('');
+            setVisibleInputId(null);
+        } catch (error) {
+            console.error(
+                "Error adding note:",
+                error.response ? error.response.data : error.message
+            );
         }
+        getOrder();
+        handleOrderDetails();
     };
 
 
@@ -619,7 +629,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
     };
 
 
-
+    console.log(orderData);
 
     return (
         <div>
@@ -709,8 +719,10 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                         </Button>
                                     </Modal.Footer>
                                 </Modal>
+
                             </div>
                         </div>
+
 
                         <Tabs
                             activeKey={activeTab}
@@ -720,7 +732,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                             fill>
                             <Tab
                                 eventKey="home"
-                                title="Orden"
+                                title="Pedidos"
                                 className="m_in text-white aaaaa  rounded"
                             >
                                 <div className='row'>
@@ -745,18 +757,24 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                                             </div>
                                                                         </div>
                                                                         <div className="col-sm-2 a_text_price">
-                                                                            <button className="b_count11 btn btn-secondary" onClick={() => decrement(item.id, item.item_id, item.quantity)}>-</button>
+                                                                            {!(orderData?.status == "cancelled") &&
+                                                                                <button className="b_count11 btn btn-secondary" onClick={() => decrement(item.id, item.item_id, item.quantity)}>-</button>
+                                                                            }
                                                                             <span className="pe-3 ms-2">{counts[item.id]}</span>
-                                                                            <button className="b_count btn btn-secondary" onClick={() => increment(item.id, item.item_id, item.quantity)}>+</button>
+                                                                            {!(orderData?.status == "cancelled") &&
+                                                                                <button className="b_count btn btn-secondary" onClick={() => increment(item.id, item.item_id, item.quantity)}>+</button>
+                                                                            }
                                                                         </div>
                                                                         <div className="col-sm-1 a_text_price">
-                                                                            <div className="pe-5 fw-bold">{item.amount}</div>
+                                                                            <div className="pe-5 fw-bold">${item.amount}</div>
                                                                         </div>
-                                                                        <div className="col-sm-1">
-                                                                            <button className="b_bg_red btn" onClick={() => deleteProductModal(item.id)}>
-                                                                                <RiDeleteBinLine />
-                                                                            </button>
-                                                                        </div>
+                                                                        {!(orderData?.status == "cancelled") &&
+                                                                            <div className="col-sm-1">
+                                                                                <button className="b_bg_red btn" onClick={() => deleteProductModal(item.id)}>
+                                                                                    <RiDeleteBinLine />
+                                                                                </button>
+                                                                            </div>
+                                                                        }
                                                                     </div>
                                                                 </div>
                                                                 <div style={{ marginBottom: "68px", cursor: "pointer" }}>
@@ -775,33 +793,51 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                                     )} */}
                                                                     {item.notes === null ? (
                                                                         <div key={item.id}>
-                                                                            {visibleInputId !== item.id && (
-                                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                                                    <span
-                                                                                        className='j-nota-blue ms-4 text-decoration-underline'
-                                                                                        onClick={() => toggleInput(item.id)}
-                                                                                    >
-                                                                                        + Nota
-                                                                                    </span>
+                                                                            {visibleInputId !== item.id ? (
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(item.id)}>
+                                                                                    <span className='j-nota-blue ms-4 text-decoration-underline'>+ Nota</span>
                                                                                 </div>
-                                                                            )}
-
-                                                                            {visibleInputId === item.id && (
+                                                                            ) : (
                                                                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                                                                     <span className='j-nota-blue ms-4'>Nota:</span>
                                                                                     <input
                                                                                         type="text"
-                                                                                        className='ms-4 j-note-input'
+                                                                                        className='j-note-input'
                                                                                         value={noteValues}
                                                                                         onChange={(e) => handleNoteChange(item.id, e)}
-                                                                                        onKeyDown={handleNoteKeyDown(item.id)}
+                                                                                        onBlur={() => handleNoteKeyDown(item.id)}
+                                                                                        onKeyDown={(e) => {
+                                                                                            if (e.key === "Enter")
+                                                                                                handleNoteKeyDown(item.id)
+                                                                                        }}
                                                                                     />
                                                                                 </div>
                                                                             )}
                                                                         </div>
                                                                     ) : (
-                                                                        <div className='a_home_addnote ms-4' >
-                                                                            {item.notes}
+                                                                        < div key={item.id}>
+                                                                            {visibleInputId != item.id ? (
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(item.id)}>
+                                                                                    <span className='j-nota-blue ms-4'>Nota: {item.notes}</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                                    <span className='j-nota-blue ms-4'>Nota:</span>
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        className='j-note-input'
+                                                                                        value={noteValues}
+                                                                                        onChange={(e) => handleNoteChange(item.id, e)}
+                                                                                        onBlur={() => handleNoteKeyDown(item.id)}
+                                                                                        onKeyDown={(e) => {
+                                                                                            console.log(e.key);
+                                                                                            if (e.key == "Enter") {
+                                                                                                handleNoteKeyDown(item.id)
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -829,14 +865,19 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                 <div className='fw-bold fs-5'>
                                                     Datos
                                                 </div>
-                                                <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
-                                                    ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
-                                                    {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : ' '}
-                                                </div>
-                                                <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
+                                                {orderData && <>
+                                                    <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
+                                                    ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'b_ora text-danger'}`}>
+                                                        {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : orderData.status.toLowerCase() === 'cancelled' ? 'Cancelar' : ''}
+                                                    </div>
+
+                                                    <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
                                                      ${orderData?.order_type.toLowerCase() === 'local' ? 'b_indigo' : orderData?.order_type.toLowerCase() === 'order now' ? 'b_ora ' : orderData?.order_type.toLowerCase() === 'delivery' ? 'b_blue' : orderData?.order_type.toLowerCase() === 'uber' ? 'b_ora text-danger' : orderData?.order_type.toLowerCase().includes("with") ? 'b_purple' : 'b_ora text-danger'}`}>
-                                                    {orderData?.order_type.toLowerCase() === 'local' ? 'Local' : orderData?.order_type.toLowerCase().includes("with") ? 'Retiro ' : orderData?.order_type.toLowerCase() === 'delivery' ? 'Entrega' : orderData?.order_type.toLowerCase() === 'uber' ? 'Uber' : orderData?.order_type}
-                                                </div>
+                                                        {orderData?.order_type.toLowerCase() === 'local' ? 'Local' : orderData?.order_type.toLowerCase().includes("with") ? 'Retiro ' : orderData?.order_type.toLowerCase() === 'delivery' ? 'Entrega' : orderData?.order_type.toLowerCase() === 'uber' ? 'Uber' : orderData?.order_type}
+                                                    </div></>
+                                                }
+
+
                                                 {/* <div className='btn a_btn_lightjamun my-3 bj-delivery-text-2 ' style={{ borderRadius: "10px" }}><span style={{ fontWeight: "600" }}>{orderData?.order_type}</span></div><br />
                                                 <div className='btn sj_btn_lightgreen my-3 bj-delivery-text-2 ' style={{ borderRadius: "10px" }}><span style={{ fontWeight: "600" }}>Uber</span></div> */}
                                                 <div className='d-flex justify-content-end align-items-center mb-4 mt-3'>
@@ -874,6 +915,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                         </div>
                                     </div>
                                 </div>
+
                             </Tab>
 
                             <Tab eventKey="profile" title="Información del cliente" className='b_border ' style={{ marginTop: "2px" }}>
@@ -893,7 +935,8 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Mesa</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table && `${table?.name}  (${table?.id})`} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            {console.log("tabke", table)}
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table?.name ? `${table.name} (${table.id})` : '-'} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                         </div>
                                     </div>
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
@@ -918,6 +961,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                     <th>Hora </th>
                                                     <th>Usuario</th>
                                                     <th>Estado</th>
+
                                                 </tr>
                                             </thead>
                                             <tbody className='text-white b_btnn '>
@@ -978,7 +1022,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                     </div>
 
                                     <div className="py-3 m_borbot mx-3  m14 ">
-                                        {parentCheck.map((parentItem) => (
+                                        {parentCheck && parentCheck.map((parentItem) => (
                                             <div key={parentItem.id}>
                                                 <div className="d-flex justify-content-between align-items-center flex-wrap mb-2">
                                                     <div className="text-nowrap">
@@ -1075,59 +1119,66 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                     </div>
                                 </div>
                                 <div className="row p-2">
-                                    {filteredItemsMenu.map((ele, index) => (
-                                        <div
-                                            className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
-                                            keys={index}
-                                        >
-                                            <div>
-                                                <div class="card m_bgblack text-white position-relative">
-                                                    <img
-                                                        src={`${API}/images/${ele.image}`}
-                                                        class="card-img-top object-fit-fill rounded"
-                                                        alt="..."
-                                                        style={{ height: "162px" }}
-                                                    />
-                                                    <div class="card-body">
-                                                        <h6 class="card-title">{ele.name}</h6>
-                                                        <h6 class="card-title">${ele.sale_price}</h6>
-                                                        <p class="card-text opacity-50">
-                                                            Codigo: {ele.code}
-                                                        </p>
-                                                        <div class="btn w-100 btn-primary text-white" onClick={() => handleAddItem(ele)}>
-                                                            <a
-                                                                href="# "
-                                                                className="text-white text-decoration-none"
-                                                                style={{ fontSize: "14px" }}
-                                                            >
-                                                                <span className="ms-1">Añadir </span>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-
-                                                    <div
-                                                        className="position-absolute "
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <Link
-                                                            to={`/articles/singleatricleproduct/${ele.id}`}
-                                                            className="text-white text-decoration-none"
-                                                        >
-                                                            <p
-                                                                className=" px-1  rounded m-2"
-                                                                style={{ backgroundColor: "#374151" }}
-                                                            >
-                                                                <IoMdInformationCircle />{" "}
-                                                                <span style={{ fontSize: "12px" }}>
-                                                                    Ver información
-                                                                </span>
+                                    {filteredItemsMenu.map((ele, index) => {
+                                        const isAdded = selectedItemsMenu.length > 0 ? selectedItemsMenu.some((v) => v.item_id == ele.id) : false;
+                                        return (
+                                            <div
+                                                className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
+                                                keys={index}
+                                            >
+                                                <div>
+                                                    <div class="card m_bgblack text-white position-relative">
+                                                        <img
+                                                            src={`${API}/images/${ele.image}`}
+                                                            class="card-img-top object-fit-fill rounded"
+                                                            alt="..."
+                                                            style={{ height: "162px" }}
+                                                        />
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">{ele.name}</h6>
+                                                            <h6 class="card-title">${ele.sale_price}</h6>
+                                                            <p class="card-text opacity-50">
+                                                                Codigo: {ele.code}
                                                             </p>
-                                                        </Link>
+                                                            <div class="btn w-100 btn-primary text-white"
+                                                                style={{ backgroundColor: isAdded ? "#063f93" : "#0d6efd" }}
+                                                                onClick={() => handleAddItem(ele)}>
+                                                                <a
+                                                                    href="# "
+                                                                    className="text-white text-decoration-none"
+                                                                    style={{ fontSize: "14px" }}
+                                                                >
+                                                                    <span className="ms-1">
+                                                                        {isAdded ? 'Agregado' : 'Agregar al menú'}
+                                                                    </span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+
+                                                        <div
+                                                            className="position-absolute "
+                                                            style={{ cursor: "pointer" }}
+                                                        >
+                                                            <Link
+                                                                to={`/articles/singleatricleproduct/${ele.id}`}
+                                                                className="text-white text-decoration-none"
+                                                            >
+                                                                <p
+                                                                    className=" px-1  rounded m-2"
+                                                                    style={{ backgroundColor: "#374151" }}
+                                                                >
+                                                                    <IoMdInformationCircle />{" "}
+                                                                    <span style={{ fontSize: "12px" }}>
+                                                                        Ver información
+                                                                    </span>
+                                                                </p>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>

@@ -1,9 +1,10 @@
+
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import box from "../Image/Ellipse 20.png";
 import box4 from "../Image/box5.png";
 import { FaCircleCheck, FaMinus, FaPlus } from "react-icons/fa6";
-import { Accordion, Button, Modal } from "react-bootstrap";
+import { Accordion, Button, Modal, Spinner } from "react-bootstrap";
 import check from "../Image/Checkbox.png";
 import check5 from "../Image/Checkbox6.png";
 import Sidenav from "./Sidenav";
@@ -29,7 +30,6 @@ const DeliveryPago = () => {
   const [payment, setPayment] = useState(
     JSON.parse(localStorage.getItem("payment"))
   );
-
   const [orderType, setOrderType] = useState(
     JSON.parse(localStorage.getItem("currentOrder")) || []
   );
@@ -49,10 +49,11 @@ const DeliveryPago = () => {
     const regex = allowDecimal ? /^\d*\.?\d{0,2}$/ : /^\d*$/;
     return regex.test(value) ? value : "";
   };
+  const [tipError, setTipError] = useState('')
 
   const handleprice = (event) => {
     let value = event.target.value.replace("$", "");
-    value = validateNumericInput(value == "" ? 0 : value);
+    value = validateNumericInput(value);
     const numericValue = parseFloat(value) || 0;
 
     // Assuming a maximum tip of 100% of the total cost
@@ -60,8 +61,11 @@ const DeliveryPago = () => {
     if (numericValue > maxTip) {
       value = maxTip.toFixed(2);
     }
-    setPrice(value);
-    // setTipAmount(parseFloat(value));
+    if (value) {
+      setTipError('');
+      setPrice(value);
+      setTipAmount(parseFloat(value));
+    }
   };
 
   const [showAllItems, setShowAllItems] = useState(false);
@@ -77,9 +81,11 @@ const DeliveryPago = () => {
   const [activeAccordionItem, setActiveAccordionItem] = useState("0");
   const [formErrors, setFormErrors] = useState({});
   const [show, setShow] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const handleClose = () => {
     setShow(false);
     setPrice('');
+    setTipError('');
   }
   const handleShow = () => setShow(true);
   const [lastOrder, setLastOrder] = useState('');           // change
@@ -150,7 +156,10 @@ const DeliveryPago = () => {
   };
 
   const initialCustomerData = {
-    amount: "",
+    cashAmount: "",      // Amount for cash payment
+    debitAmount: "",     // Amount for debit payment
+    creditAmount: "",    // Amount for credit payment
+    transferAmount: "",  // Amount for transfer payment
     turn: ""
   };
 
@@ -160,7 +169,11 @@ const DeliveryPago = () => {
   const handleCheckboxChange = (value) => {
     if (selectedCheckboxes.includes(value)) {
       setSelectedCheckboxes((prev) => prev.filter((item) => item !== value));
-      setCustomerData(initialCustomerData);
+      // Do not reset the entire customerData, only the specific amount
+      setCustomerData((prevData) => ({
+        ...prevData,
+        [value + "Amount"]: "" // Reset only the deselected payment type amount
+      }));
     } else {
       setSelectedCheckboxes((prev) => [...prev, value]);
     }
@@ -173,11 +186,18 @@ const DeliveryPago = () => {
 
   const handleChange = (event) => {
     let { name, value } = event.target;
-    value = value.replace(/[^0-9/./]/g, "");
-    setCustomerData((prevState) => ({
-      ...prevState,
-      [name]: value
-    }));
+    value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
+    setCustomerData((prevState) => {
+      const updatedState = {
+        ...prevState,
+        [name]: value, // Update the specific payment type amount
+      };
+      // New calculation for turn
+      const totalAmount = parseFloat(updatedState.cashAmount || 0) + parseFloat(updatedState.debitAmount || 0) + parseFloat(updatedState.creditAmount || 0) + parseFloat(updatedState.transferAmount || 0);
+      updatedState.turn = totalAmount - (finalTotal + taxAmount + tipAmount); // Update turn based on total amounts
+      return updatedState;
+    });
+    console.log("Payment", customerData);
     setFormErrors((prevState) => ({
       ...prevState,
       [name]: undefined
@@ -249,7 +269,7 @@ const DeliveryPago = () => {
   const totalCost = getTotalCost();
   const discount = 1.0;
   const finalTotal = totalCost - discount;
-  const taxAmount = finalTotal * 0.12;
+  const taxAmount = finalTotal * 0.19;
 
 
   // ==== Get BOX Data =====
@@ -306,15 +326,19 @@ const DeliveryPago = () => {
 
     const totalWithTax = finalTotal + taxAmount + tipAmount;
 
+    const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
+    console.log(totalPaymentAmount < totalWithTax, totalPaymentAmount <= 0)
     // Validate payment amount
-    if (!customerData.amount || parseFloat(customerData.amount) <= 0) {
+    if (!totalPaymentAmount || totalPaymentAmount <= 0) {
       errors.amount = "Por favor, introduzca un importe de pago válido";
-    } else if (parseFloat(customerData.amount) < totalWithTax.toFixed(2)) {
+      // } else if (parseFloat(customerData.amount) < totalWithTax.toFixed(2)) {
+
+    } else if (totalPaymentAmount < totalWithTax.toFixed(2)) {
       errors.amount = "El monto del pago debe cubrir el costo total";
     }
-
     return errors;
   };
+
 
   // submit
   const handleSubmit = async () => {
@@ -324,39 +348,69 @@ const DeliveryPago = () => {
       setFormErrors(errors);
       return;
     }
+    const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
 
-    const orderDetails = cartItems.map((item) => ({
-      item_id: item.id,
-      quantity: item.count,
-      notes: item.note ? item.note.replace(/^Nota:\s*/i, "").trim() : "",
-      admin_id: admin_id
-    }));
+    let url;
+    let orderData;
 
+    if (orderType.order == "old") {
 
-    const orderData = {
-      order_details: orderDetails,
-      order_master: {
-        order_type: orderType.orderType,
-        payment_type: selectedCheckboxes[0],
-        status: "received",
-        discount: discount, // Use the discount value from your state
-        user_id: userId, // You might want to dynamically set this
-        delivery_cost: 0, // You might want to dynamically set this
-        customer_name:
-          payment.firstname && payment.firstname.trim() !== ""
-            ? payment.firstname
-            : payment.businessname,
-        reason: "",
-        person: "",
-        tip: tipAmount,
-        box_id: boxId?.id != 'undefined' ? boxId?.id : '',
-      },
-      admin_id: admin_id,
-    };
+      console.log("oldold");
+
+      url = `/order/orderUpdateItem/${orderType.orderId}`
+
+      const orderDetails = cartItems.map((item) => ({
+        item_id: item.id,
+        quantity: item.count,
+        notes: item.note ? item.note.replace(/^Nota:\s*/i, "").trim() : "",
+        order_master_id: orderType.orderId,
+        id: item.OdId
+      }));
+
+      orderData = {
+        order_id: orderType.orderId,
+        admin_id: 154,
+        transaction_code: 1,
+        order_details: orderDetails,
+      }
+
+    } else {
+
+      url = '/order/place_new'
+
+      const orderDetails = cartItems.map((item) => ({
+        item_id: item.id,
+        quantity: item.count,
+        notes: item.note ? item.note.replace(/^Nota:\s*/i, "").trim() : "",
+        admin_id: admin_id
+      }));
+
+      orderData = {
+        order_details: orderDetails,
+        order_master: {
+          order_type: orderType.orderType,
+          payment_type: selectedCheckboxes[0],
+          status: "received",
+          discount: discount,
+          user_id: userId,
+          delivery_cost: 0,
+          customer_name:
+            payment.firstname && payment.firstname.trim() !== ""
+              ? payment.firstname
+              : payment.business_name,
+          reason: "",
+          person: "",
+          tip: tipAmount,
+          transaction_code: 1,
+          box_id: boxId?.id != 'undefined' ? boxId?.id : '',
+        },
+        admin_id: admin_id,
+      };
+    }
     const paymentData = {
       ...payment,
-      amount: customerData.amount,
-      type: selectedCheckboxes[0],
+      amount: totalPaymentAmount,
+      type: selectedCheckboxes,
       order_master_id: orderType.orderId,
       return: customerData.turn,
       admin_id: admin_id,
@@ -364,44 +418,45 @@ const DeliveryPago = () => {
 
     console.log(paymentData);
 
+    setIsProcessing(true)
 
     try {
-      const response = await axios.post(`${apiUrl}/order/place_new`, orderData, {
+      const response = await axios.post(`${apiUrl}${url}`, orderData, {
         headers: { Authorization: `Bearer ${token}` }
       })
       // console.log(response.data)
-      if(response.data.success){
+      // if (response.data.success) {
 
-        try {
-          const responsePayment = await axios.post(
-            `${apiUrl}/payment/insert`,
-            paymentData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
+      try {
+        const responsePayment = await axios.post(
+          `${apiUrl}/payment/insert`,
+          paymentData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
             }
-          )
-          // console.log(responsePayment.status);
-          if (responsePayment.status) {
-            localStorage.removeItem("cartItems");
-            localStorage.removeItem("currentOrder");
-            localStorage.removeItem("payment");
-            handleShow11();
           }
-          // console.log("payemnt suc", responsePayment.data);
-        } catch (error) {
-          console.log("Payment not done." + error.message); 
+        )
+        setIsProcessing(false)
+        // console.log("sbhs",responsePayment);
+        if (responsePayment.status) {
+          localStorage.removeItem("cartItems");
+          localStorage.removeItem("currentOrder");
+          localStorage.removeItem("payment");
+          handleShow11();
         }
+        // console.log("payemnt suc", responsePayment.data);
+      } catch (error) {
+        setIsProcessing(false)
+        console.log("Payment not done." + error.message);
       }
+      // }
     } catch (error) {
+      setIsProcessing(false)
       console.error("Error creating order : ", error);
       //enqueueSnackbar (error?.response?.data?.message, { variant: 'error' })
     }
-
-    
-
-
+    setIsProcessing(false)
     // localStorage.removeItem("cartItems");
     // localStorage.removeItem("currentOrder");
     // localStorage.removeItem("payment");
@@ -525,6 +580,9 @@ const DeliveryPago = () => {
                         value={`$${price}`}
                         onChange={handleprice}
                       />
+                      {tipError && (
+                        <p className="errormessage text-danger">{tipError}</p>
+                      )}
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="border-0 pt-0">
@@ -532,6 +590,10 @@ const DeliveryPago = () => {
                       className="j-tbl-btn-font-1 b_btn_pop"
                       variant="primary"
                       onClick={() => {
+                        if (!price) {
+                          setTipError('Ingrese una cantidad')
+                          return
+                        }
                         handleShowCreSubSuc();
                         handleClose();
                       }}
@@ -601,9 +663,9 @@ const DeliveryPago = () => {
                               <br />
                               <input
                                 type="text"
-                                id="name"
-                                name="amount"
-                                value={`$${customerData.amount || ""}`}
+                                id="cashAmount" // change
+                                name="cashAmount" // change
+                                value={`$${customerData.cashAmount || ""}`} // change
                                 onChange={handleChange}
                                 className="input_bg_dark w-full px-4 py-2 text-white sj_width_mobil"
                               />
@@ -620,7 +682,7 @@ const DeliveryPago = () => {
                                 type="email"
                                 id="email"
                                 name="turn"
-                                value={`$${customerData.turn || ""}`}
+                                value={`$${customerData.turn ? customerData.turn.toFixed(2) : ""}`}
                                 onChange={handleChange}
                                 className="input_bg_dark px-4 py-2 text-white sj_width_mobil"
                               />
@@ -634,11 +696,7 @@ const DeliveryPago = () => {
                     <Accordion.Header>
                       <div
                         onClick={() => handleCheckboxChange("debit")}
-                        className={`sj_bg_dark px-4 py-2 sj_w-75 ${selectedCheckboxes.includes(
-                          "debit"
-                        )
-                          ? "active"
-                          : ""}`}
+                        className={`sj_bg_dark px-4 py-2 sj_w-75 ${selectedCheckboxes.includes("debit") ? "active" : ""}`}
                       >
                         <input
                           type="checkbox"
@@ -648,7 +706,6 @@ const DeliveryPago = () => {
                           onChange={() => handleCheckboxChange("debit")}
                           className="me-2 j-change-checkbox"
                         />
-
                         <p className="d-inline px-3">Tarjeta de debito</p>
                       </div>
                     </Accordion.Header>
@@ -660,9 +717,9 @@ const DeliveryPago = () => {
                             <br />
                             <input
                               type="text"
-                              id="name"
-                              name="amount"
-                              value={`$${customerData.amount || ""}`}
+                              id="debitAmount" // Ensure this ID is unique
+                              name="debitAmount" // Ensure this name matches the state
+                              value={`$${customerData.debitAmount || ""}`} // Ensure correct binding
                               onChange={handleChange}
                               className="sj_bg_dark sj_width_input px-4 py-2 text-white"
                             />
@@ -706,9 +763,10 @@ const DeliveryPago = () => {
                               <br />
                               <input
                                 type="text"
-                                id="name"
-                                name="amount"
-                                value={`$${customerData.amount || ""}`}
+                                id="creditAmount"
+                                name="creditAmount"
+                                value={`$${customerData.creditAmount || ""}`}
+                                onChange={handleChange}
                                 className="input_bg_dark w-full px-4 py-2 text-white sj_width_mobil"
                               />
                               {formErrors.amount && (
@@ -751,9 +809,9 @@ const DeliveryPago = () => {
                             <br />
                             <input
                               type="text"
-                              id="name"
-                              name="amount"
-                              value={`$${customerData.amount || ""}`}
+                              id="transferAmount"
+                              name="transferAmount"
+                              value={`$${customerData.transferAmount || ""}`}
                               onChange={handleChange}
                               className="sj_bg_dark sj_width_input px-4 py-2 text-white"
                             />
@@ -781,8 +839,11 @@ const DeliveryPago = () => {
                 <h3 className="text-white j-kds-body-text-1000">Datos</h3>
                 <div className="j_td_center my-3">
                   <div className="j-busy-table j_busy_table_last d-flex align-items-center">
-                    <div className="b-delivery-button">
-                      <button className="bj-delivery-text-2">Delivery</button>
+                    <div className=''>
+                      <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
+                      ${orderType?.orderType.toLowerCase() === 'local' ? 'b_indigo' : orderType?.orderType?.toLowerCase() === 'order now' ? 'b_ora ' : orderType?.orderType?.toLowerCase() === 'delivery' ? 'b_blue' : orderType?.orderType?.toLowerCase() === 'uber' ? 'b_ora text-danger' : orderType?.orderType?.toLowerCase().includes("with") ? 'b_purple' : 'b_ora text-danger'}`}>
+                        {orderType?.orderType?.toLowerCase() === 'local' ? 'Local' : orderType?.orderType?.toLowerCase().includes("with") ? 'Retiro ' : orderType?.orderType?.toLowerCase() === 'delivery' ? 'Entrega' : orderType?.orderType?.toLowerCase() === 'uber' ? 'Uber' : orderType?.orderType}
+                      </div>
                     </div>
                     {/* <div className="j-b-table" /> */}
                     {/* <p className="j-table-color j-tbl-font-6">Ocupado</p> */}
@@ -999,7 +1060,7 @@ const DeliveryPago = () => {
 
                         <div className="j-border-bottom-counter">
                           <div className="j-total-discount d-flex justify-content-between">
-                            <p className="j-counter-text-2">IVA 12.00%</p>
+                            <p className="j-counter-text-2">IVA 19.00%</p>
                             <span className="text-white">${taxAmount.toFixed(2)}</span>
                           </div>
                         </div>
@@ -1016,7 +1077,7 @@ const DeliveryPago = () => {
                             className="text-white text-decoration-none btn-primary m-articles-text-2"
                             onClick={handleSubmit}
                           >
-                            Continuar
+                            Cobrar
                           </div>
                         </div>
                         <Modal
@@ -1045,6 +1106,7 @@ const DeliveryPago = () => {
                               paymentAmt={customerData}
                               paymentType={selectedCheckboxes}
                             />
+                            {console.log("sas", customerData)}
                           </Modal.Body>
                           <Modal.Footer className="sjmodenone">
                             <Button
@@ -1090,6 +1152,21 @@ const DeliveryPago = () => {
                             </div>
                           </Modal.Body>
                         </Modal>
+
+                        {/* processing */}
+                        <Modal
+                          show={isProcessing}
+                          keyboard={false}
+                          backdrop={true}
+                          className="m_modal  m_user "
+                        >
+                          <Modal.Body className="text-center">
+                            <p></p>
+                            <Spinner animation="border" role="status" style={{ height: '85px', width: '85px', borderWidth: '6px' }} />
+                            <p className="mt-2">Procesando solicitud...</p>
+                          </Modal.Body>
+                        </Modal>
+
 
                         <Modal
                           show={showSuccess}

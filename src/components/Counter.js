@@ -231,7 +231,7 @@ const Counter = () => {
         .split(/\s+/)
         .filter((term) => term.length > 0);
       itemsToRender = itemsToRender.filter((item) =>
-        searchTerms.every((term) => item.name.toLowerCase().includes(term))
+        searchTerms.every((term) => item.name.toLowerCase().includes(term) || item.code.toLowerCase().includes(term))
       );
     }
 
@@ -490,7 +490,7 @@ const Counter = () => {
                 </div>
                 <div className="  flex-grow-1 text-center">
                   <Link
-                    to={"/counter/mostrador"}
+                    to={"#"}
                     className="text-decoration-none px-2 sj_text_dark"
                   >
                     <FaCircleCheck className="mx-1" />

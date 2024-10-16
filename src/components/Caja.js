@@ -120,9 +120,6 @@ const Caja = () => {
         }
     };
 
-    // console.log(data);
-
-
     // Fetch all box logs
     const fetchBox = async () => {
         try {
@@ -149,41 +146,34 @@ const Caja = () => {
         }
         handleClose();
         setIsProcessing(true);
-        console.log(cashierAssigned,boxName);
-        
 
         try {
-            const response = await axios.post(`${apiUrl}/box/create`, {
+           const response = await axios.post(`${apiUrl}/box/create`, {
                 name: boxName,
                 user_id: cashierAssigned,
-                admin_id
+                admin_id: admin_id, // Get the admin_id from sessionStorage
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-
-            // console.log(response);
+            console.log(response.data.success);
+            setIsProcessing(false);
             if(response.data.success){
+                setIsProcessing(false);
                 fetchAllBox();
                 setIsProcessing(false);
                 handleShowCreSuc(); // Show success message
                 setBoxName(''); // Clear box name
                 setCashierAssigned(''); // Clear cashier assigned
-                //enqueueSnackbar (response.data?.notification, { variant: 'success' })
-                // playNotificationSound();;
             }else{
-                Alert(response.data.message)
+                setIsProcessing(false);
+                alert("A cada cajero se le puede asignar una sola caja.")
             }
-           
-
+            setIsProcessing(false);
         } catch (error) {
             const errorMessage = error.response ? error.response.data.message : "Error al crear la caja. Por favor, inténtelo de nuevo.";
-            //enqueueSnackbar (error?.response?.data?.alert || errorMessage, { variant: 'error' })
             setValidationErrors({ apiError: errorMessage });
-            // playNotificationSound();;
-
-            setIsProcessing(false);
         }
     };
 
@@ -193,11 +183,9 @@ const Caja = () => {
             const response = await axios.get(`${apiUrl}/get-users`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log(response.data, userId)
+            console.log(response.data)
             setUsers(response.data);
             const cashiers = response.data.filter(user => user.role_id === 2 && user.admin_id == userId);
-            console.log(cashiers);
-
             setCashier(cashiers);
             fetchAllBox(); // Call fetchAllBox after fetching users
         } catch (error) {
@@ -288,8 +276,18 @@ const Caja = () => {
                                                 onChange={handleInputChange}
                                             >
                                                 <option value="">Selecciona un cajero</option>
-
-                                                {data.length === 0 ? (
+                                                {cashier.map(user => (
+                                                    <option key={user.id} value={user.id}>
+                                                        {user.name}
+                                                    </option>
+                                                ))}
+                                                {/* // Filter the cashier array dynamically based on names */}
+                                                {/* {cashier.filter(user => !data.some(d => d.user_id === user.id)).map(order => (
+                                                    <option key={order.id} value={order.id}>
+                                                        {order.name}
+                                                    </option>
+                                                ))} */}
+                                                 {/* {data.length === 0 ? (
                                                     cashier.map(order => (
                                                         <option key={order.id} value={order.id}>
                                                             {order.name}
@@ -303,7 +301,7 @@ const Caja = () => {
                                                                 {order.name}
                                                             </option>
                                                         ))
-                                                )}
+                                                )} */}
                                             </select>
                                             {validationErrors.cashierAssigned && (
                                                 <div className="text-danger errormessage">{validationErrors.cashierAssigned}</div>
@@ -355,8 +353,8 @@ const Caja = () => {
                             </div>
                             <div className="ssssj-card-media">
                                 <div className="row">
-                                    {console.log("data", data)}
-                                    {data.length > 0 && data.filter(order => order.admin_id == admin_id).length > 0 ? (
+                                    {console.log("data",data)}
+                                    {data.length > 0 ? (
                                         data.filter(order => order.admin_id == admin_id).map((order, index) => {
                                             const lastBoxRecord = getLastBoxRecord(order.id);
                                             const isClosed = lastBoxRecord && lastBoxRecord.close_amount === null;

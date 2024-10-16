@@ -16,6 +16,7 @@ import img2 from "../Image/addmenu.jpg";
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { BsCalculatorFill } from 'react-icons/bs';
 
 export default function Home_Pedidos_paymet() {
 
@@ -43,9 +44,10 @@ export default function Home_Pedidos_paymet() {
     // ----resons----
     // ===change====
     // console.log(reason);
-    if(!reason){
-        setReasonError("Ingrese el motivo de validez")
-        return;
+    if (!reason) {
+      setReasonError("Ingrese el motivo de validez");
+      setShow12(true);
+      return;
     }
 
     try {
@@ -82,6 +84,7 @@ export default function Home_Pedidos_paymet() {
         }
       );
       getOrderStatus();
+      // getOrder();
       console.log("Order Cancle successfully:", response.data);
 
     } catch (error) {
@@ -98,7 +101,8 @@ export default function Home_Pedidos_paymet() {
     setShow12(true)
     setTimeout(() => {
       setShow12(false)
-      navigate(`/home_Pedidos/payment_edit/${id}`, { replace: true, state: "profile" });
+      getOrder();
+      // navigate(`/home_Pedidos/payment_edit/${id}`, { replace: true, state: "profile" });
     }, 2000);
   };
 
@@ -176,16 +180,42 @@ export default function Home_Pedidos_paymet() {
     }
   }, [user, roles]);
 
-  const getOrder = async () => {
-    setIsProcessing(true);
+  useEffect(() => {
+    getPaymentsData();
+  }, [admin_id, id]);
+
+  const [pamentDone, setPaymentDone] = useState(false)
+
+  const getPaymentsData = async () => {
+    console.log(admin_id, admin_id);
+
     try {
-      const response = await axios.post(`${apiUrl}/order/getSingle/${id}`, {admin_id: admin_id}, {
+      const response = await axios.get(`${apiUrl}/getsinglepayments/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response);
-      
+      console.log("Payments Data:", response);
+      if (response.data.success) {
+        // console.log("true");
+        setPaymentDone(true);
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching PaymentsData:",
+        error.response ? error.response.data : error.message
+      );
+    }
+  }
+
+  const getOrder = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.post(`${apiUrl}/order/getSingle/${id}`, { admin_id: admin_id }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setOrderData(response.data[0]);
     } catch (error) {
       console.error(
@@ -199,9 +229,11 @@ export default function Home_Pedidos_paymet() {
   const getItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${apiUrl}/item/getAll`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setItems(response.data.items);
       setObj1(response.data.items);
       // setFilteredMenuItems(response.data.items);
@@ -218,19 +250,19 @@ export default function Home_Pedidos_paymet() {
   const getSector = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${apiUrl}/sector/getWithTable`,{admin_id: admin_id}, {
+      const response = await axios.post(`${apiUrl}/sector/getWithTable`, { admin_id: admin_id }, {
         headers: {
-            Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-    });
+      });
       let sectors = response.data.data;
 
       const sectorWithTable = sectors.find(v =>
         v.tables.some(a => a.id == orderData.table_id)
       );
 
-      // console.log(sectors);
-      
+
+
       if (sectorWithTable) {
         setSector(sectorWithTable);
         setTable(sectorWithTable.tables.find(a => a.id == orderData.table_id));
@@ -243,8 +275,6 @@ export default function Home_Pedidos_paymet() {
     }
     setIsProcessing(false);
   };
-  // console.log(table);
-  
 
   const getOrderStatus = async () => {
     setIsProcessing(true);
@@ -303,7 +333,7 @@ export default function Home_Pedidos_paymet() {
 
   const getuserRole = () => {
     if (user && roles.length > 0) {
-      const role = roles.find((v) => v.id === user[0].role_id);
+      const role = roles?.find((v) => v.id === user[0]?.role_id);
       if (role) {
         setUserRole(role.name);
       }
@@ -324,9 +354,11 @@ export default function Home_Pedidos_paymet() {
 
   const getFamily = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/family/getFamily`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${apiUrl}/family/getFamily`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setParentCheck(response.data);
     } catch (error) {
       console.error(
@@ -337,9 +369,11 @@ export default function Home_Pedidos_paymet() {
   }
   const getSubFamily = async () => {
     try {
-      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setChildCheck(response.data);
     } catch (error) {
       console.error(
@@ -354,7 +388,7 @@ export default function Home_Pedidos_paymet() {
   const handlereasons = (event) => {
     let notes = event?.target.value
     setReason(notes)
-    if(notes){
+    if (notes) {
       setReasonError(null)
     }
   }
@@ -425,24 +459,29 @@ export default function Home_Pedidos_paymet() {
   };
 
 
-  // ==== select items section ====
+  // // ==== select items section ====
   const handleAddItem = (item) => {
-    if (!selectedItemsMenu.some((v) => v.item_id == item.id)) {
-      // console.log(selectedItemsMenu);
-      const obj = {
-        item_id: item.id,
-        quantity: 1,
-      }
-      setSelectedItemsMenu((prevArray) => [...prevArray, obj]);
-      // console.log(selectedItemsMenu);
-      setSelectedItemsCount(selectedItemsCount + 1);
-      // setItemId((prevArray) => [...prevArray, item.id]);
+    setSelectedItemsMenu((prevArray) => {
+      const itemIndex = prevArray.findIndex((v) => v.item_id === item.id);
 
-      // Perform any other action here when adding an item
-      // console.log(`Added item ${item.id}`);
-    } else {
-      console.log(`Item ${item.id} already added`);
-    }
+      if (itemIndex !== -1) {
+        // Item exists, so remove it
+        const newArray = [...prevArray];
+        newArray.splice(itemIndex, 1);
+        setSelectedItemsCount(prevCount => prevCount - 1);
+        console.log(`Removed item ${item.id}`);
+        return newArray;
+      } else {
+        // Item doesn't exist, so add it
+        const newItem = {
+          item_id: item.id,
+          quantity: 1,
+        };
+        setSelectedItemsCount(prevCount => prevCount + 1);
+        console.log(`Added item ${item.id}`);
+        return [...prevArray, newItem];
+      }
+    });
   };
 
   // ==== select items section ====
@@ -503,34 +542,31 @@ export default function Home_Pedidos_paymet() {
     setNoteValues(e.target.value);
   };
 
-  const handleNoteKeyDown = (id) => async (e) => {
+  const handleNoteKeyDown = async (id) => {
+    console.log(id)
+    try {
+      const response = await axios.post(
+        `${apiUrl}/order/addNote/${id}`,
+        { notes: noteValues },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log("Note added successfully:", response.data);
 
-    if (e.key === 'Enter') {
-      // console.log(id);
-      try {
-        const response = await axios.post(
-          `${apiUrl}/order/addNote/${id}`,
-          { notes: noteValues },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        // console.log("Note added successfully:", response.data);
-
-        // setSavedNote(noteValues);
-        setNoteValues('');
-        setVisibleInputId(null);
-      } catch (error) {
-        console.error(
-          "Error adding note:",
-          error.response ? error.response.data : error.message
-        );
-      }
-       getOrder();
-      handleOrderDetails();
+      // setSavedNote(noteValues);
+      setNoteValues('');
+      setVisibleInputId(null);
+    } catch (error) {
+      console.error(
+        "Error adding note:",
+        error.response ? error.response.data : error.message
+      );
     }
+    getOrder();
+    handleOrderDetails();
   };
 
   // =============end note==========
@@ -565,13 +601,48 @@ export default function Home_Pedidos_paymet() {
     }
   };
 
+  const handleCredit = () => {
+    if (orderData?.[0]?.status == 'delivered') {
+      navigate(`/home/client/crear/${id}`, { replace: true })
+    } else {
+      alert('No puedes crear un nuevo pedido si el pedido actual no ha sido entregado')
+    }
+  }
 
+  const handlePayment = () => {
 
+    console.log(orderDetails, orderData);
+
+    const currentOrder = {
+      orderType: orderData?.order_type,
+      orderId: orderData?.id,
+      name: orderData?.customer_name,
+      order: "old"
+    }
+    let cartItems = [];
+    orderDetails?.map((v) => {
+      const obj = {
+        orderId: orderData?.id,
+        id: v.item_id,
+        image: v.image,
+        name: v.name,
+        price: v.amount,
+        // "code": "89874934",
+        count: v.quantity,
+        note: v.notes ? v.notes : "",
+        isEditing: false,
+        OdId: v.id
+      }
+      cartItems.push(obj)
+    })
+
+    localStorage.setItem("currentOrder", JSON.stringify(currentOrder));
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
+    navigate("/home/usa/bhomedelivery/datos");
+
+  }
   // =============== End ============
-
-
-
-
   return (
     <div>
       <div className="m_bg_black">
@@ -583,29 +654,30 @@ export default function Home_Pedidos_paymet() {
               <Link to="/home_Pedidos" className='d-flex text-decoration-none' >
                 <div className='btn btn-outline-primary text-nowrap py-2 d-flex mt-2 ms-3' style={{ borderRadius: "10px" }}> <FaArrowLeft className='me-2 mt-1' />Regresar</div>
               </Link>
+
               <div className='d-flex justify-content-between align-items-center flex-wrap'>
                 <div className='text-white ms-3 my-4' style={{ fontSize: "18px" }}>
                   {/* Pedido : {order} */}
                   Pedido : {id}
                 </div>
 
-
-
-
-
-
                 <div className='d-flex flex-wrap me-4'>
                   {showCancelOrderButton ? (
+                    !(orderData?.status == 'delivered' || orderData?.status == 'finalized' || orderData?.status == "cancelled") &&
                     <div onClick={handleShow} className='btn btn-danger me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#F05252", borderRadius: '10px' }}> <IoMdCloseCircle className='me-2' />Anular pedido</div>
                   ) : (
-                    <Link className='text-decoration-none' 
-                    to={`/home_Pedidos/payment_edit/${id}`}
-                    >
-                      <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div>
-                    </Link>
+                    !(orderData?.status == "cancelled" || pamentDone) && <>
+                      <Link className='text-decoration-none'
+                        to={`/home_Pedidos/payment_edit/${id}`}
+                      >
+                        <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div>
+                      </Link>
+                      <div className='btn btn-outline-primary b_mar_lef ms-2 py-2 text-nowrap d-flex align-item-center justify-content-center' style={{ borderRadius: "10px" }} onClick={handleShow1Prod}> <FiPlus className='me-2 mt-1' />Agregar Producto</div>
+                    </>
                   )}
-                  {/* <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div> */}
-                  <div className='btn btn-outline-primary b_mar_lef ms-2 py-2 text-nowrap d-flex align-item-center justify-content-center' style={{ borderRadius: "10px" }} onClick={handleShow1Prod}> <FiPlus className='me-2 mt-1' />Agregar Producto</div>
+                  {showCancelOrderButton &&
+                    <div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>
+                  }
                 </div>
 
                 {/* cancel order modal */}
@@ -652,7 +724,7 @@ export default function Home_Pedidos_paymet() {
                         onKeyUp={handlereasons}
                         required
                       />
-                       {errorReason && <div className="text-danger errormessage">{errorReason}</div>}
+                      {errorReason && <div className="text-danger errormessage">{errorReason}</div>}
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="border-0 pt-0">
@@ -686,6 +758,7 @@ export default function Home_Pedidos_paymet() {
               )} */}
             </div>
 
+
             <Tabs
               activeKey={activeTab}
               onSelect={handleTabSelect}
@@ -694,7 +767,7 @@ export default function Home_Pedidos_paymet() {
               fill>
               <Tab
                 eventKey="home"
-                title="Orden"
+                title="Pedidos"
                 className="m_in text-white aaaaa  rounded"
               >
                 <div className='row'>
@@ -743,7 +816,7 @@ export default function Home_Pedidos_paymet() {
                                   )}
                                 </div> */}
                                 <div style={{ marginBottom: "68px", cursor: "pointer" }}>
-                                {v.notes === null ? (
+                                  {v.notes === null ? (
                                     <div key={v.id}>
                                       {visibleInputId !== v.id ? (
                                         <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(v.id)}>
@@ -757,31 +830,41 @@ export default function Home_Pedidos_paymet() {
                                             className='j-note-input'
                                             value={noteValues}
                                             onChange={(e) => handleNoteChange(v.id, e)}
-                                            onKeyDown={handleNoteKeyDown(v.id)}
+                                            onBlur={() => handleNoteKeyDown(v.id)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter")
+                                                handleNoteKeyDown(v.id)
+                                            }}
                                           />
                                         </div>
                                       )}
                                     </div>
                                   ) : (
                                     < div key={v.id}>
-                                  {visibleInputId != v.id ? (
-                                    <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(v.id)}>
-                                      <span className='j-nota-blue ms-4'>{v.notes}</span>
-                                    </div>
-                                  ) : (
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <span className='j-nota-blue ms-4'>Nota:</span>
-                                      <input
-                                        type="text"
-                                        className='j-note-input'
-                                        value={noteValues}
-                                        onChange={(e) => handleNoteChange(v.id, e)}
-                                        onKeyDown={handleNoteKeyDown(v.id)}
-                                      />
+                                      {visibleInputId != v.id ? (
+                                        <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(v.id)}>
+                                          <span className='j-nota-blue ms-4'>Nota: {v.notes}</span>
+                                        </div>
+                                      ) : (
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className='j-nota-blue ms-4'>Nota:</span>
+                                          <input
+                                            type="text"
+                                            className='j-note-input'
+                                            value={noteValues}
+                                            onChange={(e) => handleNoteChange(v.id, e)}
+                                            onBlur={() => handleNoteKeyDown(v.id)}
+                                            onKeyDown={(e) => {
+                                              console.log(e.key);
+                                              if (e.key == "Enter") {
+                                                handleNoteKeyDown(v.id)
+                                              }
+                                            }}
+                                          />
+                                        </div>
+                                      )}
                                     </div>
                                   )}
-                                </div>
-                                )}
                                   {/* {editingNote === index ? (
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                       <span className='j-nota-blue ms-4'>Nota:</span>
@@ -823,10 +906,11 @@ export default function Home_Pedidos_paymet() {
                         <div className='fw-bold fs-5'>
                           Datos
                         </div>
+
                         {/* <div className='btn a_btn_lightjamun my-3 bj-delivery-text-2 ' style={{ borderRadius: "10px" }}><span style={{ fontWeight: "600" }}>{orderData?.order_type}</span></div><br /> */}
                         <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
-                              ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
-                          {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : ' '}
+                              ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'b_ora text-danger'}`}>
+                          {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : orderData?.status.toLowerCase() === 'cancelled' ? 'Cancelar' : ' '}
                         </div>
 
                         <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
@@ -862,37 +946,51 @@ export default function Home_Pedidos_paymet() {
                             </div>
                           </div>
                         </div>
-                        <div className='mx-auto text-center mt-3'>
-                          <div className='btn text-white j-btn-primary w-100  border-0' style={{ padding: "8px 12px", borderRadius: "8px" }}>Pagar ahora</div>
-                        </div>
+                        {!orderData?.reason &&
+                          <div className='mx-auto text-center mt-3'>
+                            {!pamentDone ?
+                              <div className='btn text-white j-btn-primary w-100' style={{ padding: "8px 12px", borderRadius: "8px" }} onClick={handlePayment}>Pagar ahora</div> :
+                              <div className='btn btn-primary w-100 my-4 bj-delivery-text-3' style={{ backgroundColor: "#147bdea8", borderRadius: "8px", padding: "10px 20px", cursor: "not-allowed" }}>Pago completado</div>
+                            }
+                          </div>
+                        }
                       </div>
                     </div>
                   </div>
                 </div>
+
               </Tab>
+
               <Tab eventKey="profile" title="Información del cliente" className='b_border ' style={{ marginTop: "2px" }}>
                 <div className='b-bg-color1'>
+                  {orderData?.reason &&
+                    <div className='text-white ms-4 pt-4' >
+                      <h5 className='bj-delivery-text-15'>Nota anulación</h5>
+                      <textarea type="text" className="form-control bg-gray border-0 mt-4 py-2" id="inputPassword2" placeholder={orderData?.reason != null ? orderData?.reason : "Estaba sin sal"} style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled></textarea>
+                    </div>
+                  }
                   <div className='text-white ms-4 pt-4' >
                     <h5>Información pedido</h5>
                   </div>
+
                   <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                     <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Sector</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
                     </div>
                     <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2">Mesa</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table?.name && `${table?.name}  (${table?.id})`} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " v value={table?.name ? `${table.name} (${table.id})` : '-'} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
                     </div>
                   </div>
                   <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                     <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Cliente</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
                     </div>
                     <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                       <label htmlFor="inputPassword2" className="mb-2">Personas</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
                     </div>
                   </div>
 
@@ -918,7 +1016,7 @@ export default function Home_Pedidos_paymet() {
                             <td>{userRole}</td>
                             {/* <td style={{ fontWeight: "500", padding: "8px 12px" }} className={`bj-delivery-text-2 mt-3  mb-3 b_text_w b_btn1 d-flex align-items-center justify-content-center mt-0 ${order.state == 'Anulado' ? 'b_redd' : order.state === 'Recibido' ? 'b_bluee' : order.state === 'Preparado' ? 'b_orr' : order.state === 'Entregado' ? 'b_neww' : order.state === 'Finalized' ? 'b_gree' : order.state === 'Preparado' ? 'b_orr' : 'text-denger'}`}>{order.state}</td> */}
                             <td style={{ fontWeight: "500", padding: "8px 12px" }} className={`bj-delivery-text-2 mt-3  mb-3 b_text_w b_btn1 d-flex align-items-center justify-content-center mt-0 
-                               ${order.status.toLowerCase() === 'received' ? 'b_indigo' : order.status.toLowerCase() === 'prepared' ? 'b_ora ' : order.status.toLowerCase() === 'delivered' ? 'b_blue' : order.status.toLowerCase() === 'finalized' ? 'b_green' : order.status.toLowerCase() === 'withdraw' ? 'b_indigo' : order.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
+                               ${order.status.toLowerCase() === 'received' ? 'b_indigo' : order.status.toLowerCase() === 'prepared' ? 'b_ora ' : order.status.toLowerCase() === 'delivered' ? 'b_blue' : order.status.toLowerCase() === 'finalized' ? 'b_green' : order.status.toLowerCase() === 'withdraw' ? 'b_indigo' : order.status.toLowerCase() === 'local' ? 'b_purple' : 'b_ora text-danger'}`}>
                               {order.status.toLowerCase() === 'received' ? 'Recibido' : order.status.toLowerCase() === 'prepared' ? 'Preparado ' : order.status.toLowerCase() === 'delivered' ? 'Entregado' : order.status.toLowerCase() === 'finalized' ? 'Finalizado' : order.status.toLowerCase() === 'withdraw' ? 'Retirar' : order.status.toLowerCase() === 'local' ? 'Local' : order.status.toLowerCase() === 'cancelled' ? 'Cancelar' : ' '}
                             </td>
                           </tr>
@@ -931,6 +1029,7 @@ export default function Home_Pedidos_paymet() {
             </Tabs>
           </div>
         </div>
+
 
         <Modal
           show={show1Prod}
@@ -967,7 +1066,7 @@ export default function Home_Pedidos_paymet() {
                   </div>
 
                   <div className="py-3 m_borbot mx-3  m14 ">
-                    {parentCheck.map((parentItem) => (
+                    {parentCheck?.map((parentItem) => (
                       <div key={parentItem.id}>
                         <div className="d-flex justify-content-between align-items-center flex-wrap mb-2">
                           <div className="text-nowrap">
@@ -1063,59 +1162,66 @@ export default function Home_Pedidos_paymet() {
                   </div>
                 </div>
                 <div className="row p-2">
-                  {filteredItemsMenu.map((ele, index) => (
-                    <div
-                      className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
-                      keys={index}
-                    >
-                      <div>
-                        <div class="card m_bgblack text-white position-relative">
-                          <img
-                            src={`${API}/images/${ele.image}`}
-                            class="card-img-top object-fit-fill rounded"
-                            alt="..."
-                            style={{ height: "162px" }}
-                          />
-                          <div class="card-body">
-                            <h6 class="card-title">{ele.name}</h6>
-                            <h6 class="card-title">${ele.sale_price}</h6>
-                            <p class="card-text opacity-50">
-                              Codigo: {ele.code}
-                            </p>
-                            <div class="btn w-100 btn-primary text-white" onClick={() => handleAddItem(ele)}>
-                              <a
-                                href="# "
-                                className="text-white text-decoration-none"
-                                style={{ fontSize: "14px" }}
-                              >
-                                <span className="ms-1">Añadir </span>
-                              </a>
-                            </div>
-                          </div>
-
-                          <div
-                            className="position-absolute "
-                            style={{ cursor: "pointer" }}
-                          >
-                            <Link
-                              to={`/articles/singleatricleproduct/${ele.id}`}
-                              className="text-white text-decoration-none"
-                            >
-                              <p
-                                className=" px-1  rounded m-2"
-                                style={{ backgroundColor: "#374151" }}
-                              >
-                                <IoMdInformationCircle />{" "}
-                                <span style={{ fontSize: "12px" }}>
-                                  Ver información
-                                </span>
+                  {filteredItemsMenu.map((ele, index) => {
+                    const isAdded = selectedItemsMenu.length > 0 ? selectedItemsMenu.some((v) => v.item_id == ele.id) : false;
+                    return (
+                      <div
+                        className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
+                        keys={index}
+                      >
+                        <div>
+                          <div class="card m_bgblack text-white position-relative">
+                            <img
+                              src={`${API}/images/${ele.image}`}
+                              class="card-img-top object-fit-fill rounded"
+                              alt="..."
+                              style={{ height: "162px" }}
+                            />
+                            <div class="card-body">
+                              <h6 class="card-title">{ele.name}</h6>
+                              <h6 class="card-title">${ele.sale_price}</h6>
+                              <p class="card-text opacity-50">
+                                Codigo: {ele.code}
                               </p>
-                            </Link>
+                              <div class="btn w-100 btn-primary text-white"
+                                style={{ backgroundColor: isAdded ? "#063f93" : "#0d6efd" }}
+                                onClick={() => handleAddItem(ele)}>
+                                <a
+                                  href="# "
+                                  className="text-white text-decoration-none"
+                                  style={{ fontSize: "14px" }}
+                                >
+                                  <span className="ms-1">
+                                    {isAdded ? 'Agregado' : 'Agregar al menú'}
+                                  </span>
+                                </a>
+                              </div>
+                            </div>
+
+                            <div
+                              className="position-absolute "
+                              style={{ cursor: "pointer" }}
+                            >
+                              <Link
+                                to={`/articles/singleatricleproduct/${ele.id}`}
+                                className="text-white text-decoration-none"
+                              >
+                                <p
+                                  className=" px-1  rounded m-2"
+                                  style={{ backgroundColor: "#374151" }}
+                                >
+                                  <IoMdInformationCircle />{" "}
+                                  <span style={{ fontSize: "12px" }}>
+                                    Ver información
+                                  </span>
+                                </p>
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>

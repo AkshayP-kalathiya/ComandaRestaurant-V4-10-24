@@ -25,6 +25,15 @@ const TableDatos = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const id = queryParams.get("id");
+  const orderId = queryParams.get("oId");
+
+  const {state} = useLocation();
+
+  // console.log(id,orderId,state);
+  const [rut1, setRut1] = useState("");
+  const [rut2, setRut2] = useState("");
+  const [rut3, setRut3] = useState("");
+
   const [obj1, setObj1] = useState([]);
 
   const [tId, setTId] = useState(id);
@@ -61,7 +70,6 @@ const TableDatos = () => {
   const [countsoup, setCountsoup] = useState(
     orderitem.map((item) => parseInt(item.quantity))
   );
-
   const [itemToDelete, setItemToDelete] = useState(null);
   const [showAllItems, setShowAllItems] = useState(false);
   const toggleShowAllItems = () => {
@@ -164,24 +172,45 @@ const TableDatos = () => {
     }
   };
 
-  useEffect(
-    () => {
-
-
-      if (!(role == "admin" || role == "cashier" || role == "waitress")) {
-        navigate('/dashboard')
-      } else {
-        setIsProcessing(true);
-        if (id) {
-          getTableData(id)
-          fetchAllItems();
-        };
-        setIsProcessing(false);
+  useEffect(() => {
+    // Check if the user has a role that allows access
+    if (!(role == "admin" || role == "cashier" || role == "waitress")) {
+      navigate('/dashboard');
+    } else {
+      setIsProcessing(true);
+      if (id) {
+        getTableData(id);
+        fetchAllItems();
       }
+      setIsProcessing(false);
+    }
 
-    },
-    [id, role]
-  );
+    // New code to check localStorage for tablePayment
+    const storedData = localStorage.getItem("tablePayment");
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+    
+      setFormData((prevState) => ({
+        ...prevState,
+        fname: parsedData.firstname || prevState.fname,
+        lname: parsedData.lastname || prevState.lname,
+        tour: parsedData.tour || prevState.tour,
+        address: parsedData.address || prevState.address,
+        email: parsedData.email || prevState.email,
+        number: parsedData.phone || prevState.number,
+        bname: parsedData.business_name,
+        ltda: parsedData.ltda,
+        rut1: parsedData.receiptType === "1" ? parsedData.rut : prevState.rut,
+        rut2: parsedData.receiptType === "2" ? parsedData.rut : prevState.rut
+      }));
+      setRut1(parsedData.receiptType === "1"? parsedData.rut : "");
+      setRut2(parsedData.receiptType === "2"? parsedData.rut : "")
+      setRut3(parsedData.receiptType === "3"? parsedData.rut : "")
+      setSelectedRadio(parsedData.receiptType || "1"); // Set default receipt type if not present
+      setActiveAccordionItem(parsedData.receiptType || "1")
+    }
+
+  }, [id, role]);
   const handleDeleteItem = (index) => {
     const updatedCartItems = cartItems.filter((_, i) => i !== index);
     setCartItems(updatedCartItems);
@@ -244,14 +273,13 @@ const TableDatos = () => {
   const handleShowEditFam = () => setShowEditFam(true);
 
   const [selectedRadio, setSelectedRadio] = useState("1");
-  const [activeAccordionItem, setActiveAccordionItem] = useState("0");
+  const [activeAccordionItem, setActiveAccordionItem] = useState("1");
   const handleAccordionClick = (value) => {
     setSelectedRadio(value);
+    setActiveAccordionItem(value);
   };
 
-  const [rut1, setRut1] = useState("");
-  const [rut2, setRut2] = useState("");
-  const [rut3, setRut3] = useState("");
+ 
 
   const handleRutChange = (e, setRut) => {
     let value = e.target.value.replace(/-/g, ""); // Remove any existing hyphen
@@ -377,7 +405,6 @@ const TableDatos = () => {
 
     return `${minutes} min ${seconds} seg`;
   };
-  
   useEffect(
     () => {
       if (tableData.length > 0 && tableData[0].created_at) {
@@ -404,6 +431,7 @@ const TableDatos = () => {
       );
     }
   };
+
   /* get name and image */
   const getItemInfo = (itemId) => {
     const item = obj1.find((item) => item.id === itemId);
@@ -532,6 +560,7 @@ const TableDatos = () => {
     updatedAddNotes[index] = true;
     setAddNotes(updatedAddNotes);
   };
+
   return (
     <div>
       <Header />
@@ -580,8 +609,8 @@ const TableDatos = () => {
                 <p className="mb-2">Datos cliente</p>
                 <p>Tipos de comprobantes</p>
                 <hr className="sj_bottom" />
-                <Accordion className="sj_accordion" defaultActiveKey={["0"]}>
-                  <Accordion.Item eventKey="0" className="mb-3">
+                <Accordion className="sj_accordion" activeKey={activeAccordionItem}>
+                  <Accordion.Item eventKey="1" className="mb-3">
                     <Accordion.Header>
                       {" "}
                       <div
@@ -698,7 +727,7 @@ const TableDatos = () => {
                       </div>
                     </Accordion.Body>
                   </Accordion.Item>
-                  <Accordion.Item eventKey="1" className="mb-3">
+                  <Accordion.Item eventKey="2" className="mb-3">
                     <Accordion.Header>
                       {" "}
 
@@ -817,7 +846,7 @@ const TableDatos = () => {
                       </div>
                     </Accordion.Body>
                   </Accordion.Item>
-                  <Accordion.Item eventKey="2" className="mb-3">
+                  <Accordion.Item eventKey="3" className="mb-3">
                     <Accordion.Header>
                       {" "}
                       {/* <div className="sj_bg_dark px-4 py-2 mt-3 sj_w-75">
@@ -829,7 +858,7 @@ const TableDatos = () => {
                       <div
                         onClick={() => handleAccordionClick("3")}
                         className={`sj_bg_dark j_td_mp sj_w-75 ${activeAccordionItem ===
-                          "2"
+                          "3"
                           ? "active"
                           : ""}`}
                       >

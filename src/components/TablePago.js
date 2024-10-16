@@ -61,7 +61,7 @@ const TablePago = () => {
   const getTableData = async (id) => {
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${apiUrl}/table/getStats/${id}`, {admin_id: admin_id}, {
+      const response = await axios.post(`${apiUrl}/table/getStats/${id}`, { admin_id: admin_id }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -85,9 +85,11 @@ const TablePago = () => {
   const fetchAllItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${apiUrl}/item/getAll`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setObj1(response.data.items);
     } catch (error) {
       console.error(
@@ -102,6 +104,7 @@ const TablePago = () => {
     return regex.test(value) ? value : "";
   };
 
+  const [tipError, setTipError] = useState('')
 
   const handleprice = (event) => {
     let value = event.target.value.replace("$", "");
@@ -113,8 +116,11 @@ const TablePago = () => {
     if (numericValue > maxTip) {
       value = maxTip.toFixed(2);
     }
-    setPrice(value);
-    setTipAmount(parseFloat(value));
+    if (value) {
+      setTipError('');
+      setPrice(value);
+      setTipAmount(parseFloat(value));
+    }
   };
   /* get name and image */
   const getItemInfo = (itemId) => {
@@ -157,6 +163,7 @@ const TablePago = () => {
       note: ""
     }
   ];
+
   const [cartItems, setCartItems] = useState(orderitem);
   const [countsoup, setCountsoup] = useState(
     orderitem.map((item) => parseInt(item.quantity))
@@ -166,12 +173,16 @@ const TablePago = () => {
   const toggleShowAllItems = () => {
     setShowAllItems(!showAllItems);
   };
+
   const getTotalCost = () => {
+    console.log(cartItems);
+
     return cartItems.reduce(
-      (total, item, index) => total + parseInt(item.price) * countsoup[index],
+      (total, item, index) => total + parseInt(item.price) * parseInt(item.quantity),
       0
     );
   };
+
   const [isEditing, setIsEditing] = useState(
     Array(cartItems.length).fill(false)
   );
@@ -199,6 +210,8 @@ const TablePago = () => {
   };
 
   const totalCost = getTotalCost();
+  console.log(totalCost);
+
   const discount = 1.0;
   const propina = 5.0;
   const finalTotal = totalCost - discount;
@@ -220,16 +233,25 @@ const TablePago = () => {
   );
 
   const initialCustomerData = {
-    amount: "",
+    cashAmount: "",      // Amount for cash payment
+    debitAmount: "",     // Amount for debit payment
+    creditAmount: "",    // Amount for credit payment
+    transferAmount: "",  // Amount for transfer payment
     turn: ""
   };
 
   const [selectedCheckboxes, setSelectedCheckboxes] = useState([]);
-  const [customerData, setCustomerData] = useState({});
+  const [customerData, setCustomerData] = useState(initialCustomerData);
+
   const handleCheckboxChange = (value) => {
     if (selectedCheckboxes.includes(value)) {
       setSelectedCheckboxes((prev) => prev.filter((item) => item !== value));
-      setCustomerData(initialCustomerData);
+
+      setCustomerData((prevData) => ({
+        ...prevData,
+        [value + "Amount"]: "" // Reset only the deselected payment type amount
+      }));
+
     } else {
       setSelectedCheckboxes((prev) => [...prev, value]);
     }
@@ -241,11 +263,21 @@ const TablePago = () => {
   };
   const handleChange = (event) => {
     let { name, value } = event.target;
-    value = value.replace(/[^0-9/./]/g, "");
-    setCustomerData((prevState) => ({
-      ...prevState,
-      [name]: value
-    }));
+    value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
+    setCustomerData((prevState) => {
+      const updatedState = {
+        ...prevState,
+        [name]: value, // Update the specific payment type amount
+      };
+      // New calculation for turn
+      console.log(tableData);
+      const taxAmount = parseFloat(((tableData[0].order_total - parseFloat(tableData[0].discount)) * 0.19).toFixed(2))
+      const totalAmount = parseFloat(updatedState.cashAmount || 0) + parseFloat(updatedState.debitAmount || 0) + parseFloat(updatedState.creditAmount || 0) + parseFloat(updatedState.transferAmount || 0);
+      console.log(totalAmount, finalTotal, tipAmount, taxAmount);
+      updatedState.turn = totalAmount - (tableData[0].order_total + taxAmount + tipAmount); // Update turn based on total amounts
+      return updatedState;
+    });
+    console.log("Payment", customerData);
     setFormErrors((prevState) => ({
       ...prevState,
       [name]: undefined
@@ -375,14 +407,17 @@ const TablePago = () => {
       errors.paymentType = "Por favor seleccione un tipo de pago";
     }
 
-    const totalWithTax = tableData[0].order_total + (tableData[0].order_total * 0.12) + tipAmount - tableData[0].discount;
+    const totalWithTax = tableData[0].order_total + (tableData[0].order_total * 0.19) + tipAmount - tableData[0].discount;
+    const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
+    console.log(totalPaymentAmount < totalWithTax, totalPaymentAmount <= 0)
     // Validate payment amount
-    if (!customerData.amount || parseFloat(customerData.amount) <= 0) {
+    if (!totalPaymentAmount || totalPaymentAmount <= 0) {
       errors.amount = "Por favor, introduzca un importe de pago válido";
-    } else if (parseFloat(customerData.amount) < totalWithTax.toFixed(2)) {
+      // } else if (parseFloat(customerData.amount) < totalWithTax.toFixed(2)) {
+
+    } else if (totalPaymentAmount < totalWithTax.toFixed(2)) {
       errors.amount = "El monto del pago debe cubrir el costo total";
     }
-
     return errors;
   };
 
@@ -412,7 +447,7 @@ const TablePago = () => {
     fetchBoxData();
     console.log(tableData[0]?.id);
     console.log(selectedCheckboxes[0]);
-  
+
   }, [userId]);
 
   // console.log(tableData[0]?.id);
@@ -430,22 +465,25 @@ const TablePago = () => {
       return;
     }
 
-    const taxAmount = (tableData[0].order_total * 0.12) // Calculate tax (12%)
+    const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
+
+    const taxAmount = ((tableData[0].order_total - parseFloat(tableData[0].discount)) * 0.19).toFixed(2) // Calculate tax (12%)
     const paymentData = {
       ...payment,
-      amount: customerData.amount,
+      amount: totalPaymentAmount,
       type: selectedCheckboxes,
       order_master_id: tableData[0].id,
       return: customerData.turn,
+      admin_id: admin_id,
       tax: taxAmount,
-      admin_id: admin_id
     };
+
     console.log(paymentData)
     setPaymentInfo(paymentData);
     setIsProcessing(true);
     console.log(boxId?.id);
     console.log(tableData[0].id);
-    
+
     try {
       const response = await axios.post(`${apiUrl}/order/orderUpdateItem/${tableData[0].id}`, {
         tip: tipAmount ? tipAmount : 0,
@@ -474,7 +512,7 @@ const TablePago = () => {
 
           console.log(responsePayment.status == 200);
           console.log(responsePayment);
-          if(responsePayment.status == 200){
+          if (responsePayment.status == 200) {
             try {
               const resStatus = await axios.post(`${apiUrl}/table/updateStatus`, {
                 table_id: tableData[0].table_id,
@@ -493,35 +531,27 @@ const TablePago = () => {
               setCustomerData({});
               setSelectedCheckboxes([]);
               handleShow11();
-              
+
               localStorage.removeItem("cartItems");
               localStorage.removeItem("currentOrder");
               localStorage.removeItem("payment");
             } catch (error) {
-              console.log("Table Status not Upadte ," + error.message); 
+              console.log("Table Status not Upadte ," + error.message);
             }
           }
-          
+
         } catch (error) {
           setIsProcessing(false);
           console.log("Payment not Done" + error.message);
-          
+
         }
       }
 
     } catch (error) {
       setIsProcessing(false);
       console.log("Error to update the Order", error.message);
-     
+
     }
-
-
-
-   
-
-
-
-   
   };
   // print recipt
   const [show11, setShow11] = useState(false);
@@ -629,6 +659,52 @@ const TablePago = () => {
                   </button>
                 </div>
 
+                {/* <Modal
+                  show={show}
+                  onHide={handleClose}
+                  backdrop={true}
+                  keyboard={false}
+                  className="m_modal"
+                >
+                  <Modal.Header closeButton className="m_borbot">
+                    <Modal.Title className="j-tbl-text-10">
+                      Agregar propina
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body className="border-0">
+                    <div className="mb-3">
+                      <label
+                        htmlFor="exampleFormControlInput1"
+                        className="form-label j-tbl-font-11"
+                      >
+                        Cantidad
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control j-table_input"
+                        id="exampleFormControlInput1"
+                        placeholder="$20"
+                        value={`$${price}`}
+                        onChange={handleprice}
+                      />
+                       {tipError && (
+                        <p className="errormessage text-danger">{tipError}</p>
+                      )}
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer className="border-0">
+                    <Button
+                      className="j-tbl-btn-font-1"
+                      variant="primary"
+                      onClick={() => {
+                        handleShowCreSuc();
+                        handleClose();
+                      }}
+                    >
+                      Aceptar
+                    </Button>
+                  </Modal.Footer>
+                </Modal> */}
                 <Modal
                   show={show}
                   onHide={handleClose}
@@ -657,6 +733,9 @@ const TablePago = () => {
                         value={`$${price}`}
                         onChange={handleprice}
                       />
+                      {tipError && (
+                        <p className="errormessage text-danger">{tipError}</p>
+                      )}
                     </div>
                   </Modal.Body>
                   <Modal.Footer className="border-0">
@@ -664,6 +743,10 @@ const TablePago = () => {
                       className="j-tbl-btn-font-1"
                       variant="primary"
                       onClick={() => {
+                        if (!price) {
+                          setTipError('Ingrese una cantidad')
+                          return
+                        }
                         handleShowCreSuc();
                         handleClose();
                       }}
@@ -672,7 +755,6 @@ const TablePago = () => {
                     </Button>
                   </Modal.Footer>
                 </Modal>
-
                 <Modal
                   show={showCreSuc}
                   onHide={handleCloseCreSuc}
@@ -731,7 +813,7 @@ const TablePago = () => {
                         name="receiptType"
                         value="cash"
                         checked={selectedCheckboxes.includes("cash")}
-                        onChange={() => handleCheckboxChange("cash")}
+                        // onChange={() => handleCheckboxChange("cash")}
                         className="me-2 j-change-checkbox"
                       />
 
@@ -747,9 +829,9 @@ const TablePago = () => {
                             <br />
                             <input
                               type="text"
-                              id="name"
-                              name="amount"
-                              value={`$${customerData.amount || ""}`}
+                              id="cashAmount" // change
+                              name="cashAmount" // change
+                              value={`$${customerData.cashAmount || ""}`} // change
                               onChange={handleChange}
                               className="input_bg_dark w-full px-4 py-2 text-white sj_width_mobil"
                             />
@@ -766,7 +848,7 @@ const TablePago = () => {
                               type="email"
                               id="email"
                               name="turn"
-                              value={`$${customerData.turn || ""}`}
+                              value={`$${customerData.turn ? customerData.turn.toFixed(2) : ""}`}
                               onChange={handleChange}
                               className="input_bg_dark px-4 py-2 text-white sj_width_mobil"
                             />
@@ -791,7 +873,7 @@ const TablePago = () => {
                         name="receiptType"
                         value="debit"
                         checked={selectedCheckboxes.includes("debit")}
-                        onChange={() => handleCheckboxChange("debit")}
+                        // onChange={() => handleCheckboxChange("debit")}
                         className="me-2 j-change-checkbox"
                       />
 
@@ -806,9 +888,9 @@ const TablePago = () => {
                           <br />
                           <input
                             type="text"
-                            id="name"
-                            name="amount"
-                            value={`$${customerData.amount || ""}`}
+                            id="debitAmount" // Ensure this ID is unique
+                            name="debitAmount" // Ensure this name matches the state
+                            value={`$${customerData.debitAmount || ""}`} // Ensure correct binding
                             onChange={handleChange}
                             className="sj_bg_dark sj_width_input px-4 py-2 text-white"
                           />
@@ -837,7 +919,7 @@ const TablePago = () => {
                         name="receiptType"
                         value="credit"
                         checked={selectedCheckboxes.includes("credit")}
-                        onChange={() => handleCheckboxChange("credit")}
+                        // onChange={() => handleCheckboxChange("credit")}
                         className="me-2 j-change-checkbox"
                       />
                       <p className="d-inline px-3">Tarjeta de credito</p>
@@ -852,11 +934,11 @@ const TablePago = () => {
                             <br />
                             <input
                               type="text"
-                              id="name"
-                              name="amount"
-                              value={`$${customerData.amount || ""}`}
-                              className="input_bg_dark w-full px-4 py-2 text-white sj_width_mobil"
+                              id="creditAmount"
+                              name="creditAmount"
+                              value={`$${customerData.creditAmount || ""}`}
                               onChange={handleChange}
+                              className="input_bg_dark w-full px-4 py-2 text-white sj_width_mobil"
                             />
                             {formErrors.amount && (
                               <p className="errormessage text-danger">
@@ -884,7 +966,7 @@ const TablePago = () => {
                         name="receiptType"
                         value="4"
                         checked={selectedCheckboxes.includes("transfer")}
-                        onChange={() => handleCheckboxChange("transfer")}
+                        // onChange={() => handleCheckboxChange("transfer")}
                         className="me-2 j-change-checkbox"
                       />
                       <p className="d-inline px-3">Transferencia</p>
@@ -898,9 +980,9 @@ const TablePago = () => {
                           <br />
                           <input
                             type="text"
-                            id="name"
-                            name="amount"
-                            value={`$${customerData.amount || ""}`}
+                            id="transferAmount"
+                            name="transferAmount"
+                            value={`$${customerData.transferAmount || ""}`}
                             onChange={handleChange}
                             className="sj_bg_dark sj_width_input px-4 py-2 text-white"
                           />
@@ -1113,26 +1195,30 @@ const TablePago = () => {
                     </div>
                     <div className="j-border-bottom-counter">
                       <div className="j-total-discount d-flex justify-content-between">
-                        <p className="j-counter-text-2">IVA 12.00%</p>
-                        <span className="text-white">{tableData.map((item) => (
+                        <p className="j-counter-text-2">IVA 19.00%</p>
+                        <span className="text-white">$ {
+                          ((tableData?.[0]?.order_total - parseFloat(tableData?.[0]?.discount)) * 0.19).toFixed(2)
+                        }
+                          {/* {tableData.map((item) => (
                           <span key={item.id}>
-                            ${parseFloat(item.order_total * 0.12).toFixed(2)}
+                            ${(item.order_total * 0.19).toFixed(2)}
                           </span>
-                        ))}
+                        ))} */}
                         </span>
                       </div>
                     </div>
                     <div className="j-total-discount my-2 d-flex justify-content-between">
                       <p className="text-white bj-delivery-text-153 ">Total</p>
                       <span className="text-white bj-delivery-text-153 ">
-                        {tableData.map((item) => (
+                        $ {(tableData?.[0]?.order_total) + parseFloat(((tableData?.[0]?.order_total - parseFloat(tableData?.[0]?.discount)) * 0.19).toFixed(2)) + tipAmount}
+                        {/* {tableData.map((item) => (
                           <span key={item.id}>
                             ${" "}
                             {parseFloat(
-                              item.order_total + (item.order_total * 0.12) - item.discount + tipAmount
+                              parseInt(item.order_total) + parseInt((tableData?.[0]?.order_total - parseFloat(tableData?.[0]?.discount)) * 0.19).toFixed(2) + tipAmount
                             ).toFixed(2)}
                           </span>
-                        ))}
+                        ))} */}
                       </span>
                     </div>
                     <div
@@ -1169,7 +1255,8 @@ const TablePago = () => {
                               paymentAmt={customerData}
                               paymentType={selectedCheckboxes}
                             /> */}
-                    <TableLastRecipt data={tableData} itemInfo={itemInfo} payment={paymentInfo} />
+                    <TableLastRecipt  data={tableData} itemInfo={itemInfo} payment={paymentInfo} paymentAmt={customerData} />
+                    {console.log("cust", customerData)}
                   </Modal.Body>
                   <Modal.Footer className="sjmodenone">
                     <Button

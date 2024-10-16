@@ -26,6 +26,7 @@ const Usuarios = () => {
   const role = sessionStorage.getItem("role");
   const [email] = useState(sessionStorage.getItem("email"));
   const navigate = useNavigate();
+  const admin_id = sessionStorage.getItem("admin_id");
   const [showPassword, setShowPassword] = useState(false);
   const [showcomfirmPassword, setShowcomfirmPassword] = useState(false);
   const [editshowPassword, seteditShowPassword] = useState(false);
@@ -457,7 +458,7 @@ const Usuarios = () => {
         }
         handleClose();
         // Create new user
-        const response = await axios.post(`${apiUrl}/create-user`, formData, {
+        const response = await axios.post(`${apiUrl}/create-user`, {...formData,admin_id}, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
@@ -1052,7 +1053,7 @@ const Usuarios = () => {
                           <td>
                             {user.status === "Activa" ? (
                               <button className="btn btn-success" onClick={() => handleShowEditFam(user.id)} style={{ minWidth: "120px" }}>
-                                Activa
+                                Activo
                               </button>
                             ) : (
                               <button className="btn btn-danger" onClick={() => handleShowEditFam2(user.id)} style={{ minWidth: "120px" }} >
@@ -1093,7 +1094,7 @@ const Usuarios = () => {
                 <div className="text-center">
                   <img src={require("../Image/trash-check 1.png")} alt="" />
                   <p className="opacity-75 mt-2">
-                    Usuario suspendida con éxito
+                  Usuario Suspendido con éxito
                   </p>
                 </div>
               </Modal.Body>
@@ -1295,13 +1296,13 @@ const Usuarios = () => {
                 </div>
               </Modal.Body>
               <Modal.Footer className="border-0">
-                <Button
+                {/* <Button
                   variant="danger"
                   className="b_btn_close"
                   onClick={handleCloseEditProduction}
                 >
                   Eliminar
-                </Button>
+                </Button> */}
                 <Button
                   variant="primary"
                   className="b_btn_pop"
@@ -1350,7 +1351,7 @@ const Usuarios = () => {
                   />
                   <p className="mb-0 mt-2 h6">
                     {" "}
-                    ¿Quieres suspender a esta usuaria?
+                    ¿Quieres suspender a esta Usuario?
                   </p>
                 </div>
               </Modal.Body>

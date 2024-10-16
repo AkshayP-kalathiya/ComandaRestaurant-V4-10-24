@@ -49,7 +49,8 @@ const Informacira = () => {
   const [selectedHastaMonthReport, setSelectedHastaMonthReport] = useState(
     new Date().getMonth() + 1
   );
-
+  const [boxnameError, setBoxnameError] = useState();
+  const [boxcashError, setBoxcashError] = useState();
 
   useEffect(
     () => {
@@ -85,6 +86,7 @@ const Informacira = () => {
       value = value.substring(1);
     }
     setpricesecond(value);
+    setErrorCashPrice('');
   };
 
   const [showModal12, setShowModal12] = useState(false);
@@ -212,6 +214,16 @@ const Informacira = () => {
 
   // update box
   const handleSaveChanges = async () => {
+    if (!editedBoxName) {
+      setBoxnameError("por favor ingrese el nombre")
+      return
+    }
+
+    if (!editedCashierId) {
+      setBoxcashError("por favor seleccione cajero")
+      return;
+    }
+
     if (!selectedBox) return;
     handleClose();
 
@@ -242,6 +254,8 @@ const Informacira = () => {
         fetchAllBox();
 
         getBox();
+        setBoxcashError('');
+        setBoxnameError('');
         if (response.data && response.data.notification) {
           //enqueueSnackbar (response.data.notification, { variant: 'success' });
           // playNotificationSound();;
@@ -345,7 +359,7 @@ const Informacira = () => {
     setIsProcessing(true);
     try {
       const response = await axios.post(
-        `${apiUrl}/sector/getWithTable`,
+        `${apiUrl}/sector/getWithTable`, { admin_id: admin_id },
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -453,7 +467,7 @@ const Informacira = () => {
       });
       const filteredItem = response.data.filter(item => item.id == bId);
       setBoxName(filteredItem);
-      setUsers(response.data);
+      // setUsers(response.data);
     } catch (error) {
       console.error("Error fetching boxes:", error);
     }
@@ -1333,8 +1347,16 @@ const Informacira = () => {
                               placeholder="Caja#"
                               id="boxName"
                               value={editedBoxName}
-                              onChange={(e) => setEditedBoxName(e.target.value)}
+                              onChange={(e) => {
+                                setEditedBoxName(e.target.value)
+                                if (e.target.value) {
+                                  setBoxnameError('');
+                                }
+                              }}
                             />
+
+                            {boxnameError && <div className="text-danger errormessage">{boxnameError}</div>}
+
                           </div>
                           <div className="mb-3">
                             <label
@@ -1349,8 +1371,15 @@ const Informacira = () => {
                               aria-label="Selecciona un título"
                               id="cashierSelect"
                               value={editedCashierId}
-                              onChange={(e) => setEditedCashierId(e.target.value)}
+                              onChange={(e) => {
+                                setEditedCashierId(e.target.value);
+                                if (e.target.value) {
+                                  setBoxcashError('');
+                                }
+                              }
+                              }
                             >
+
                               <option value="0">Cajero asignado</option>
                               {cashier.map(user => (
                                 <option key={user.id} value={user.id}>
@@ -1358,6 +1387,7 @@ const Informacira = () => {
                                 </option>
                               ))}
                             </select>
+                            {boxcashError && <div className="text-danger errormessage">{boxcashError}</div>}
                           </div>
                         </Modal.Body>
                         <Modal.Footer className="sjmodenone justify-content-between pt-0">
@@ -1722,13 +1752,13 @@ const Informacira = () => {
                       <tbody>
                         {data.length > 0 ? (
                           data.map((box, index) => (
+                            console.log(box.close_time),
                             <tr
                               key={box.id}
                               className="sjbordergray j-caja-text-2"
                             >
-                              <td className="p-3">{box.createdAt}</td>
-
-                              <td>{box.close_time}</td>
+                              <td className="p-3">{new Date(box.open_time).toLocaleDateString('en-GB')}<span className="ms-3">{new Date(box.open_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td>
+                              <td className="ps-0">{box.close_time ? new Date(box.close_time).toLocaleDateString('en-GB') : ''}<span className="ms-3">{box.close_time ? new Date(box.close_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}</span></td>
                               <td>{box.open_amount}</td>
 
                               <td>{box.close_amount || "N/A"}</td>
@@ -1825,7 +1855,7 @@ const Informacira = () => {
                           className="j-caja-border-bottom p-0 m-3 mb-0 pb-3"
                         >
                           <Modal.Title className="modal-title j-caja-pop-up-text-1 ">
-                            Detalles cajac
+                          Detalles de caja 
                           </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
@@ -1849,7 +1879,7 @@ const Informacira = () => {
                                   id="quien-abrio"
                                   className="sj_modelinput mt-2 w-100"
                                   placeholder="-"
-                                  value={users.find(user => user.id === selectedBox?.open_by)?.name || ""}
+                                  value={users?.find(user => user.id === selectedBox?.open_by)?.name || ""}
 
                                 />
                               </div>
@@ -1865,7 +1895,7 @@ const Informacira = () => {
                                   id="quien-cerro"
                                   className="sj_modelinput mt-2 w-100"
                                   placeholder="-"
-                                  value={users.find(user => user.id === selectedBox?.close_by)?.name || ""}
+                                  value={users?.find(user => user.id === selectedBox?.close_by)?.name || ""}
                                 />
                               </div>
                             </div>
@@ -2021,7 +2051,7 @@ const Informacira = () => {
                           className="j-caja-border-bottom p-0 m-3 mb-0 pb-3"
                         >
                           <Modal.Title className="modal-title j-caja-pop-up-text-1">
-                          Detalles de caja
+                            Detalles de caja
 
                           </Modal.Title>
                         </Modal.Header>
@@ -2046,7 +2076,7 @@ const Informacira = () => {
                                   id="quien-abrio"
                                   className="sj_modelinput mt-2 w-100"
                                   placeholder="-"
-                                  value={users.find(user => user.id === selectedBox?.open_by)?.name || ""}
+                                  value={users?.find(user => user.id === selectedBox?.open_by)?.name || ""}
                                 />
                               </div>
                               <div className="col-12 col-md-6 mb-3 pe-0">
@@ -2061,7 +2091,7 @@ const Informacira = () => {
                                   id="quien-cerro"
                                   className="sj_modelinput mt-2 w-100"
                                   placeholder="-"
-                                  value={users.find(user => user.id === selectedBox?.close_by)?.name || ""}
+                                  value={users?.find(user => user.id === selectedBox?.close_by)?.name || ""}
                                 />
                               </div>
                             </div>

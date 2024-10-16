@@ -15,6 +15,7 @@ import { IoMdCloseCircle, IoMdInformationCircle } from 'react-icons/io';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
+import { BsCalculatorFill } from 'react-icons/bs';
 
 export default function Homeinformation() {
 
@@ -38,13 +39,17 @@ export default function Homeinformation() {
 
   const [show12, setShow12] = useState(false);
   const handleClose12 = () => setShow12(false);
-
+  const [errorReason, setReasonError] = useState(null);
   const handleShow12 = async () => {
 
     // ----resons----
     // ===change====
     // console.log(reason);
-
+    if (!reason) {
+      setReasonError("Ingrese el motivo de validez")
+      return;
+    }
+    handleClose();
     try {
       const response = await axios.post(
         `${API_URL}/order/updateorderreason/${id.toString()}`,
@@ -145,19 +150,18 @@ export default function Homeinformation() {
   };
 
   useEffect(() => {
-
     getOrder();
     getItems();
-    getSector();
     getOrderStatus();
     getRole();
     getFamily();
     getSubFamily();
-  }, [ show12, show1Prod,token]);
+  }, [show12, show1Prod, token]);
 
   useEffect(() => {
     if (orderData && items.length > 0) {
       handleOrderDetails();
+      getSector();
     }
     if (orderData?.user_id) {
       console.log(orderData?.user_id);
@@ -171,9 +175,36 @@ export default function Homeinformation() {
     }
   }, [user, roles]);
 
+  useEffect(() => {
+    getPaymentsData();
+  }, [admin_id, id]);
+
+  const [pamentDone, setPaymentDone] = useState(false)
+
+  const getPaymentsData = async () => {
+    // console.log(admin_id,id); 
+    try {
+      const response = await axios.get(`${API_URL}/getsinglepayments/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Payments Data:", response);
+      if (response.data.success) {
+        // console.log("true");
+        setPaymentDone(true);
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching PaymentsData:",
+        error.response ? error.response.data : error.message
+      );
+    }
+  }
+
   const getOrder = async () => {
     try {
-      const response = await axios.post(`${API_URL}/order/getSingle/${id}`,{admin_id: admin_id}, {
+      const response = await axios.post(`${API_URL}/order/getSingle/${id}`, { admin_id: admin_id }, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -190,9 +221,11 @@ export default function Homeinformation() {
   const getItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${API_URL}/item/getAll`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${API_URL}/item/getAll`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setItems(response.data.items);
       setObj1(response.data.items);
       // setFilteredMenuItems(response.data.items);
@@ -209,16 +242,22 @@ export default function Homeinformation() {
   const getSector = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${API_URL}/sector/getWithTable`,{admin_id: admin_id});
+      const response = await axios.post(`${API_URL}/sector/getWithTable`, { admin_id: admin_id }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       let sectors = response.data.data;
 
       const sectorWithTable = sectors.find(v =>
-        v.tables.some(a => a.order_id == id)
+        v.tables.some(a => a.id == orderData.table_id)
       );
+
+      // console.log(sectors);
 
       if (sectorWithTable) {
         setSector(sectorWithTable);
-        setTable(sectorWithTable.tables.find(a => a.order_id == id));
+        setTable(sectorWithTable.tables.find(a => a.id == orderData.table_id));
       }
     } catch (error) {
       console.error(
@@ -227,7 +266,6 @@ export default function Homeinformation() {
       );
     }
     setIsProcessing(false);
-
   };
 
   const getOrderStatus = async () => {
@@ -317,9 +355,11 @@ export default function Homeinformation() {
   const getFamily = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${API_URL}/family/getFamily`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${API_URL}/family/getFamily`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setParentCheck(response.data);
     } catch (error) {
       console.error(
@@ -332,9 +372,11 @@ export default function Homeinformation() {
   const getSubFamily = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${API_URL}/subfamily/getSubFamily`,{headers: {
-        Authorization: `Bearer ${token}`
-      }});
+      const response = await axios.get(`${API_URL}/subfamily/getSubFamily`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setChildCheck(response.data);
     } catch (error) {
       console.error(
@@ -350,6 +392,9 @@ export default function Homeinformation() {
   const handlereasons = (event) => {
     let notes = event?.target.value
     setReason(notes)
+    if (notes) {
+      setReasonError(null)
+    }
   }
 
   // ----resons section  end-----
@@ -418,25 +463,29 @@ export default function Homeinformation() {
   };
 
 
-  // ==== select items section ====
+  // // ==== select items section ====
   const handleAddItem = (item) => {
-    console.log(item, "safasf");
-    if (!selectedItemsMenu.some((v) => v.item_id == item.id)) {
-      console.log(selectedItemsMenu);
-      const obj = {
-        item_id: item.id,
-        quantity: 1,
-      }
-      setSelectedItemsMenu((prevArray) => [...prevArray, obj]);
-      console.log(selectedItemsMenu);
-      setSelectedItemsCount(selectedItemsCount + 1);
-      // setItemId((prevArray) => [...prevArray, item.id]);
+    setSelectedItemsMenu((prevArray) => {
+      const itemIndex = prevArray.findIndex((v) => v.item_id === item.id);
 
-      // Perform any other action here when adding an item
-      console.log(`Added item ${item.id}`);
-    } else {
-      console.log(`Item ${item.id} already added`);
-    }
+      if (itemIndex !== -1) {
+        // Item exists, so remove it
+        const newArray = [...prevArray];
+        newArray.splice(itemIndex, 1);
+        setSelectedItemsCount(prevCount => prevCount - 1);
+        console.log(`Removed item ${item.id}`);
+        return newArray;
+      } else {
+        // Item doesn't exist, so add it
+        const newItem = {
+          item_id: item.id,
+          quantity: 1,
+        };
+        setSelectedItemsCount(prevCount => prevCount + 1);
+        console.log(`Added item ${item.id}`);
+        return [...prevArray, newItem];
+      }
+    });
   };
 
   // ==== select items section ====
@@ -494,35 +543,42 @@ export default function Homeinformation() {
     setNoteValues(e.target.value);
   };
 
-  const handleNoteKeyDown = (id) => async (e) => {
-    if (e.key === 'Enter') {
-      console.log(id);
-      try {
-        const response = await axios.post(
-          `${API_URL}/order/addNote/${id}`,
-          { notes: noteValues },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log("Note added successfully:", response.data);
+  const handleNoteKeyDown = async (id) => {
+    console.log(id)
+    try {
+      const response = await axios.post(
+        `${API_URL}/order/addNote/${id}`,
+        { notes: noteValues },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // console.log("Note added successfully:", response.data);
 
-        // setSavedNote(noteValues);
-        setNoteValues('');
-        setVisibleInputId(null);
-      } catch (error) {
-        console.error(
-          "Error adding note:",
-          error.response ? error.response.data : error.message
-        );
-      }
-
-      getOrder();
-      handleOrderDetails();
+      // setSavedNote(noteValues);
+      setNoteValues('');
+      setVisibleInputId(null);
+    } catch (error) {
+      console.error(
+        "Error adding note:",
+        error.response ? error.response.data : error.message
+      );
     }
+    getOrder();
+    handleOrderDetails();
   };
+
+
+  const handleCredit = () => {
+    { console.log(orderData) }
+    if (orderData?.[0]?.status == 'delivered') {
+      navigate(`/home/client/crear/${id}`, { replace: true })
+    } else {
+      alert('No puedes crear un nuevo pedido si el pedido actual no ha sido entregado')
+    }
+  }
 
   // =============end note==========
 
@@ -539,7 +595,6 @@ export default function Homeinformation() {
           button.classList.remove('bg-primary', 'text-light');
           button.classList.add('bg-light', 'text-dark');
         });
-
         // Add 'bg-primary' and 'text-light' to the clicked tab
         tab.classList.remove('bg-light', 'text-dark');
         tab.classList.add('bg-primary', 'text-light');
@@ -559,8 +614,52 @@ export default function Homeinformation() {
       setShowCancelOrderButton(false);
     }
   };
-  // console.log(orderData);
+  console.log(orderData);
 
+  const translateOrderType = (orderType) => {
+    const translations = {
+      'local': 'Local',
+      'withdraw': 'Retirar',
+      'delivery': 'Entrega',
+      'uber': 'Uber',
+      // Add more translations as needed
+    };
+    return translations[orderType?.toLowerCase()] || orderType; // Fallback to original if not found
+  };
+
+
+  const handlePayment = () => {
+
+    console.log(orderDetails, orderData[0]);
+
+    const currentOrder = {
+      orderType: orderData[0]?.order_type,
+      orderId: orderData[0]?.id,
+      name: orderData[0]?.customer_name,
+      order: "old"
+    }
+    let cartItems = [];
+    orderDetails?.map((v) => {
+      const obj = {
+        orderId: orderData[0]?.id,
+        id: v.item_id,
+        image: v.image,
+        name: v.name,
+        price: v.amount,
+        // "code": "89874934",
+        count: v.quantity,
+        note: v.notes ? v.notes : "",
+        isEditing: false,
+        OdId:v.id
+      }
+      cartItems.push(obj)
+    })
+
+    localStorage.setItem("currentOrder", JSON.stringify(currentOrder));
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
+    navigate("/home/usa/bhomedelivery/datos");
+  }
 
   return (
     <div>
@@ -580,14 +679,20 @@ export default function Homeinformation() {
 
                 <div className='d-flex flex-wrap me-4'>
                   {showCancelOrderButton ? (
-                    <div onClick={handleShow} className='btn btn-danger me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#F05252", borderRadius: '10px' }}> <IoMdCloseCircle className='me-2' />Cancel order</div>
+                    !(orderData?.[0].status == 'delivered' || orderData?.[0].status == 'finalized' || orderData?.[0].status == "cancelled") &&
+                    <div onClick={handleShow} className='btn btn-danger me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#F05252", borderRadius: '10px' }}> <IoMdCloseCircle className='me-2' />Cancelar Pedido</div>
                   ) : (
-                    <Link className='text-decoration-none' to={`/home/usa/information/payment_edit/${id}`}>
-                      <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div>
-                    </Link>
+                    !(orderData?.[0].status == "cancelled" || pamentDone) && <>
+                      <Link className='text-decoration-none' to={`/home/usa/information/payment_edit/${id}`}>
+                        <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div>
+                      </Link>
+                      <div className='btn bj-btn-outline-primary b_mar_lef ms-2 py-2 text-nowrap d-flex align-item-center justify-content-center ' style={{ borderRadius: "10px" }} onClick={handleShow1Prod}> <FiPlus className='me-2 mt-1 ' />Agregar Producto</div>
+                    </>
                   )}
                   {/* <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div> */}
-                  <div className='btn bj-btn-outline-primary b_mar_lef ms-2 py-2 text-nowrap d-flex align-item-center justify-content-center ' style={{ borderRadius: "10px" }} onClick={handleShow1Prod}> <FiPlus className='me-2 mt-1 ' />Agregar Producto</div>
+                  {showCancelOrderButton &&
+                    <div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>
+                  }
                 </div>
 
               </div>
@@ -650,6 +755,7 @@ export default function Homeinformation() {
                     onKeyUp={handlereasons}
                     required
                   />
+                  {errorReason && <div className="text-danger errormessage">{errorReason}</div>}
                 </div>
               </Modal.Body>
               <Modal.Footer className="border-0 pt-0">
@@ -666,13 +772,37 @@ export default function Homeinformation() {
                   className="j-tbl-btn-font-1"
                   variant="primary"
                   onClick={() => {
-                    handleClose();
+                    // handleClose();
                     handleShow12();
                   }}
                 >
                   Anular pedido
                 </Button>
               </Modal.Footer>
+            </Modal>
+            {/* cancel order Success */}
+
+            <Modal
+              show={show12}
+              onHide={handleClose12}
+              backdrop={true}
+
+              keyboard={false}
+              className="m_modal"
+            >
+              <Modal.Header closeButton className="border-0" />
+              <Modal.Body>
+                <div className="text-center">
+                  <img
+                    src={require("../Image/check-circle.png")}
+                    alt=""
+                  />
+                  <p className="mb-0 mt-2 h6">Pedido anulado</p>
+                  <p className="opacity-75">
+                    Su pedido ha sido anulado exitosamente
+                  </p>
+                </div>
+              </Modal.Body>
             </Modal>
 
             <Tabs
@@ -683,7 +813,7 @@ export default function Homeinformation() {
               fill>
               <Tab
                 eventKey="home"
-                title="Orden"
+                title="Pedidos"
                 className="m_in text-white m-3 aaaaa rounded">
                 <div className='row'>
                   <div className='col-xl-7 ps-0 col-12 overflow-hidden '>
@@ -720,18 +850,11 @@ export default function Homeinformation() {
                                 <div className='' style={{ marginBottom: "68px", cursor: "pointer" }}><a href='#' className='a_home_addnote ms-4 bj-delivery-text-3 '>
                                   {v.notes === null ? (
                                     <div key={v.id}>
-                                      {visibleInputId !== v.id && (
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                          <span
-                                            className='j-nota-blue ms-4 text-decoration-underline'
-                                            onClick={() => toggleInput(v.id)}
-                                          >
-                                            + Nota
-                                          </span>
+                                      {visibleInputId !== v.id ? (
+                                        <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(v.id)}>
+                                          <span className='j-nota-blue ms-4 text-decoration-underline'>+ Nota</span>
                                         </div>
-                                      )}
-
-                                      {visibleInputId === v.id && (
+                                      ) : (
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                           <span className='j-nota-blue ms-4'>Nota:</span>
                                           <input
@@ -739,14 +862,39 @@ export default function Homeinformation() {
                                             className='j-note-input'
                                             value={noteValues}
                                             onChange={(e) => handleNoteChange(v.id, e)}
-                                            onKeyDown={handleNoteKeyDown(v.id)}
+                                            onBlur={() => handleNoteKeyDown(v.id)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter")
+                                                handleNoteKeyDown(v.id)
+                                            }}
                                           />
                                         </div>
                                       )}
                                     </div>
                                   ) : (
-                                    <div className='a_home_addnote ms-4' >
-                                      {v.notes}
+                                    < div key={v.id}>
+                                      {visibleInputId != v.id ? (
+                                        <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(v.id)}>
+                                          <span className='j-nota-blue ms-4'>Nota: {v.notes}</span>
+                                        </div>
+                                      ) : (
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                          <span className='j-nota-blue ms-4'>Nota:</span>
+                                          <input
+                                            type="text"
+                                            className='j-note-input'
+                                            value={noteValues}
+                                            onChange={(e) => handleNoteChange(v.id, e)}
+                                            onBlur={() => handleNoteKeyDown(v.id)}
+                                            onKeyDown={(e) => {
+                                              console.log(e.key);
+                                              if (e.key == "Enter") {
+                                                handleNoteKeyDown(v.id)
+                                              }
+                                            }}
+                                          />
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </a></div>
@@ -764,11 +912,11 @@ export default function Homeinformation() {
                         <div className='d-flex justify-content-end align-items-center ' >
                           <div className='d-flex justify-content-end align-items-center me-3 '>
                             <div className='me-2 fs-4'><FaCalendarAlt className='bj-icon-size-change' /></div>
-                            <div className='pt-1 bj-delivery-text-3'>{new Date(orderData?.created_at).toLocaleDateString('en-GB')}</div>
+                            <div className='pt-1 bj-delivery-text-3'>{new Date(orderData?.[0].created_at).toLocaleDateString('en-GB')}</div>
                           </div>
                           <div className='d-flex justify-content-end align-items-center '>
                             <div className='me-2 fs-4 '><MdOutlineAccessTimeFilled /></div>
-                            <div className='pt-1 a_time bj-delivery-text-3'>{new Date(orderData?.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div className='pt-1 a_time bj-delivery-text-3'>{new Date(orderData?.[0].created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                           </div>
                         </div>
                         <div className='bj-delivery-text-15'>
@@ -776,7 +924,7 @@ export default function Homeinformation() {
                         </div>
                         <div className={`bj-delivery-text-2  b_btn1 mb-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
                                             ${orderData?.[0]?.status?.toLowerCase() === 'received' ? 'b_indigo' : orderData?.[0]?.status?.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.[0]?.status?.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.[0]?.status?.toLowerCase() === 'finalized' ? 'b_green' : orderData?.[0]?.status?.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.[0]?.status?.toLowerCase() === 'local' ? 'b_purple' : 'b_ora text-danger'}`}>
-                          {orderData?.[0]?.status?.toLowerCase() === 'received' ? 'Recibido' : orderData?.[0]?.status?.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.[0]?.status?.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.[0]?.status?.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.[0]?.status?.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.[0]?.status?.toLowerCase() === 'local' ? 'Local'  : orderData?.[0]?.status?.toLowerCase() === 'cancelled' ? 'Cancelar' : ' '}
+                          {orderData?.[0]?.status?.toLowerCase() === 'received' ? 'Recibido' : orderData?.[0]?.status?.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.[0]?.status?.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.[0]?.status?.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.[0]?.status?.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.[0]?.status?.toLowerCase() === 'local' ? 'Local' : orderData?.[0]?.status?.toLowerCase() === 'cancelled' ? 'Cancelar' : ' '}
                         </div>
                         {/* <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3   p-0 text-nowrap d-flex  align-items-center justify-content-center 
                         ${orderData?.order_type.toLowerCase() === 'local' ? 'b_indigo' : orderData?.order_type.toLowerCase() === 'order now' ? 'b_ora ' : orderData?.order_type.toLowerCase() === 'delivery' ? 'b_blue' : orderData?.order_type.toLowerCase() === 'uber' ? 'b_ora text-danger' : orderData?.order_type.toLowerCase().includes("with") ? 'b_purple' : 'b_ora text-danger'}`}>
@@ -796,7 +944,7 @@ export default function Homeinformation() {
                           <div className=' a_mar_summary bj-delivery-text-650'>Costo total</div>
                           <div className='d-flex justify-content-between align-items-center my-1 mb-2'>
                             <div className='bj-delivery-text-150'>Productos</div>
-                            {console.log("orderDetails",orderDetails)}
+                            {console.log("orderDetails", orderDetails)}
                             <div className='bj-delivery-text-151'>${orderDetails?.reduce((acc, v) => v.amount * v.quantity + acc, 0)}</div>
                           </div>
                           <div className='d-flex justify-content-between align-items-center my-1'>
@@ -812,7 +960,14 @@ export default function Homeinformation() {
                           </div>
                         </div>
                         <div className='mx-auto text-center mt-3'>
-                          <div className='btn btn-primary w-100 my-4 bj-delivery-text-3 border-0' style={{ backgroundColor: "#147BDE", borderRadius: "8px", padding: "10px 20px" }}>Cobrar ahora</div>
+                          {!(orderData?.[0].status == "cancelled") &&
+                            < div className='d-flex text-decoration-none'>
+                              {!pamentDone ?
+                                <div className='btn btn-primary w-100 my-4 bj-delivery-text-3' style={{ backgroundColor: "#147BDE", borderRadius: "8px", padding: "10px 20px" }} onClick={handlePayment} >Cobrar ahora</div> :
+                                <div className='btn btn-primary w-100 my-4 bj-delivery-text-3' style={{ backgroundColor: "#147bdea8", borderRadius: "8px", padding: "10px 20px", cursor: "not-allowed" }}>Pago completado</div>
+                              }
+                            </div>
+                          }
                         </div>
                       </div>
                     </div>
@@ -821,7 +976,7 @@ export default function Homeinformation() {
 
               </Tab>
 
-              <Tab eventKey="profile" title="Informaction del cliente" className='b_border ' style={{ marginTop: "2px" }}>
+              <Tab eventKey="profile" title="Información del cliente" className='b_border ' style={{ marginTop: "2px" }}>
                 <div className='b-bg-color1'>
                   <div className='text-white ms-4 pt-4' >
                     <h5 >Información del pedido</h5>
@@ -830,11 +985,12 @@ export default function Homeinformation() {
                   <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                     <div className='w-100 b_search flex-grow-1  text-white'>
                       <label htmlFor="inputPassword2" className="mb-2 bj-delivery-text-3">Cliente</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={orderData?.customer_name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={orderData?.[0]?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
                     </div>
                     <div className='w-100 flex-grow-1 b_search text-white'>
                       <label htmlFor="inputPassword2" className="mb-2 bj-delivery-text-3">Plataforma</label>
-                      <input type="text" className="form-control bg-gray border-0 mt-2 py-3 " value={orderData?.order_type} id="inputPassword2" placeholder="Uber" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                      <input type="text" className="form-control bg-gray border-0 mt-2 py-3 " value={translateOrderType(orderData?.[0]?.order_type)} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
+                      {/* <input type="text" className="form-control bg-gray border-0 mt-2 py-3 " value={orderData?.[0]?.order_type} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/> */}
                     </div>
                   </div>
 
@@ -1008,59 +1164,66 @@ export default function Homeinformation() {
                   </div>
                 </div>
                 <div className="row p-2">
-                  {filteredItemsMenu.map((ele, index) => (
-                    <div
-                      className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
-                      keys={index}
-                    >
-                      <div>
-                        <div class="card m_bgblack text-white position-relative">
-                          <img
-                            src={`${API}/images/${ele.image}`}
-                            class="card-img-top object-fit-fill rounded"
-                            alt="..."
-                            style={{ height: "162px" }}
-                          />
-                          <div class="card-body">
-                            <h6 class="card-title">{ele.name}</h6>
-                            <h6 class="card-title">${ele.sale_price}</h6>
-                            <p class="card-text opacity-50">
-                              Codigo: {ele.code}
-                            </p>
-                            <div class="btn w-100 btn-primary text-white" onClick={() => handleAddItem(ele)}>
-                              <a
-                                href="# "
-                                className="text-white text-decoration-none"
-                                style={{ fontSize: "14px" }}
-                              >
-                                <span className="ms-1">Añadir </span>
-                              </a>
-                            </div>
-                          </div>
-
-                          <div
-                            className="position-absolute "
-                            style={{ cursor: "pointer" }}
-                          >
-                            <Link
-                              to={`/articles/singleatricleproduct/${ele.id}`}
-                              className="text-white text-decoration-none"
-                            >
-                              <p
-                                className=" px-1  rounded m-2"
-                                style={{ backgroundColor: "#374151" }}
-                              >
-                                <IoMdInformationCircle />{" "}
-                                <span style={{ fontSize: "12px" }}>
-                                  Ver información
-                                </span>
+                  {filteredItemsMenu.map((ele, index) => {
+                    const isAdded = selectedItemsMenu.length > 0 ? selectedItemsMenu.some((v) => v.item_id == ele.id) : false;
+                    return (
+                      <div
+                        className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
+                        keys={index}
+                      >
+                        <div>
+                          <div class="card m_bgblack text-white position-relative">
+                            <img
+                              src={`${API}/images/${ele.image}`}
+                              class="card-img-top object-fit-fill rounded"
+                              alt="..."
+                              style={{ height: "162px" }}
+                            />
+                            <div class="card-body">
+                              <h6 class="card-title">{ele.name}</h6>
+                              <h6 class="card-title">${ele.sale_price}</h6>
+                              <p class="card-text opacity-50">
+                                Codigo: {ele.code}
                               </p>
-                            </Link>
+                              <div class="btn w-100 btn-primary text-white"
+                                style={{ backgroundColor: isAdded ? "#063f93" : "#0d6efd" }}
+                                onClick={() => handleAddItem(ele)}>
+                                <a
+                                  href="# "
+                                  className="text-white text-decoration-none"
+                                  style={{ fontSize: "14px" }}
+                                >
+                                  <span className="ms-1">
+                                    {isAdded ? 'Agregado' : 'Agregar al menú'}
+                                  </span>
+                                </a>
+                              </div>
+                            </div>
+
+                            <div
+                              className="position-absolute "
+                              style={{ cursor: "pointer" }}
+                            >
+                              <Link
+                                to={`/articles/singleatricleproduct/${ele.id}`}
+                                className="text-white text-decoration-none"
+                              >
+                                <p
+                                  className=" px-1  rounded m-2"
+                                  style={{ backgroundColor: "#374151" }}
+                                >
+                                  <IoMdInformationCircle />{" "}
+                                  <span style={{ fontSize: "12px" }}>
+                                    Ver información
+                                  </span>
+                                </p>
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>

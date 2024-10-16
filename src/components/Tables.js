@@ -752,7 +752,8 @@ const Tables = () => {
 
   const handleSubmitNote = async (e, index, oId) => {
     e.preventDefault();
-    const finalNote = e.target.elements[0].value.trim();
+    console.log(e.target.value)
+    const finalNote = e.target.elements[0].value.trim() ||e.target.value;
     if (finalNote) {
       const flatIndex = tableData
         .flatMap((t) => t.items)
@@ -1832,7 +1833,7 @@ const Tables = () => {
                       clip-rule="evenodd"
                     />
                   </svg>}
-                  {isEditing ? "Ahorrar" : "Editar"}
+                  {isEditing ? "Guardar" : "Editar"}
                 </div>
               </button>
 
@@ -1922,7 +1923,7 @@ const Tables = () => {
                     <div className={"j-counter-order-data"}>
                       {tableData.map((tableItem) =>
                         tableItem.items
-                          .slice(0, showAll ? tableItem.items.length : 3)
+                          .slice(0, showAll ? tableItem.items.length : 2)
                           .map((item, index) => {
                             const itemInfo = getItemInfo(item.item_id);
                             return (
@@ -1981,9 +1982,28 @@ const Tables = () => {
                                 </div>
                                 <div className="text-white j-order-count-why ">
                                   {item.notes ? (
-                                    <span className="j-nota-blue">
-                                      Nota: {item.notes}
-                                    </span>
+                                    addNotes[index] ? (
+                                      <form
+                                        onSubmit={(e) =>
+                                          handleSubmitNote(e, index, item.id)}
+                                      >
+                                        <span className="j-nota-blue">
+                                          Nota:{" "}
+                                        </span>
+                                        <input
+                                          className="j-note-input"
+                                          type="text"
+                                          defaultValue={item.notes || ""}
+                                          autoFocus
+                                        />
+                                      </form>
+                                    ) : (
+                                      <span className="j-nota-blue" onClick={() =>
+                                        handleAddNoteClick(index)}>
+                                        Nota: {item.notes}
+                                      </span>
+                                    )
+
                                   ) : (
                                     <div>
                                       {addNotes[index] ? (
@@ -2018,13 +2038,15 @@ const Tables = () => {
                             );
                           })
                       )}
-                      <a
-                        href="#"
-                        onClick={handleShowMoreClick}
-                        className="j-tbl-pop-2"
-                      >
-                        {showAll ? "Ver menos" : "Ver más"}
-                      </a>
+                      {tableData[0]?.items.length >= 4 &&
+                        <a
+                          href="#"
+                          onClick={handleShowMoreClick}
+                          className="j-tbl-pop-2"
+                        >
+                          {showAll ? "Ver menos" : "Ver más"}
+                        </a>
+                      }
                     </div>
                     <div className="j-counter-total-2">
                       <h5 className="text-white j-tbl-text-15 ">Costo total</h5>
@@ -2147,7 +2169,7 @@ const Tables = () => {
                     </div>
                   </div>
                   <div className="j-counter-order">
-                    <h3 className="text-white j-tbl-pop-1">Pedido </h3>
+                    <h3 className="text-white j-tbl-pop-1">Pedido</h3>
                     <div className={"j-counter-order-data"}>
                       {tableData.map((tableItem) =>
                         tableItem.items
@@ -2179,16 +2201,46 @@ const Tables = () => {
                                   </div>
                                 </div>
                                 <div className="text-white j-order-count-why">
-                                  {item.notes ? (
-                                    <span className="j-nota-blue">
-                                      Nota: {item.notes}
-                                    </span>
+                                {item.notes ? (
+                                    addNotes[index] ? (
+                                      <form
+                                        onSubmit={(e) =>
+                                          handleSubmitNote(e, index, item.id)}
+                                        onBlur={(e) => {
+                                          // Check if the target is not the input
+                                          if (!e.currentTarget.contains(e.relatedTarget)) {
+                                            handleSubmitNote(e, index, item.id);
+                                          }
+                                        }}
+                                      >
+                                        <span className="j-nota-blue">
+                                          Nota:{" "}
+                                        </span>
+                                        <input
+                                          className="j-note-input"
+                                          type="text"
+                                          defaultValue={item.notes || ""}
+                                          autoFocus
+                                        />
+                                      </form>
+                                    ) : (
+                                      <span className="j-nota-blue" onClick={() =>
+                                        handleAddNoteClick(index)}>
+                                        Nota: {item.notes}
+                                      </span>
+                                    )
                                   ) : (
                                     <div>
                                       {addNotes[index] ? (
                                         <form
                                           onSubmit={(e) =>
                                             handleSubmitNote(e, index, item.id)}
+                                          onBlur={(e) => {
+                                            // Check if the target is not the input
+                                            if (!e.currentTarget.contains(e.relatedTarget)) {
+                                              handleSubmitNote(e, index, item.id);
+                                            }
+                                          }}
                                         >
                                           <span className="j-nota-blue">
                                             Nota:{" "}
@@ -2217,13 +2269,15 @@ const Tables = () => {
                             );
                           })
                       )}
-                      <a
-                        href="#"
-                        onClick={handleShowMoreClick}
-                        className="j-tbl-pop-2"
-                      >
-                        {showAll ? "Ver menos" : "Ver más"}
-                      </a>
+                     {tableData[0]?.items.length >= 4 &&
+                        <a
+                          href="#"
+                          onClick={handleShowMoreClick}
+                          className="j-tbl-pop-2"
+                        >
+                          {showAll ? "Ver menos" : "Ver más"}
+                        </a>
+                      }
                     </div>
                     <div className="j-counter-total-2">
                       <h5 className="text-white j-tbl-text-15 ">Costo total</h5>

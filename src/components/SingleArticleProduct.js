@@ -308,16 +308,20 @@ export default function SingleArticleProduct() {
       errors.sub_family_id = "La subfamilia es obligatoria";
     }
 
-    if (!formDetails.image && !formDetails.existingImage) {
-      errors.image = "Se requiere una imagen";
-    } else if (formDetails.image && formDetails.image.size > 2 * 1024 * 1024) {
-      errors.image = "El tamaño de la imagen debe ser inferior a 2 MB.";
-    } else if (formDetails.image) {
-      const allowedTypes = ['image/jpeg', 'image/svg+xml', 'image/png', 'image/gif'];
-      if (!allowedTypes.includes(formDetails.image.type)) {
-        errors.image = "El tipo de archivo no es válido. Solo se permiten archivos jpg, svg, png y gif.";
+    if(!formDetails.existingImage)
+      {
+        if (!formDetails.image) {
+          errors.image = "Se requiere una imagen";
+        } else if (formDetails.image && formDetails.image.size > 2 *  1024  *1024) {
+          errors.image = "El tamaño de la imagen debe ser inferior a 2 MB.";
+        } else if (formDetails.image) {
+          const allowedTypes = ['image/jpeg', 'image/svg+xml', 'image/png', 'image/gif'];
+          console.log(allowedTypes.includes(formDetails.image.type))
+          if (!allowedTypes.includes(formDetails.image.type)) {
+            errors.image = "El tipo de archivo no es válido. Solo se permiten archivos jpg, svg, png y gif.";
+          }
+        }
       }
-    }
 
     return errors;
   };
@@ -1685,9 +1689,9 @@ export default function SingleArticleProduct() {
                                     </td>
                                   </tr>
                                 )} */}
-                              {datatab.length > 0 ? (
-                                datatab.map((order, index) => {
-                                  const payment = payments.find(
+                              {datatab?.length > 0 ? (
+                                datatab?.map((order, index) => {
+                                  const payment = payments?.find(
                                     (p) => p.order_master_id === order.id
                                   );
                                   const paymentStatus =
@@ -1696,9 +1700,12 @@ export default function SingleArticleProduct() {
                                       : "No pagado";
 
                                   return (
-                                    <tr key={order.id} className="m_borbot p-3">
-                                      <td className="m_idbtn m12">
-                                        {order.id}
+                                    <tr key={order.id} className="m_borbot p-3"> 
+                                     
+                                      <td >
+                                      <Link to={`/home_Pedidos/paymet/${order.id}`}>
+                                        <div className="m_idbtn m12">{order.id}</div>
+                                      </Link>
                                       </td>
                                       <td>{formatDate(order.created_at)}</td>
                                       <td>{formatTime(order.created_at)}</td>

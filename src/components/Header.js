@@ -73,6 +73,9 @@ export default function Header() {
   if (!token) {
     return null;
   }
+  if(role =="superadmin"){
+    navigate('/enlaceAdmin');
+  }
 
 
 
@@ -81,12 +84,32 @@ export default function Header() {
 
 
   const toggleShowA = () => setShowA(!showA);
-  const handleLogout = () => {
-    sessionStorage.removeItem("email");
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("name");
-    window.location.href = "/";
+  const handleLogout = async () => {
+    try {
+      const responce = await axios.post(
+        `${apiUrl}/update-user/${user_id}`,
+        {
+          activeStatus: "0",
+          name: name,
+          email: email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      if (responce.status == 200) {
+        echo.leaveChannel(`chat.${user_id}`);
+        sessionStorage.removeItem("email");
+        sessionStorage.removeItem("role");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("name");
+        window.location.href = "/";
+      }
+    } catch (error) {
+      console.log("not updating user", + error.message);
+    }
   };
   const roleTranslations = {
     admin: "Admin",

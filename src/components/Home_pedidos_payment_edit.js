@@ -105,18 +105,19 @@ const Home_pedidos_payment_edit = ({ item }) => {
         setIsProcessing(true);
         getOrder();
         getItems();
-        getSector();
         getOrderStatus();
         getRole();
         getFamily();
         getSubFamily();
         setActiveTab(state ? state : "home")
         setIsProcessing(false);
-    }, [noteValues, show1Prod, deleteProductId]);
+    }, [ show1Prod, deleteProductId]);
 
     useEffect(() => {
         if (orderData && items.length > 0) {
             handleOrderDetails();
+            getSector();
+
         }
         if (orderData?.user_id) {
             // console.log(orderData?.user_id);
@@ -137,6 +138,7 @@ const Home_pedidos_payment_edit = ({ item }) => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log("order", response.data[0])
             setOrderData(response.data[0]);
         } catch (error) {
             console.error(
@@ -166,17 +168,16 @@ const Home_pedidos_payment_edit = ({ item }) => {
 
     const getSector = async () => {
         try {
-            const response = await axios.post(`${apiUrl}/sector/getWithTable`);
+            const response = await axios.post(`${apiUrl}/sector/getWithTable`, { admin_id: admin_id }, { headers: { Authorization: `Bearer ${token}` } });
             let sectors = response.data.data;
-                console.log(sectors);
-                
+
             const sectorWithTable = sectors.find(v =>
-                v.tables.some(a => a.order_id == id)
+                v.tables.some(a => a.id == orderData.table_id)
             );
 
             if (sectorWithTable) {
                 setSector(sectorWithTable);
-                setTable(sectorWithTable.tables.find(a => a.order_id == id));
+                setTable(sectorWithTable.tables.find(a => a.id == orderData.table_id));
             }
         } catch (error) {
             console.error(
@@ -185,8 +186,6 @@ const Home_pedidos_payment_edit = ({ item }) => {
             );
         }
     };
-    console.log(table);
-    
 
     const getOrderStatus = async () => {
         try {
@@ -241,7 +240,7 @@ const Home_pedidos_payment_edit = ({ item }) => {
 
     const getuserRole = () => {
         if (user && roles.length > 0) {
-            const role = roles.find((v) => v.id === user[0].role_id);
+            const role = roles.find((v) => v.id === user[0]?.role_id);
             if (role) {
                 setUserRole(role.name);
             }
@@ -362,22 +361,27 @@ const Home_pedidos_payment_edit = ({ item }) => {
 
     // // ==== select items section ====
     const handleAddItem = (item) => {
+        setSelectedItemsMenu((prevArray) => {
+            const itemIndex = prevArray.findIndex((v) => v.item_id === item.id);
 
-        if (!selectedItemsMenu.some((v) => v.item_id == item.id)) {
-            const obj = {
-                item_id: item.id,
-                quantity: 1,
+            if (itemIndex !== -1) {
+                // Item exists, so remove it
+                const newArray = [...prevArray];
+                newArray.splice(itemIndex, 1);
+                setSelectedItemsCount(prevCount => prevCount - 1);
+                console.log(`Removed item ${item.id}`);
+                return newArray;
+            } else {
+                // Item doesn't exist, so add it
+                const newItem = {
+                    item_id: item.id,
+                    quantity: 1,
+                };
+                setSelectedItemsCount(prevCount => prevCount + 1);
+                console.log(`Added item ${item.id}`);
+                return [...prevArray, newItem];
             }
-            setSelectedItemsMenu((prevArray) => [...prevArray, obj]);
-            // console.log(selectedItemsMenu);
-            setSelectedItemsCount(selectedItemsCount + 1);
-            // setItemId((prevArray) => [...prevArray, item.id]);
-
-            // Perform any other action here when adding an item
-            console.log(`Added item ${item.id}`);
-        } else {
-            console.log(`Item ${item.id} already added`);
-        }
+        });
     };
 
     // // ==== select items section ====
@@ -434,32 +438,32 @@ const Home_pedidos_payment_edit = ({ item }) => {
         setNoteValues(e.target.value);
     };
 
-    const handleNoteKeyDown = (id) => async (e) => {
-        if (e.key === 'Enter') {
-            // console.log(id);
-            try {
-                const response = await axios.post(
-                    `${apiUrl}/order/addNote/${id}`,
-                    { notes: noteValues },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-                // console.log("Note added successfully:", response.data);
-
-                // setSavedNote(noteValues);
-                setNoteValues('');
-                setVisibleInputId(null);
-            } catch (error) {
-                console.error(
-                    "Error adding note:",
-                    error.response ? error.response.data : error.message
-                );
-            }
+    const handleNoteKeyDown = async(id) => {
+        console.log(id)
+          try {
+            const response = await axios.post(
+              `${apiUrl}/order/addNote/${id}`,
+              { notes: noteValues },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            // console.log("Note added successfully:", response.data);
+    
+            // setSavedNote(noteValues);
+            setNoteValues('');
+            setVisibleInputId(null);
+          } catch (error) {
+            console.error(
+              "Error adding note:",
+              error.response ? error.response.data : error.message
+            );
         }
-    };
+        getOrder();
+        handleOrderDetails();
+      };
 
 
     //    -------- Edite order Qyt ----
@@ -744,7 +748,7 @@ const Home_pedidos_payment_edit = ({ item }) => {
                             fill>
                             <Tab
                                 eventKey="home"
-                                title="Orden"
+                                title="Pedidos"
                                 className="m_in text-white aaaaa  rounded"
                             >
                                 <div className='row'>
@@ -769,18 +773,24 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                                                             </div>
                                                                         </div>
                                                                         <div className="col-sm-2 a_text_price">
-                                                                            <button className="b_count11 btn btn-secondary" onClick={() => decrement(item.id, item.item_id, item.quantity)}>-</button>
+                                                                            {!(orderData?.status == "cancelled") &&
+                                                                                <button className="b_count11 btn btn-secondary" onClick={() => decrement(item.id, item.item_id, item.quantity)}>-</button>
+                                                                            }
                                                                             <span className="pe-3 ms-2">{counts[item.id]}</span>
-                                                                            <button className="b_count btn btn-secondary" onClick={() => increment(item.id, item.item_id, item.quantity)}>+</button>
+                                                                            {!(orderData?.status == "cancelled") &&
+                                                                                <button className="b_count btn btn-secondary" onClick={() => increment(item.id, item.item_id, item.quantity)}>+</button>
+                                                                            }
                                                                         </div>
                                                                         <div className="col-sm-1 a_text_price">
-                                                                            <div className="pe-5 fw-bold">{item.amount}</div>
+                                                                            <div className="pe-5 fw-bold">${item.amount}</div>
                                                                         </div>
-                                                                        <div className="col-sm-1">
-                                                                            <button className="b_bg_red btn" onClick={() => deleteProductModal(item.id)}>
-                                                                                <RiDeleteBinLine />
-                                                                            </button>
-                                                                        </div>
+                                                                        {!(orderData?.status == "cancelled") &&
+                                                                            <div className="col-sm-1">
+                                                                                <button className="b_bg_red btn" onClick={() => deleteProductModal(item.id)}>
+                                                                                    <RiDeleteBinLine />
+                                                                                </button>
+                                                                            </div>
+                                                                        }
                                                                     </div>
                                                                 </div>
                                                                 <div style={{ marginBottom: "68px", cursor: "pointer" }}>
@@ -799,33 +809,51 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                                                     )} */}
                                                                     {item.notes === null ? (
                                                                         <div key={item.id}>
-                                                                            {visibleInputId !== item.id && (
-                                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                                                    <span
-                                                                                        className='j-nota-blue ms-4 text-decoration-underline'
-                                                                                        onClick={() => toggleInput(item.id)}
-                                                                                    >
-                                                                                        + Nota
-                                                                                    </span>
+                                                                            {visibleInputId !== item.id ? (
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(item.id)}>
+                                                                                    <span className='j-nota-blue ms-4 text-decoration-underline'>+ Nota</span>
                                                                                 </div>
-                                                                            )}
-
-                                                                            {visibleInputId === item.id && (
+                                                                            ) : (
                                                                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                                                                     <span className='j-nota-blue ms-4'>Nota:</span>
                                                                                     <input
                                                                                         type="text"
-                                                                                        className='ms-4 j-note-input'
+                                                                                        className='j-note-input'
                                                                                         value={noteValues}
                                                                                         onChange={(e) => handleNoteChange(item.id, e)}
-                                                                                        onKeyDown={handleNoteKeyDown(item.id)}
+                                                                                        onBlur={() => handleNoteKeyDown(item.id)}
+                                                                                        onKeyDown={(e) => {
+                                                                                            if (e.key === "Enter")
+                                                                                                handleNoteKeyDown(item.id)
+                                                                                        }}
                                                                                     />
                                                                                 </div>
                                                                             )}
                                                                         </div>
                                                                     ) : (
-                                                                        <div className='a_home_addnote ms-4' >
-                                                                            {item.notes}
+                                                                        < div key={item.id}>
+                                                                            {visibleInputId != item.id ? (
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }} onClick={() => toggleInput(item.id)}>
+                                                                                    <span className='j-nota-blue ms-4'>Nota: {item.notes}</span>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                                    <span className='j-nota-blue ms-4'>Nota:</span>
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        className='j-note-input'
+                                                                                        value={noteValues}
+                                                                                        onChange={(e) => handleNoteChange(item.id, e)}
+                                                                                        onBlur={() => handleNoteKeyDown(item.id)}
+                                                                                        onKeyDown={(e) => {
+                                                                                            console.log(e.key);
+                                                                                            if (e.key == "Enter") {
+                                                                                                handleNoteKeyDown(item.id)
+                                                                                            }
+                                                                                        }}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -853,9 +881,14 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                                 <div className='fw-bold fs-5'>
                                                     Datos
                                                 </div>
-                                                <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
-                                                    ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
-                                                    {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : ' '}
+
+                                                {/* <div className={`bj-delivery-text-2  b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex  align-items-center justify-content-center 
+                                                    ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora ' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : 'b_ora  text-danger'}`}>
+                                                    {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado ' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : orderData?.status.toLowerCase() === 'cancelled' ? 'Cancelar' : ''}
+                                                </div> */}
+                                                <div className={`bj-delivery-text-2 b_btn1 mb-2 mt-3 p-0 text-nowrap d-flex align-items-center justify-content-center 
+                                                    ${orderData?.status.toLowerCase() === 'received' ? 'b_indigo' : orderData?.status.toLowerCase() === 'prepared' ? 'b_ora' : orderData?.status.toLowerCase() === 'delivered' ? 'b_blue' : orderData?.status.toLowerCase() === 'finalized' ? 'b_green' : orderData?.status.toLowerCase() === 'withdraw' ? 'b_indigo' : orderData?.status.toLowerCase() === 'local' ? 'b_purple' : orderData?.status.toLowerCase() === 'cancelled' ? 'b_ora text-danger' : 'b_ora text-danger'}`}>
+                                                    {orderData?.status.toLowerCase() === 'received' ? 'Recibido' : orderData?.status.toLowerCase() === 'prepared' ? 'Preparado' : orderData?.status.toLowerCase() === 'delivered' ? 'Entregado' : orderData?.status.toLowerCase() === 'finalized' ? 'Finalizado' : orderData?.status.toLowerCase() === 'withdraw' ? 'Retirar' : orderData?.status.toLowerCase() === 'local' ? 'Local' : orderData?.status.toLowerCase() === 'cancelled' ? 'Cancelar' : 'Unknown'}
                                                 </div>
 
                                                 <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
@@ -893,7 +926,7 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                                     </div>
                                                 </div>
                                                 <div className='mx-auto text-center mt-3'>
-                                                    <div onClick={handleShow20} className='btn text-white j-btn-primary w-100  border-0' style={{ padding: "8px 12px", borderRadius: "8px" }}>Guardar cambios</div>
+                                                    <div onClick={handleShow20} className='btn text-white j-btn-primary w-100  border-0' style={{ padding: "8px 12px", borderRadius: "8px" }}>{orderData?.status !="cancelled" ? "Guardar cambios":"Pagar ahora"}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -910,27 +943,28 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                             <textarea type="text" className="form-control bg-gray border-0 mt-4 py-2" id="inputPassword2" placeholder={orderData?.reason != null ? orderData?.reason : "Estaba sin sal"} style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled></textarea>
                                         </div>
                                     }
+
                                     <div className='text-white ms-4 pt-4' >
                                         <h5 className='bj-delivery-text-15'>Información pedido</h5>
                                     </div>
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                                         <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Sector</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={sector?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Mesa</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={table && `${table?.name}  (${table?.id})`} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 "  value={table?.name ? `${table.name} (${table.id})` : '-'} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled />
                                         </div>
                                     </div>
                                     <div className='d-flex  flex-grow-1 gap-5 mx-4 m b_inputt b_id_input b_home_field  pt-3 '>
                                         <div className='w-100 b_search flex-grow-1  text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2" style={{ fontSize: "14px" }}>Cliente</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2" value={orderData?.customer_name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                                         </div>
                                         <div className='w-100 flex-grow-1 b_search text-white mb-3'>
                                             <label htmlFor="inputPassword2" className="mb-2">Personas</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 py-2 " value={orderData?.person} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled/>
                                         </div>
                                     </div>
 
@@ -1006,7 +1040,7 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                     </div>
 
                                     <div className="py-3 m_borbot mx-3  m14 ">
-                                        {parentCheck.map((parentItem) => (
+                                        {parentCheck?.map((parentItem) => (
                                             <div key={parentItem.id}>
                                                 <div className="d-flex justify-content-between align-items-center flex-wrap mb-2">
                                                     <div className="text-nowrap">
@@ -1103,59 +1137,66 @@ const Home_pedidos_payment_edit = ({ item }) => {
                                     </div>
                                 </div>
                                 <div className="row p-2">
-                                    {filteredItemsMenu.map((ele, index) => (
-                                        <div
-                                            className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
-                                            keys={index}
-                                        >
-                                            <div>
-                                                <div class="card m_bgblack text-white position-relative">
-                                                    <img
-                                                        src={`${API}/images/${ele.image}`}
-                                                        class="card-img-top object-fit-fill rounded"
-                                                        alt="..."
-                                                        style={{ height: "162px" }}
-                                                    />
-                                                    <div class="card-body">
-                                                        <h6 class="card-title">{ele.name}</h6>
-                                                        <h6 class="card-title">${ele.sale_price}</h6>
-                                                        <p class="card-text opacity-50">
-                                                            Codigo: {ele.code}
-                                                        </p>
-                                                        <div class="btn w-100 btn-primary text-white" onClick={() => handleAddItem(ele)}>
-                                                            <a
-                                                                href="# "
-                                                                className="text-white text-decoration-none"
-                                                                style={{ fontSize: "14px" }}
-                                                            >
-                                                                <span className="ms-1">Añadir </span>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-
-                                                    <div
-                                                        className="position-absolute "
-                                                        style={{ cursor: "pointer" }}
-                                                    >
-                                                        <Link
-                                                            to={`/articles/singleatricleproduct/${ele.id}`}
-                                                            className="text-white text-decoration-none"
-                                                        >
-                                                            <p
-                                                                className=" px-1  rounded m-2"
-                                                                style={{ backgroundColor: "#374151" }}
-                                                            >
-                                                                <IoMdInformationCircle />{" "}
-                                                                <span style={{ fontSize: "12px" }}>
-                                                                    Ver información
-                                                                </span>
+                                {filteredItemsMenu.map((ele, index) => {
+                                        const isAdded = selectedItemsMenu.length > 0 ? selectedItemsMenu.some((v) => v.item_id == ele.id) : false;
+                                        return (
+                                            <div
+                                                className="col-md-4 col-xl-3 col-sm-6 col-12 g-3"
+                                                keys={index}
+                                            >
+                                                <div>
+                                                    <div class="card m_bgblack text-white position-relative">
+                                                        <img
+                                                            src={`${API}/images/${ele.image}`}
+                                                            class="card-img-top object-fit-fill rounded"
+                                                            alt="..."
+                                                            style={{ height: "162px" }}
+                                                        />
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">{ele.name}</h6>
+                                                            <h6 class="card-title">${ele.sale_price}</h6>
+                                                            <p class="card-text opacity-50">
+                                                                Codigo: {ele.code}
                                                             </p>
-                                                        </Link>
+                                                            <div class="btn w-100 btn-primary text-white"
+                                                                style={{ backgroundColor: isAdded ? "#063f93" : "#0d6efd" }}
+                                                                onClick={() => handleAddItem(ele)}>
+                                                                <a
+                                                                    href="# "
+                                                                    className="text-white text-decoration-none"
+                                                                    style={{ fontSize: "14px" }}
+                                                                >
+                                                                    <span className="ms-1">
+                                                                        {isAdded ? 'Agregado' : 'Agregar al menú'}
+                                                                    </span>
+                                                                </a>
+                                                            </div>
+                                                        </div>
+
+                                                        <div
+                                                            className="position-absolute "
+                                                            style={{ cursor: "pointer" }}
+                                                        >
+                                                            <Link
+                                                                to={`/articles/singleatricleproduct/${ele.id}`}
+                                                                className="text-white text-decoration-none"
+                                                            >
+                                                                <p
+                                                                    className=" px-1  rounded m-2"
+                                                                    style={{ backgroundColor: "#374151" }}
+                                                                >
+                                                                    <IoMdInformationCircle />{" "}
+                                                                    <span style={{ fontSize: "12px" }}>
+                                                                        Ver información
+                                                                    </span>
+                                                                </p>
+                                                            </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -1229,11 +1270,11 @@ const Home_pedidos_payment_edit = ({ item }) => {
                             />
                             <p className="mb-0 mt-3 h6">
                                 {" "}
-                                ¿Estás seguro de que quieres eliminar este menú?
+                                ¿Estás seguro de que quieres eliminar este pedido?
                             </p>
                         </div>
                     </Modal.Body>
-                    <Modal.Footer className="border-0 ">
+                    <Modal.Footer className="border-0 justify-content-center">
                         <Button
                             className="j-tbl-btn-font-1 b_btn_close"
                             variant="danger"
@@ -1261,11 +1302,11 @@ const Home_pedidos_payment_edit = ({ item }) => {
                 >
                     <Modal.Header closeButton className="border-0" />
                     <Modal.Body>
-                        <div className="text-center">
-                            <img src={require("../Image/trash-outline-secondary.png")} alt="" />
+                        <div className="j-modal-trash  text-center">
+                            <img src={require("../Image/trash-outline.png")} alt="" />
                             <p className="mb-0 mt-3 h6">
                                 {" "}
-                                menú Ha sido eliminada correctamente
+                                Pedido Ha sido eliminada correctamente
                             </p>
                         </div>
                     </Modal.Body>

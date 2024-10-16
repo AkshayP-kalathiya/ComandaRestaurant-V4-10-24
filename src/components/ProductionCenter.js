@@ -20,9 +20,9 @@ export default function ProductionCenter() {
   const apiUrl = process.env.REACT_APP_API_URL;
   const API = process.env.REACT_APP_IMAGE_URL;
   const [token] = useState(sessionStorage.getItem("token"));
-  const [role] = useState(sessionStorage.getItem("role"));
   // const [isLoading, setIsLoading] = useState(true);
-  const admin_id = sessionStorage.getItem("admin_id");
+const admin_id = sessionStorage.getItem("admin_id");
+const role = sessionStorage.getItem("role");
   const [productionCenters, setProductionCenters] = useState([]);
   const [prodName, setProdName] = useState("");
   const [printerCode, setPrinterCode] = useState("");
@@ -77,57 +77,36 @@ export default function ProductionCenter() {
     }
   };
   // Add these handlers
-  // const handleEditNameChange = (e) => {
-  //   setCurrentProdCenter({
-  //     ...currentProdCenter,
-  //     name: e.target.value
-  //   });
-  //   if (e.target.value.trim()) {
-  //     setEditNameError("");
-  //   }
-  // };
   const handleEditNameChange = (e) => {
     setCurrentProdCenter({
       ...currentProdCenter,
       name: e.target.value
     });
-    setProdName(e.target.value);
     if (e.target.value.trim()) {
-      setProdNameError("");
+      setEditNameError("");
     }
   };
-
-  // const handleEditPrinterCodeChange = (e) => {
-  //   setCurrentProdCenter({
-  //     ...currentProdCenter,
-  //     printer_code: e.target.value
-  //   });
-  //   if (e.target.value.trim()) {
-  //     setEditPrinterCodeError("");
-  //   }
-  // };
 
   const handleEditPrinterCodeChange = (e) => {
     setCurrentProdCenter({
       ...currentProdCenter,
       printer_code: e.target.value
     });
-    setPrinterCode(e.target.value);
     if (e.target.value.trim()) {
-      setPrinterCodeError("");
+      setEditPrinterCodeError("");
     }
   };
 
   const validateProductionCenter = () => {
     let isValid = true;
 
-    if (!prodName?.trim()) {
+    if (!prodName.trim()) {
       setProdNameError("El nombre es requerido");
       isValid = false;
     } else {
       setProdNameError("");
     }
-    if (!printerCode?.trim()) {
+    if (!printerCode.trim()) {
       setPrinterCodeError("El código de impresora es requerido");
       isValid = false;
     } else if (isNaN(printerCode)) {
@@ -168,6 +147,7 @@ export default function ProductionCenter() {
     setPrinterCode("");
     setProdNameError("");
     setPrinterCodeError("");
+
   };
   const handleShowCreate = () => setShowCreate(true);
 
@@ -202,13 +182,7 @@ export default function ProductionCenter() {
 
   // edit family
   const [showEditProduction, setShowEditProduction] = useState(false);
-  const handleCloseEditProduction = () => {
-    setShowEditProduction(false);
-    setProdNameError("");
-    setPrinterCodeError("");
-    setProdName("");
-    setPrinterCode("");
-  }
+  const handleCloseEditProduction = () => setShowEditProduction(false);
   const handleShowEditProduction = () => setShowEditProduction(true);
 
   // edit family Success
@@ -359,7 +333,7 @@ export default function ProductionCenter() {
   // get menu
   const fetchMenuData = async () => {
     try {
-      const response = await axios.post(`${apiUrl}/item/getProducationdata`, { admin_id },
+      const response = await axios.post(`${apiUrl}/item/getProducationdata`, {admin_id},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -376,7 +350,7 @@ export default function ProductionCenter() {
   // get menu item
   const fetchMenuItemData = async () => {
     try {
-      const response = await axios.post(`${apiUrl}/item/getProducationdata`, { admin_id },
+      const response = await axios.post(`${apiUrl}/item/getProducationdata`, {admin_id},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -397,11 +371,9 @@ export default function ProductionCenter() {
   const fetchFamilyData = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/family/getFamily`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
+      const response = await axios.get(`${apiUrl}/family/getFamily`,{  headers: {
+        Authorization: `Bearer ${token}`,
+      }});
       setParentCheck(response.data);
     } catch (error) {
       console.error(
@@ -416,11 +388,9 @@ export default function ProductionCenter() {
   const fetchSubFamilyData = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
+      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`,{  headers: {
+        Authorization: `Bearer ${token}`,
+      }});
       setChildCheck(response.data);
     } catch (error) {
       console.error(
@@ -435,7 +405,7 @@ export default function ProductionCenter() {
   const getProductionCenters = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${apiUrl}/production-centers`, { admin_id }, {
+      const response = await axios.post(`${apiUrl}/production-centers`,{admin_id}, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -451,11 +421,9 @@ export default function ProductionCenter() {
   const fetchAllItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
+      const response = await axios.get(`${apiUrl}/item/getAll`,{  headers: {
+        Authorization: `Bearer ${token}`,
+      }});
       setObj1(response.data.items);
       setFilteredItemsMenu(response.data.items);
       setItems(response.data.items);
@@ -519,8 +487,6 @@ export default function ProductionCenter() {
       name: prodCenter.name,
       printer_code: prodCenter.printer_code
     });
-    setProdName(prodCenter.name)
-    setPrinterCode(prodCenter.printer_code)
     handleShowEditProduction();
   };
 
@@ -582,43 +548,36 @@ export default function ProductionCenter() {
   // };
 
   const updateProductionCenter = async () => {
-    if (validateProductionCenter()) {
-      try {
-        handleCloseEditProduction(); // Close the modal first
-        setIsProcessing(true); // Then show the loader
+    try {
+      handleCloseEditProduction(); // Close the modal first
+      setIsProcessing(true); // Then show the loader
 
-        const updatedData = {
-          name: currentProdCenter.name,
-          // Only include printer_code if it has changed
-          ...(currentProdCenter.printer_code && {
-            printer_code: currentProdCenter.printer_code
-          })
-        };
+      const updatedData = {
+        name: currentProdCenter.name,
+        // Only include printer_code if it has changed
+        ...(currentProdCenter.printer_code && {
+          printer_code: currentProdCenter.printer_code
+        })
+      };
 
-        console.log(updatedData);
-        
-
-        const response = await axios.post(
-          `${apiUrl}/update/production-centers/${currentProdCenter.id}`,
-          { ...updatedData,admin_id },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+      const response = await axios.post(
+        `${apiUrl}/update/production-centers/${currentProdCenter.id}`,
+        {...updatedData,admin_id},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
-        );
-        console.log("Production center updated:", response.data);
-        fetchMenuData()
-        fetchMenuItemData();
-        getProductionCenters();
-        handleShowEditProductionSuc();
-        setProdName("");
-        setPrinterCode("");
-      } catch (error) {
-        console.error("Error updating production center:", error);
-      } finally {
-        setIsProcessing(false);
-      }
+        }
+      );
+      console.log("Production center updated:", response.data);
+      fetchMenuData()
+      fetchMenuItemData();
+      getProductionCenters();
+      handleShowEditProductionSuc();
+    } catch (error) {
+      console.error("Error updating production center:", error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -747,7 +706,7 @@ export default function ProductionCenter() {
   };
 
   console.log(itemstoUpdate[0]);
-
+  
   // ...
 
   const handleAddMenu = async () => {
@@ -858,9 +817,10 @@ export default function ProductionCenter() {
 
   const filterItems = (searchTerm, checkedParents, childCheck) => {
     return obj1.filter((item) => {
-      const matchesSearch = item.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      const matchesSearch = 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.code.toLowerCase().includes(searchTerm.toLowerCase()); // Added search by code
+
       const matchesCheckbox =
         checkedParents[item.family_id] ||
         (childCheck &&
@@ -953,7 +913,7 @@ export default function ProductionCenter() {
                         Centros de Producción
                       </p>
                       <div>
-                        {(role == "admin") &&
+                      {(role == "admin") &&
                           <div>
                             <Button
                               variant="primary"
@@ -1140,11 +1100,6 @@ export default function ProductionCenter() {
                             value={currentProdCenter.name}
                             onChange={handleEditNameChange}
                           />
-                          {prodNameError && (
-                            <div className="text-danger errormessage">
-                              {prodNameError}
-                            </div>
-                          )}
                         </div>
                         <div className="mb-3">
                           <label
@@ -1161,11 +1116,6 @@ export default function ProductionCenter() {
                             value={currentProdCenter.printer_code}
                             onChange={handleEditPrinterCodeChange}
                           />
-                          {printerCodeError && (
-                            <div className="text-danger errormessage">
-                              {printerCodeError}
-                            </div>
-                          )}
                         </div>
                       </Modal.Body>
                       <Modal.Footer className="border-0 pt-0">
@@ -1268,7 +1218,7 @@ export default function ProductionCenter() {
                             Cambios centro de producción
                           </p>
                           <p className="opacity-75">
-                            Tus cambios no tuvieron éxito
+                            Centro de producción eliminado exitosamente
                           </p>
                         </div>
                       </Modal.Body>
@@ -1363,8 +1313,8 @@ export default function ProductionCenter() {
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
-                    {/* add product */}
-                    {(selectedMenus.length == 1 && role == "admin") &&
+                      {/* add product */}
+                      {(selectedMenus.length == 1 && role == "admin")  &&
                       <div>
                         <Button
                           variant="primary text-nowrap"

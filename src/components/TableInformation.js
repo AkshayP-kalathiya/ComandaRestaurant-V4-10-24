@@ -18,7 +18,7 @@ const TableInformation = () => {
   const API = process.env.REACT_APP_IMAGE_URL;
   const [token] = useState(sessionStorage.getItem("token"));
   const [role] = useState(sessionStorage.getItem("role"));
-  const admin_id = sessionStorage.getItem("admin_id") 
+  const admin_id = sessionStorage.getItem("admin_id")
 
   const [tId, setTId] = useState(location.state?.selectedTable);
   console.log(tId);
@@ -83,7 +83,7 @@ const TableInformation = () => {
   );
 
 
-  const gettableData = async (tId) => {
+  const gettableData = async () => {
     if (tId) {
       try {
         const response = await axios.get(
@@ -125,7 +125,7 @@ const TableInformation = () => {
       estado: "Recibido"
     },
 
-    
+
   ]);
 
   const [activeTab, setActiveTab] = useState("home");
@@ -288,7 +288,7 @@ const TableInformation = () => {
     try {
       const response = await axios.post(
         `${apiUrl}/table/getStats/${tableId}?from_month=${selectedDesdeMonth}&to_month=${selectedHastaMonth}`,
-        {admin_id},
+        { admin_id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -452,7 +452,7 @@ const TableInformation = () => {
       //  // =============== Historial =============
 
       const response = await axios.post(
-        `${apiUrl}/table/getStats/${tableid}?from_month=${selectedDesdeMonthReport}&to_month=${selectedHastaMonthReport}`,{admin_id},
+        `${apiUrl}/table/getStats/${tableid}?from_month=${selectedDesdeMonthReport}&to_month=${selectedHastaMonthReport}`, { admin_id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -535,7 +535,9 @@ const TableInformation = () => {
   const [showEdittable, setShowEdittable] = useState(false);
 
   const handleCloseEdittable = () => setShowEdittable(false);
-  const handleShowEdittable = () => setShowEdittable(true);
+  const handleShowEdittable = () => {setShowEdittable(true);
+    setTableName(tableData.name || '')
+  }
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -680,7 +682,7 @@ const TableInformation = () => {
                 </div>
                 <div className="j-table-information-head-buttons">
                   <h5 className="j-table-information-1 j-table-text-23 ">
-                    Datos mesa <span>{tableData?.id}</span>
+                  Datos mesa <span>- {tableData?.name} ( {tableData?.id} )</span>
                   </h5>
 
                   <div className="j-table-information-btn-1">
@@ -717,7 +719,7 @@ const TableInformation = () => {
                       className="j-canvas-btn2 j-tbl-font-3 b_border_out"
                       style={{ borderRadius: "8px" }}
                       variant="outline-primary"
-                      onClick={() => setShowEdittable(true)}
+                      onClick={() => handleShowEdittable(true)}
                     >
                       <div className="d-flex align-items-center">
                         <svg
@@ -756,7 +758,7 @@ const TableInformation = () => {
               >
                 <Tab
                   eventKey="home"
-                 title="Información"
+                  title="Información"
                   className=" text-white m_bgblack mt-2 rounded"
                 >
                   <div className="j-table-information-body">
@@ -773,10 +775,11 @@ const TableInformation = () => {
                             type="text"
                             className="form-control j-tbl-information-input"
                             id="exampleFormControlInput1"
-                            placeholder="Damian Lopez"
+                            placeholder="-"
                             value={userData[0]?.name}
                             readOnly
                           />
+                          {console.log(userData)}
                         </div>
                         <div className="col-6 mb-3">
                           <label
@@ -789,7 +792,7 @@ const TableInformation = () => {
                             type="text"
                             className="form-control j-tbl-information-input"
                             id="exampleFormControlInput1"
-                            placeholder="20/03/2024"
+                            placeholder="-"
                             value={new Date(tableData?.created_at).toLocaleDateString('en-GB')}
                             readOnly
                           />
@@ -805,7 +808,7 @@ const TableInformation = () => {
                             type="text"
                             className="form-control j-tbl-information-input"
                             id="exampleFormControlInput1"
-                            placeholder="4"
+                            placeholder="-"
                             // value={tableData?.sector_id}
                             value={userTableData?.name}
                             readOnly
@@ -822,7 +825,7 @@ const TableInformation = () => {
                             type="text"
                             className="form-control j-tbl-information-input"
                             id="exampleFormControlInput1"
-                            placeholder="1"
+                            placeholder="-"
                             value={tableData?.id}
                             readOnly
                           />
@@ -987,7 +990,7 @@ const TableInformation = () => {
                                       style={{ fontSize: "12px" }}
                                       className="b_idbtn j-btn-primary text-nowrap j-tbl-font-3 "
                                     >
-                                        Ver detalles
+                                      Ver detalles
                                     </td>
                                   </Link>
                                 </td>
@@ -1291,7 +1294,7 @@ const TableInformation = () => {
 
                   className="form-control j-table_input"
                   id="exampleFormControlInput1"
-                  placeholder={tableData?.name}
+                  placeholder={"-"}
                   value={tableName}
                   name="name"
                   onChange={handleEditChange}

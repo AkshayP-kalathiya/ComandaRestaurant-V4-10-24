@@ -107,7 +107,10 @@ function Home_Usuarios() {
                     Hora: formattedTime, // Add time
                     Cliente: order.customer_name, // Changed to Spanish
                     Pago: "$" + order.total, // Changed to Spanish
-                    Metodo: order.payment_type, // Changed to Spanish
+                    Metodo: order.payment_type == 'cash' ? 'Caso' :
+                            order.payment_type == 'debit' ? 'Débito' :
+                            order.payment_type == 'credit' ? 'Crédito' :
+                            order.payment_type == 'transfer' ? 'Transferir' : " ",
                     Vuelto: "$" + order.total, // Changed to Spanish
                     Tipo: order.order_type.toLowerCase() === 'local' ? 'Local' :
                         order.order_type.toLowerCase().includes("with") ? 'Retiro ' :
@@ -335,285 +338,7 @@ function Home_Usuarios() {
 
 
 
-    // const [data, setData] = useState([
-    //     {
-    //         no: 1,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Uber', // Add a status property
-    //     },
-    //     {
-    //         no: 2,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Rappi', // Add a status property
-    //     },
-    //     {
-    //         no: 3,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Padidos Ya', // Add a status property
-    //     },
-    //     {
-    //         no: 4,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Padidos Ya', // Add a status property
-    //     },
-    //     {
-    //         no: 5,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Delivery', // Add a status property
-    //     },
-    //     {
-    //         no: 6,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Retirar', // Add a status property
-    //     },
-    //     {
-    //         no: 7,
-    //         id: '01234',
-    //         order: '03/28/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         method: 'Efectivo',
-    //         turned: '$3.00',
-    //         guy: 'Local', // Add a status property
-    //     },
-    //     // More orders...
-
-
-
-    // ]);
-    // const [data1, setData1] = useState([
-
-
-    //     {
-    //         no: 8,
-    //         id1: '01234',
-    //         order1: '28/03/2024',
-    //         time1: '08:56 am',
-    //         customer1: 'Damian Gonzales',
-    //         Delivery_address1: 'Avenida 123 y Avenida 789',
-    //         guy1: 'Uber', // Add a status property
-    //     },
-    //     {
-    //         no: 9,
-    //         id1: '01234',
-    //         order1: '28/03/2024',
-    //         time1: '08:56 am',
-    //         customer1: 'Damian Gonzales',
-    //         pay1: '$20.00',
-    //         Delivery_address1: 'Avenida 123 y Avenida 789',
-    //         guy1: 'Rappi', // Add a status property
-    //     },
-    //     {
-    //         no: 10,
-    //         id1: '01234',
-    //         order1: '28/03/2024',
-    //         time1: '08:56 am',
-    //         customer1: 'Damian Gonzales',
-    //         pay1: '$20.00',
-    //         Delivery_address1: 'Avenida 123 y Avenida 789',
-    //         guy1: 'Padidos Ya', // Add a status property
-    //     },
-    //     {
-    //         no: 11,
-    //         id1: '01234',
-    //         order1: '28/03/2024',
-    //         time1: '08:56 am',
-    //         customer1: 'Damian Gonzales',
-    //         pay1: '$20.00',
-    //         Delivery_address1: 'Avenida 123 y Avenida 789',
-    //         guy1: 'Padidos Ya', // Add a status property
-    //     },
-    // ])
-    // const [data2, setData2] = useState([
-    //     {
-    //         no: 12,
-    //         id: '01234',
-    //         order: '28/03/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Sucursal 1',
-    //         guy: 'Retiro', // Add a status property
-    //     },
-    //     {
-    //         no: 13,
-    //         id: '01234',
-    //         order: '28/03/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Sucursal 2',
-    //         guy: 'Retiro', // Add a status property
-    //     },
-    //     {
-    //         no: 14,
-    //         id: '01234',
-    //         order: '28/03/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Sucursal 3',
-    //         guy: 'Retiro', // Add a status property
-    //     },
-    //     {
-    //         no: 15,
-    //         id: '01234',
-    //         order: '28/03/2024 ',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Sucursal 4',
-    //         guy: 'Retiro', // Add a status property
-    //     },
-
-    // ]);
-    // const [data3, setData3] = useState([
-    //     {
-    //         no: 16,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Restaurante 1',
-    //         guy: 'Local', // Add a status property
-    //     },
-    //     {
-    //         no: 17,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Restaurante 1',
-    //         guy: 'Local', // Add a status property
-    //     },
-    //     {
-    //         no: 18,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Restaurante 1',
-    //         guy: 'Local', // Add a status property
-    //     },
-    //     {
-    //         no: 19,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         withdrawal_address: 'Restaurante 1',
-    //         guy: 'Local', // Add a status property
-    //     },
-    // ]);
-    // const [data4, setData4] = useState([
-    //     {
-    //         no: 20,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         shipping_add: 'Avenida 123 y Calle 789',
-    //         guy: 'Platform', // Add a status property
-    //     },
-    //     {
-    //         no: 21,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         shipping_add: 'Avenida 123 y Calle 789',
-    //         guy: 'Platform', // Add a status property
-    //     },
-    //     {
-    //         no: 22,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         shipping_add: 'Avenida 123 y Calle 789',
-    //         guy: 'Platform', // Add a status property
-    //     },
-    //     {
-    //         no: 23,
-    //         id: '01234',
-    //         order: '28/03/2024',
-    //         time: '08:56 am',
-    //         customer: 'Damian Gonzales',
-    //         pay: '$20.00',
-    //         shipping_add: 'Avenida 123 y Calle 789',
-    //         guy: 'Platform', // Add a status property
-    //     },
-    // ])
-
-    // const [currentPage, setCurrentPage] = useState({
-    //     filterData:1
-    // });
-    // const itemsPerPage = 20;
-
-    // const handleNextPage = (dataType) => {
-    //     setCurrentPage((prevState) => ({
-    //         ...prevState,
-    //         [dataType]: Math.min(prevState[dataType] + 1, Math.ceil(eval(dataType).length / itemsPerPage))
-    //     }));
-    // };
-
-    // const handlePrevPage = (dataType) => {
-    //     setCurrentPage((prevState) => ({
-    //         ...prevState,
-    //         [dataType]: Math.max(prevState[dataType] - 1, 1)
-    //     }));
-    // };
-
-    // const getCurrentItems = (dataType) => {
-    //     const indexOfLastItem = currentPage[dataType] * itemsPerPage;
-    //     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    //     return eval(dataType).slice(indexOfFirstItem, indexOfLastItem);
-    // };
-
+   
 
 
     return (
@@ -758,9 +483,17 @@ function Home_Usuarios() {
                                                             <td className='b_text_w'>{new Date(order?.created_at).toLocaleDateString('en-GB')}</td>
                                                             <td className='b_text_w'>{new Date(order?.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                                                             <td className='b_text_w'>{order.customer_name}</td>
-                                                            <td className='b_text_w'>${order.total}</td>
-                                                            <td className='b_text_w'>{order.payment_type}</td>
-                                                            <td className='b_text_w'>${order.total}</td>
+                                                            <td className='b_text_w'>${order.order_details.reduce((acc,v)=>acc+parseInt(v.amount)*parseInt(v.quantity),0)-parseFloat(order.discount).toFixed(2)}</td>
+                                                            {/* <td className='b_text_w'>{order.payment_type}</td> */}
+                                                            <td className='b_text_w'>
+                                                                {
+                                                                order.payment_type == 'cash' ? 'Caso' :
+                                                                order.payment_type == 'debit' ? 'Débito' :
+                                                                order.payment_type == 'credit' ? 'Crédito' :
+                                                                order.payment_type == 'transfer' ? 'Transferir' : " "
+                                                                }
+                                                            </td>
+                                                            <td className='b_text_w'>${order.order_details.reduce((acc,v)=>acc+parseInt(v.amount)*parseInt(v.quantity),0)-parseFloat(order.discount).toFixed(2)}</td>
                                                             {/* <td className='b_btn1 bj-delivery-text-2 mb-3 ms-3 d-flex align-items-center justify-content-center'>{order.order_type}</td> */}
                                                             <td className={`bj-delivery-text-2  b_btn1 mb-3 ms-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
                                                             ${order.order_type.toLowerCase() === 'local' ? 'b_indigo' : order.order_type.toLowerCase() === 'order now' ? 'b_ora ' : order.order_type.toLowerCase() === 'delivery' ? 'b_blue' : order.order_type.toLowerCase() === 'uber' ? 'b_ora text-danger' : order.order_type.toLowerCase().includes("with") ? 'b_purple' : 'b_ora text-danger'}`}>

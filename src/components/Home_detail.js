@@ -137,8 +137,8 @@ function Home_detail() {
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = (id, status) => {
-        if (status == 'received' || status == 'delivered' || status == 'finalized' || status == "cancelled") {
-            alert(`Tu pedido ha sido ${status == 'received' ? "Recibido" : status == 'delivered' ? "Entregado" : status == 'finalized' ? "Finalizado" : status == 'cancelled' ? "Cancelado" : ''}.`)
+        if (status == 'delivered' || status == 'finalized' || status == "cancelled") {
+            alert(`Tu pedido ha sido ${status == 'delivered' ? "Entregado" : status == 'finalized' ? "Finalizado" : status == 'cancelled' ? "Cancelado" : ''}.`)
         } else {
             setOrderId(id)
             setShow(true);
@@ -323,7 +323,7 @@ function Home_detail() {
             console.log("Navigating to credit creation page");
             navigate(`/home/client/crear/${id}`, { replace: true, state: { user } });
         } else {
-            alert(`Tu pedido ha sido ${status == 'cancelled' ? "Cancelado" : status == 'prepared' ? "Preparado" : status == 'withdraw' ? "Retirar" : status == 'delivered' ? "Entregado" : ''}.`)
+            alert(`Tu pedido ha sido ${status == 'cancelled' ? "Cancelado" : status == 'prepared' ? "Preparado" : status == 'withdraw' ? "Retirar" : status ==  'received' ? 'Recibido' : ''}.`)
         }
     };
 
@@ -516,6 +516,7 @@ function Home_detail() {
             console.log(response);
             if (!(response.success == "false")) {
                 setDeleteProductId(null);
+                setIsProcessing(false);
                 setShowDeleteConfirmation(false);
                 handleShowEditFamfinal();
             }
@@ -577,7 +578,9 @@ function Home_detail() {
                                             orderAlldata.map((order) => (
                                                 <tr key={order.id} className='b_row'>
 
-                                                    <td onClick={() => handleCredit(order.id, order.status)}><div className='b_idbtn bj-delivery-text-2' style={{ borderRadius: "10px" }}>{order.id}</div></td>
+                                                    {/* <td onClick={() => handleCredit(order.id, order.status)}><div className='b_idbtn bj-delivery-text-2' style={{ borderRadius: "10px" }}>{order.id}</div></td> */}
+                                                    <td><Link to={`/home_Pedidos/paymet/${order.id}`}><div className='b_idbtn bj-delivery-text-2' style={{ borderRadius: "10px" }}>{order.id}</div></Link></td>
+                                                    
 
                                                     <td >
                                                         <div style={{ borderRadius: "10px" }} className={`b_idbtn bj-delivery-text-2 b_idbtn_s m-0 ${order.status.toLowerCase() === 'received' ? 'b_indigo' : order.status.toLowerCase() === 'prepared' ? 'b_ora ' : order.status.toLowerCase() === 'delivered' ? 'b_blue' : order.status.toLowerCase() === 'finalized' ? 'b_green' : order.status.toLowerCase() === 'withdraw' ? 'b_indigo' : order.status.toLowerCase() === 'local' ? 'b_purple' : 'text-danger'}`}>
@@ -585,7 +588,7 @@ function Home_detail() {
 
                                                     <td>
                                                         {credits && credits?.some(v => v.order_id === order.id) ? (
-                                                            <div className='b_text_w bj-delivery-text-2 b_idbtn b_idbtn_c m-0' style={{ borderRadius: "10px", width: "145px" }}>  crédito generado   </div>
+                                                            <div className='b_text_w bj-delivery-text-2 b_idbtn b_idbtn_c m-0' style={{ borderRadius: "10px", width: "145px", background:"#2f5dadbd"}}>  crédito generado   </div>
                                                         ) : (
                                                             <div
                                                                 onClick={() => handleCredit(order.id, order.status)}
@@ -598,7 +601,11 @@ function Home_detail() {
 
 
 
-                                                    <td ><div className='b_text_w bj-delivery-text-2 b_idbtn b_idbtn_a  ' style={{ borderRadius: "10px" }} onClick={() => handleShow(order.id, order.status)} >Anular venta</div></td>
+                                                    <td >
+                                                    {order.status.toLowerCase() != 'cancelled' ? 
+                                                        <div className='b_text_w bj-delivery-text-2 b_idbtn b_idbtn_a  ' style={{ borderRadius: "10px" }} onClick={() => handleShow(order.id, order.status)} >Anular venta</div>
+                                                        : " "}
+                                                    </td>
                                                     <td>
                                                         <button className='b_edit sj-button-xise' style={{ backgroundColor: "#0694A2" }} onClick={() => handleRecipe(order)}>
                                                             <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -630,11 +637,11 @@ function Home_detail() {
                                         <div className=' b_search text-white a_input_size'>
                                             <label htmlFor="inputPassword2" className="">Nombre</label>
                                             <input type="text" className="form-control bg-gray border-0 bj-slimilar-class-why mt-2" id="inputPassword2" placeholder="4" style={{ backgroundColor: '#374151', borderRadius: "10px" }}
-                                                value={(user?.firstname ? user?.firstname : user?.business_name) + " " + (user?.lastname)} />
+                                                value={(user?.firstname ? user?.firstname : user?.business_name) + " " + (user?.lastname)}  disabled/>
                                         </div>
                                         <div className=' b_search text-white a_input_size'>
                                             <label htmlFor="inputPassword2" className="">DNI</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 bj-slimilar-class-why " id="inputPassword2" placeholder="0123456789" style={{ backgroundColor: '#374151', borderRadius: "10px" }} />
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 bj-slimilar-class-why " id="inputPassword2" placeholder="-" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={"-"} disabled/>
                                         </div>
 
                                     </div>
@@ -644,12 +651,11 @@ function Home_detail() {
                                 <div className='d-flex gap-5 mx-4 b_inputt mb-5 '>
                                     <div className=' b_search text-white a_input_size' >
                                         <label htmlFor="inputPassword2" className="">Correo</label>
-
-                                        <input type="text" className="form-control bg-gray border-0 bj-slimilar-class-why mt-2" id="inputPassword2" placeholder="-" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={user?.email} />
+                                        <input type="text" className="form-control bg-gray border-0 bj-slimilar-class-why mt-2" id="inputPassword2" placeholder="-" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={user?.email} disabled/>
                                     </div>
                                     <div className=' b_search text-white a_input_size'>
                                         <label htmlFor="inputPassword2" className=" ">Pedidos</label>
-                                        <input type="text" className="form-control bg-gray border-0 bj-slimilar-class-why mt-2" id="inputPassword2" placeholder="4" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={orderAlldata.length} />
+                                        <input type="text" className="form-control bg-gray border-0 bj-slimilar-class-why mt-2" id="inputPassword2" placeholder="-" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={orderAlldata.length} disabled/>
                                     </div>
                                 </div>
                             </div>
@@ -704,7 +710,7 @@ function Home_detail() {
                                     <tbody className='text-white b_btnn '>
                                         {credits.length > 0 ?
                                             credits?.map((order) => (
-                                                console.log(order),
+                                                // console.log(order),
 
                                                 <tr key={order.id} className='b_row'>
                                                     <td ><div className='b_idbtn bj-delivery-text-2' style={{ borderRadius: "10px" }}>{order.order_id}</div></td>
@@ -717,7 +723,7 @@ function Home_detail() {
                                                     </td>
 
                                                     <td>
-                                                        <div className='b_text_w bj-delivery-text-2 b_idbtn b_idbtn_a  ' style={{ borderRadius: "10px" }} onClick={() => deleteProductModal(order.id)}> Anular credito</div>
+                                                        {order.status == 'pending' ? <div className='b_text_w bj-delivery-text-2 b_idbtn b_idbtn_a  ' style={{ borderRadius: "10px" }} onClick={() => deleteProductModal(order.id)}> Anular credito</div> : " " }    
                                                     </td>
                                                     <td onClick={() => handleCreditRecipe(order)}>
                                                         <button className='b_edit sj-button-xise' style={{ backgroundColor: "#0694A2" }}>
