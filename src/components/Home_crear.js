@@ -780,7 +780,11 @@ export default function Home_crear({ item }) {
                                                                                 <div className="col-sm-3 a_text_price">
                                                                                     <button className="b_count11 btn btn-secondary" onClick={() => decrement(item.id, item.item_id, item.quantity)}>-</button>
                                                                                     <span className="pe-3 ms-2">{counts[item.id]}</span>
-                                                                                    <button className="b_count btn btn-secondary" onClick={() => increment(item.id, item.item_id, item.quantity)}>+</button>
+                                                                                    <button 
+                                                                                    className="b_count btn btn-secondary" 
+                                                                                    onClick={() => increment(item.id, item.item_id, item.quantity)}
+                                                                                    disabled={!originalCounts || originalCounts[item.id] === undefined || originalCounts[item.id] === item.quantity}
+                                                                                        >+</button>
                                                                                 </div>
                                                                                 <div className="col-sm-2 a_text_price">
                                                                                     <div className="pe-5 fw-bold">${item.amount}</div>
