@@ -1,10 +1,11 @@
 import React from "react";
 
 const OrderRecipt = ({ paymentData, orderData }) => {
+
   console.log(paymentData);
   console.log(orderData);
 
-  const role = sessionStorage.getItem("role");
+  const role = localStorage.getItem("role");
 
   const currentDate = new Date();
   const currentHour = currentDate.getHours();
@@ -37,8 +38,8 @@ const OrderRecipt = ({ paymentData, orderData }) => {
       type: "REIMPRESION"
     },
     cashier: role,
-    date: formattedDate,
-    time: formattedTime,
+    date: new Date(orderData.created_at).toLocaleDateString('en-GB'),
+    time: new Date(orderData.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) ,
     customer: {
       name: paymentData.firstname,
       email: paymentData.email,

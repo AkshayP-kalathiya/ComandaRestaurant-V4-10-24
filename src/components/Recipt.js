@@ -1,7 +1,7 @@
 import React from "react";
 
 const Recipt = ({ payment, item, discount, paymentAmt, paymentType }) => {
-  const role = sessionStorage.getItem("role");
+  const role = localStorage.getItem("role");
   const currentDate = new Date();
   const currentHour = currentDate.getHours();
   const currentMinute = currentDate.getMinutes();
@@ -93,6 +93,16 @@ if(paymentType){
   .map(payment => paymentTypes[payment.trim()])
   .filter(Boolean) : [];
 }
+
+const roleTranslations = {
+  admin: "Administrador",
+  cashier: "Cajero",
+  manager: "Gerente",
+  // Add other roles as needed
+};
+
+receiptData.cashier = roleTranslations[role] || role; // Translate role to Spanish or keep original if not found
+
   return (
     <div id="receipt-content">
       <div className="j-counter-recipt">

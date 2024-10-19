@@ -10,11 +10,11 @@ import axios from "axios";
 
 const Counter_finalP = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
-  const [token] = useState(sessionStorage.getItem("token"));
-  const [role] = useState(sessionStorage.getItem("role"));
+  const [token] = useState(localStorage.getItem("token"));
+  const [role] = useState(localStorage.getItem("role"));
   const API = process.env.REACT_APP_IMAGE_URL;
-  const userId = sessionStorage.getItem("userId");
-  const admin_id = sessionStorage.getItem("admin_id");
+  const userId = localStorage.getItem("userId");
+  const admin_id = localStorage.getItem("admin_id");
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState(
     JSON.parse(localStorage.getItem("cartItems")) || []
@@ -167,7 +167,17 @@ const Counter_finalP = () => {
   const [customerData, setCustomerData] = useState(initialCustomerData);
 
   const handleCheckboxChange = (value) => {
+    // console.log(value);
+
     if (selectedCheckboxes.includes(value)) {
+
+      if (customerData?.[value + "Amount"] ) {
+        setCustomerData((prevData) => ({
+          ...prevData,
+          turn: customerData?.[value + "Amount"] ? parseFloat(customerData?.turn || 0) + parseFloat(-customerData?.[value + "Amount"]) : ""
+        }));
+      }
+
       setSelectedCheckboxes((prev) => prev.filter((item) => item !== value));
       // setCustomerData(initialCustomerData);
       setCustomerData((prevData) => ({
@@ -176,6 +186,7 @@ const Counter_finalP = () => {
       }));
     } else {
       setSelectedCheckboxes((prev) => [...prev, value]);
+      setCustomerData({ ...customerData, [value + "Amount"]: customerData?.turn ? (Math.abs(customerData?.turn.toFixed(2))).toString() : '', turn: '' });
     }
     // Clear the payment type error when a type is selected
     setFormErrors((prevErrors) => ({
@@ -397,7 +408,7 @@ const Counter_finalP = () => {
     }));
 
     const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
-
+console.log("payment",payment);
     const orderData = {
       order_details: orderDetails,
       admin_id: admin_id,
@@ -411,7 +422,7 @@ const Counter_finalP = () => {
         customer_name:
           payment.firstname && payment.firstname.trim() !== ""
             ? payment.firstname
-            : payment.businessname,
+            : payment.business_name,
         reason: "",
         person: "",
         tip: tipAmount,
@@ -927,6 +938,7 @@ const Counter_finalP = () => {
                       type="text"
                       placeholder={lastOrder ? lastOrder : "01234"}          //change
                       value={lastOrder ? lastOrder : orderType.orderId}
+                      disabled
                     />
                   </div>
                   <div className="j-orders-type me-2">

@@ -7495,7 +7495,8 @@ select:focus-visible {
   }
 
   .j-input-name-23 {
-    width: 247px;
+    /* width: 247px; */
+    width: 90% !important;
   }
 
   .j_counter_order_final {

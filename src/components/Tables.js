@@ -24,10 +24,10 @@ import useAudioManager from "./audioManager";
 const Tables = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
   const API = process.env.REACT_APP_IMAGE_URL;
-  const [token] = useState(sessionStorage.getItem("token"));
-  const [role] = useState(sessionStorage.getItem("role"));
+  const [token] = useState(localStorage.getItem("token"));
+  const [role] = useState(localStorage.getItem("role"));
   const [isProcessing, setIsProcessing] = useState(false);
-  const admin_id = sessionStorage.getItem("admin_id");
+  const admin_id = localStorage.getItem("admin_id");
   const [secTab, setSecTab] = useState([]);
   const [checkboxes, setCheckboxes] = useState([]);
   const [selectedFamily, setSelectedFamily] = useState({});
@@ -1005,7 +1005,7 @@ const Tables = () => {
   // redirect to new page
   const handleLinkClick = (e) => {
     e.preventDefault(); // Prevent default link behavior
-    localStorage.clear(); // Clear local storage
+    localStorage.removeItem("cartItems"); // Clear only cart items from local storage
 
     navigate(`/table1?id=${selectedTable}&status=${tableStatus}`); // Navigate to the new page
   };
@@ -1113,7 +1113,7 @@ const Tables = () => {
     //   }
     // });
     echo.channel('box-channel').listen('.CardClick', (event) => {
-      console.log(event);
+      // console.log(event);
       if (event.selected) {
         setSelectedCards(prev => [...prev ? prev : [], event.card_id]);
 
@@ -1584,6 +1584,7 @@ const Tables = () => {
                 name="noOfTables"
                 value={selectedFamily.noOfTables}
                 onChange={handleEditChange}
+                disabled
               />
               {editErrors.noOfTables && (
                 <div className="text-danger errormessage">
@@ -1923,7 +1924,7 @@ const Tables = () => {
                     <div className={"j-counter-order-data"}>
                       {tableData.map((tableItem) =>
                         tableItem.items
-                          .slice(0, showAll ? tableItem.items.length : 2)
+                          .slice(0, showAll ? tableItem.items.length : 3)
                           .map((item, index) => {
                             const itemInfo = getItemInfo(item.item_id);
                             return (
@@ -2038,6 +2039,7 @@ const Tables = () => {
                             );
                           })
                       )}
+                     
                       {tableData[0]?.items.length >= 4 &&
                         <a
                           href="#"

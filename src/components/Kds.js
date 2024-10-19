@@ -11,9 +11,9 @@ import { Modal, Spinner } from 'react-bootstrap';
 
 const Kds = () => {
     const apiUrl = process.env.REACT_APP_API_URL;
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
     const [allOrder, setAllOrder] = useState([]);
-    const admin_id = sessionStorage.getItem('admin_id');
+    const admin_id = localStorage.getItem('admin_id');
     const [user, setUser] = useState([]);
     const [centerProduction, setCenterProduction] = useState([]);
     const [allItems, setAllItems] = useState([]);
@@ -38,6 +38,7 @@ const Kds = () => {
             const ordersArray = Object.values(ordersObject); // Convert object to array
 
             setAllOrder(ordersArray); // Set the state with the array of orders
+            console.log(response)
             console.log("Fetched orders as array:", ordersArray); // Log the array
         } catch (error) {
             console.error("Error fetching orders:", error);
@@ -176,6 +177,7 @@ const Kds = () => {
 
                                     {filterOrdersByCategory(allOrder, selectedCategory)
                                         .filter(section => section.status === orderTypeMapping[orderType])
+                                        .reverse() // Reversing the filtered array
                                         .map((section, sectionIndex) => (
                                             <>
                                             <KdsCard
@@ -213,7 +215,11 @@ const Kds = () => {
                                                     : [selectedCategory]
                                                 }
                                                 />
-                                            {console.log(section)}
+                                             {section.order_id==132 && (
+                                             <>
+                                             {console.log("aa",section)}
+                                             </>
+                                             )}
 
                                                 </>
                                         ))}

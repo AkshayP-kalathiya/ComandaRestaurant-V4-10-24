@@ -13,8 +13,8 @@ import { MdRoomService } from "react-icons/md";
 const Mostrador = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
   const API = process.env.REACT_APP_IMAGE_URL;
-  const [token ]=useState( sessionStorage.getItem("token"));
-  const [role] = useState( sessionStorage.getItem("role"));
+  const [token ]=useState( localStorage.getItem("token"));
+  const [role] = useState( localStorage.getItem("role"));
   const [isProcessing, setIsProcessing] = useState(false);
   const [errors, setErrors] = useState({});
   const [cartItems, setCartItems] = useState(
@@ -848,6 +848,7 @@ const Mostrador = () => {
                       type="text"
                       placeholder={lastOrder ? lastOrder : "01234"}   //change
                       value={lastOrder ? lastOrder : orderType.orderId}
+                      disabled
                     />
                   </div>
                   <div className="j-orders-type me-2">

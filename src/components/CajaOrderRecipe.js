@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 
 const CajaOrderRecipe = ({ data }) => {
     const apiUrl = process.env.REACT_APP_API_URL;
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
     const [user,setUser] = useState([]);
     useEffect(() => {
         const fetchData = async () => {
@@ -23,7 +23,7 @@ const CajaOrderRecipe = ({ data }) => {
     }, [data]);
     console.log("user",user)
 
-  const role = sessionStorage.getItem("role");
+  const role = localStorage.getItem("role");
 
   const currentDate = new Date();
   const currentHour = currentDate.getHours();
@@ -56,8 +56,8 @@ const CajaOrderRecipe = ({ data }) => {
       type: "REIMPRESION"
     },
     cashier: role,
-    date: formattedDate,
-    time: formattedTime,
+    date: new Date(data.created_at).toLocaleDateString('en-GB'),
+    time: new Date(data.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     customer: {
       name: user.firstname ,
       email:user.email ,

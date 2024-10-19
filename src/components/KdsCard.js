@@ -6,8 +6,8 @@ import useAudioManager from './audioManager';
 
 const KdsCard = ({ table, time, orderId, startTime, waiter, center, items, notes, finishedAt, hrtimestart, user, centerProduction, fetchOrder, status, productionCenter }) => {
     const apiUrl = process.env.REACT_APP_API_URL;
-    const token = sessionStorage.getItem('token');
-    const admin_id = sessionStorage.getItem('admin_id');
+    const token = localStorage.getItem('token');
+    const admin_id = localStorage.getItem('admin_id');
   const { playNotificationSound } = useAudioManager();
 
     const handleNextStatus = async () => {
@@ -41,7 +41,7 @@ const KdsCard = ({ table, time, orderId, startTime, waiter, center, items, notes
         }
     };
 
-
+console.log("ss",orderId==15)
 
     const waiterName = user.find(u => u.id === waiter)?.name || 'Unknown'; // Get the waiter's name
     const centerName = centerProduction.find(c => c.id === center)?.name || 'Unknown'; // Get the center's name
