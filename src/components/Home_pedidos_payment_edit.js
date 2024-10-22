@@ -645,7 +645,33 @@ const Home_pedidos_payment_edit = ({ item }) => {
     }
 
 
+    useEffect(() => {
+        if(id)
+        fetchCredit();
+    }, [id]);
 
+    const [creditNote, setCreditNote] = useState(false);
+
+  const fetchCredit = async () => {
+    setIsProcessing(true);
+    try {
+        const response = await axios.post(`${apiUrl}/order/getCredit`, { admin_id: admin_id }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        console.log(response.data.data);
+        const credit = response.data.data?.some((v) => v.order_id == id);
+        setCreditNote(credit);
+        // console.log(credit);
+    } catch (error) {
+        console.error(
+            "Error fetching allOrder:",
+            error.response ? error.response.data : error.message
+        );
+    }
+    setIsProcessing(false);
+}
 
     return (
         <div>
@@ -666,7 +692,8 @@ const Home_pedidos_payment_edit = ({ item }) => {
 
                                 <div className='d-flex flex-wrap me-4'>
                                     {showCancelOrderButton ? (
-                                        <div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>
+                                        creditNote &&
+                                       ( <div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>)
                                     ) : (
                                         <div onClick={handleShow1Prod} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <FaPlus className='me-2' />Agregar artículo</div>
                                     )}

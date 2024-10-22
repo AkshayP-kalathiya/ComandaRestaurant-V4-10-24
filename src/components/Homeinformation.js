@@ -650,7 +650,7 @@ export default function Homeinformation() {
         count: v.quantity,
         note: v.notes ? v.notes : "",
         isEditing: false,
-        OdId:v.id
+        OdId: v.id
       }
       cartItems.push(obj)
     })
@@ -659,7 +659,38 @@ export default function Homeinformation() {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
 
     navigate("/home/usa/bhomedelivery/datos");
+
   }
+
+  useEffect(() => {
+    if (id)
+      fetchCredit();
+  }, [id]);
+
+  const [creditNote, setCreditNote] = useState(false);
+
+  const fetchCredit = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.post(`${API_URL}/order/getCredit`, { admin_id: admin_id }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data.data);
+      const credit = response.data.data?.some((v) => v.order_id == id);
+      setCreditNote(credit);
+      // console.log(credit);
+
+    } catch (error) {
+      console.error(
+        "Error fetching allOrder:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    setIsProcessing(false);
+  }
+
 
   return (
     <div>
@@ -691,7 +722,8 @@ export default function Homeinformation() {
                   )}
                   {/* <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div> */}
                   {showCancelOrderButton &&
-                    <div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>
+                    creditNote &&
+                    (<div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>)
                   }
                 </div>
 
@@ -981,7 +1013,7 @@ export default function Homeinformation() {
                   <div className='text-white ms-4 pt-4' >
                     <h5 >Información del pedido</h5>
                   </div>
-                {orderData?.[0]?.reason &&
+                  {orderData?.[0]?.reason &&
                     <div className='text-white ms-4 pt-4' >
                       <h5 className='bj-delivery-text-15'>Nota anulación</h5>
                       <textarea type="text" className="form-control bg-gray border-0 mt-4 py-2" id="inputPassword2" placeholder={orderData?.[0]?.reason != null ? orderData?.[0]?.reason : "Estaba sin sal"} style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled></textarea>

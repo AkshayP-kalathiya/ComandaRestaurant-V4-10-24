@@ -641,7 +641,7 @@ function Home_detail() {
                                         </div>
                                         <div className=' b_search text-white a_input_size'>
                                             <label htmlFor="inputPassword2" className="">DNI</label>
-                                            <input type="text" className="form-control bg-gray border-0 mt-2 bj-slimilar-class-why " id="inputPassword2" placeholder="-" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={"-"} disabled/>
+                                            <input type="text" className="form-control bg-gray border-0 mt-2 bj-slimilar-class-why " id="inputPassword2" placeholder="-" style={{ backgroundColor: '#374151', borderRadius: "10px" }} value={user?.rut} disabled/>
                                         </div>
 
                                     </div>

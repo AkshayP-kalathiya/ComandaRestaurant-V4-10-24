@@ -712,13 +712,13 @@ export default function Home_crear({ item }) {
                             {showCancelOrderButton ? (
                                 <div className="d-flex justify-content-between align-items-center flex-wrap ms-3">
                                     <div className="text-white  my-2">
-                                        DNI :- {order2}
+                                        DNI :- {userPayment?.rut}
                                     </div>
                                 </div>
                             ) : (
                                 <div className="d-flex justify-content-between align-items-center flex-wrap ms-3">
                                     <div className="text-white  my-2">
-                                        DNI :- {order1}
+                                        DNI :- {userPayment?.rut}
                                     </div>
                                 </div>
                             )}
@@ -966,7 +966,7 @@ export default function Home_crear({ item }) {
                                                                 <div className="d-flex justify-content-end align-items-center mt-4">
                                                                     <div className="w-50">
                                                                         <div>DNI</div>
-                                                                        <div className="w-75 a_bg_order border-0 mt-2" style={{ borderRadius: "10px" }}><span className="">{order1}</span></div>
+                                                                        <div className="w-75 a_bg_order border-0 mt-2" style={{ borderRadius: "10px" }}><span className="">{userPayment?.rut}</span></div>
                                                                     </div>
                                                                     <div className="w-50">
                                                                         <div>Correo electrónico</div>
@@ -1041,7 +1041,7 @@ export default function Home_crear({ item }) {
                                                                 <div className="d-flex justify-content-end align-items-center mt-4">
                                                                     <div className="w-50">
                                                                         <div className='mb-2'>DNI</div>
-                                                                        <div className="w-75 a_bg_order  border-0 " style={{ borderRadius: "10px" }}><span className="">{order2}</span></div>
+                                                                        <div className="w-75 a_bg_order  border-0 " style={{ borderRadius: "10px" }}><span className="">{userPayment?.rut}</span></div>
                                                                     </div>
                                                                     <div className="w-50">
                                                                         <div className='mb-2'>Correo electrónico</div>

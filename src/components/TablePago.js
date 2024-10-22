@@ -268,7 +268,12 @@ const TablePago = () => {
       }));
     } else {
       setSelectedCheckboxes((prev) => [...prev, value]);
-      setCustomerData({ ...customerData, [value + "Amount"]: customerData?.turn ? (Math.abs(customerData?.turn.toFixed(2))).toString() : '', turn: '' });
+      setCustomerData({
+        ...customerData,
+        [value + "Amount"]: customerData?.turn && customerData.turn < 0 ?
+          (Math.abs(customerData.turn.toFixed(2))).toString() : '',
+        turn: customerData?.turn && customerData.turn > 0 ? customerData.turn : 0
+      });
     }
     // Clear the payment type error when a type is selected
     setFormErrors((prevErrors) => ({
@@ -279,16 +284,34 @@ const TablePago = () => {
   const handleChange = (event) => {
     let { name, value } = event.target;
     value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
+
+    console.log(name);
+    const otherbox = selectedCheckboxes.filter(item => !name.includes(item))
+
     setCustomerData((prevState) => {
       const updatedState = {
         ...prevState,
         [name]: value, // Update the specific payment type amount
       };
+
+      const taxAmount = parseFloat(((tableData[0].order_total - parseFloat(tableData[0].discount)) * 0.19).toFixed(2))
+      const currentValue = parseFloat(value) || 0;
+      const finalTotal = tableData[0].order_total
+      const totalDue = finalTotal + taxAmount + tipAmount;
+      const otherAmount = Math.max(totalDue - currentValue, 0);
+
+
+      if (otherbox.length > 0) {
+        const otherPaymentType = otherbox[0] + 'Amount';
+        updatedState[otherPaymentType] = otherAmount.toFixed(2);
+      }
+      console.log(updatedState);
+
       // New calculation for turn
       console.log(tableData);
-      const taxAmount = parseFloat(((tableData[0].order_total - parseFloat(tableData[0].discount)) * 0.19).toFixed(2))
+      
       const totalAmount = parseFloat(updatedState.cashAmount || 0) + parseFloat(updatedState.debitAmount || 0) + parseFloat(updatedState.creditAmount || 0) + parseFloat(updatedState.transferAmount || 0);
-      console.log(totalAmount, finalTotal, tipAmount, taxAmount);
+
       updatedState.turn = totalAmount - (tableData[0].order_total + taxAmount + tipAmount); // Update turn based on total amounts
       return updatedState;
     });

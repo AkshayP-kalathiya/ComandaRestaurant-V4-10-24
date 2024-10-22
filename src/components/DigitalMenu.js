@@ -1172,7 +1172,6 @@ export default function Articles() {
                   <div className="mb-3">
                     <h6 className="mb-0 ">Entradas</h6>
                   </div>
-
                   <div>
                     <div className="d-flex justify-content-between m_property">
                       <div>
@@ -1205,7 +1204,7 @@ export default function Articles() {
                           className="btn j-btn-primary j_editor_menu text-white text-nowrap m12 me-2"
                           onClick={handlesaveEdit}
                         >
-                          {showRetirar ? "Ahorrar" : "+ Editar"}
+                          {showRetirar ? "Guardar" : "+ Editar"}
                         </button>
                         {(selectedMenus.length == 1 && !showRetirar)  && 
                             <button

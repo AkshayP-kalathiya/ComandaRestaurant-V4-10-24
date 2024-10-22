@@ -65,12 +65,14 @@ function Home_client() {
       const fullName = `${displayName} ${user?.lastname || ''}`.toLowerCase();
       const searchLower = searchTerm?.toLowerCase();
 
+      
       return (
         fullName.includes(searchLower) ||
         displayName?.toLowerCase().includes(searchLower) ||
         (user?.lastname?.toLowerCase().includes(searchLower) || '') ||
         user?.email?.toLowerCase().includes(searchLower) &&
-        user.email !== "superadmin@gmail.com"
+        user.email !== "superadmin@gmail.com" ||
+        user.rut?.toLowerCase().includes(searchLower)
       );
     });
   const indexOfLastFilteredItem = currentPage * itemsPerPage;
@@ -405,7 +407,7 @@ function Home_client() {
                       // console.log(user),  
 
                       <tr key={user.id} className="b_row">
-                        <td className="bj-table-client-text">{user.id}</td>
+                        <td className="bj-table-client-text">{user.rut}</td>
                         <td className="bj-table-client-text">{user.firstname ? user.firstname : user.business_name} {user.lastname}</td>
                         <td className="b_text_w bj-table-client-text">
                           {user.email}

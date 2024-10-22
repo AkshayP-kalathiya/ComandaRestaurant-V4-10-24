@@ -40,7 +40,6 @@ export default function Home_Pedidos_paymet() {
   const [errorReason, setReasonError] = useState(null);
 
   const handleShow12 = async () => {
-
     // ----resons----
     // ===change====
     // console.log(reason);
@@ -182,6 +181,7 @@ export default function Home_Pedidos_paymet() {
 
   useEffect(() => {
     getPaymentsData();
+    fetchCredit()
   }, [admin_id, id]);
 
   const [pamentDone, setPaymentDone] = useState(false)
@@ -642,7 +642,39 @@ console.log(orderData)
     navigate("/home/usa/bhomedelivery/datos");
 
   }
+
+
+  const [creditNote, setCreditNote] = useState(false);
+
+  const fetchCredit = async () => {
+    setIsProcessing(true);
+    try {
+        const response = await axios.post(`${apiUrl}/order/getCredit`, { admin_id: admin_id }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        console.log(response.data.data);
+
+
+        const credit = response.data.data?.some((v) => v.order_id == id);
+
+        setCreditNote(credit);
+        // console.log(credit);
+
+    } catch (error) {
+        console.error(
+            "Error fetching allOrder:",
+            error.response ? error.response.data : error.message
+        );
+    }
+    setIsProcessing(false);
+}
+
   // =============== End ============
+
+
   return (
     <div>
       <div className="m_bg_black">
@@ -676,7 +708,8 @@ console.log(orderData)
                     </>
                   )}
                   {showCancelOrderButton &&
-                    <div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>
+                    !creditNote && 
+                    (<div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>)
                   }
                 </div>
 

@@ -594,29 +594,29 @@ console.log("object");
           className="j-counter-price position-sticky"
           style={{ top: "77px" }}
         >
-          <div className="j_position_fixed j_b_hd_width">
+          <div className="j_position_fixed j_b_hd_width ak-position">
             <h2 className="text-white j-kds-body-text-1000">Resumen</h2>
             <div className="j-counter-price-data">
               <h3 className="text-white j-kds-body-text-1000">Datos</h3>
-              <div className="j-orders-inputs j_inputs_block">
-                <div className="j-orders-code">
+              <div className="j-orders-inputs j_inputs_block ak-w-100">
+                <div className="j-orders-code ak-w-50">
                   <label className="j-label-name text-white mb-2 j-tbl-font-6 ">
                     Código pedido
                   </label>
                   <input
-                    className="j-input-name j_input_name2"
+                    className="j-input-name j_input_name2 ak-input"
                     type="text"
                     placeholder="-"
                     value={lastOrder}
                     disabled
                   />
                 </div>
-                <div className="j-orders-type">
+                <div className="j-orders-type ak-w-50">
                   <label className="j-label-name  text-white mb-2 j-tbl-font-6 ">
                     Tipo pedido
                   </label>
                   <select
-                    className="form-select j-input-name-2 j-input-name-23"
+                    className="form-select j-input-name-2 j-input-name-23 ak-input"
                     onChange={(e) => { setOrderType(e.target.value); setOrderTypeError('') }}
                   // value={orType.orderType}
                   >
@@ -727,7 +727,7 @@ console.log("object");
                       </Link>
                     )}
                   </div>
-                  <div className="j-counter-total">
+                  <div className="j-counter-total ak-counter-total">
                     <h5 className="text-white j-tbl-text-15">Costo total</h5>
                     <div className="j-total-discount d-flex justify-content-between">
                       <p className="j-counter-text-2">Artículos</p>

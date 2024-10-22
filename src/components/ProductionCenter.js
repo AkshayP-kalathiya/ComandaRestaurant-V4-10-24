@@ -1695,7 +1695,7 @@ const role = localStorage.getItem("role");
                             </div>
                           ) : (
                             <div className="col-12 text-center text-white mt-3">
-                              <p className="opacity-75">No hay productos disponibles en este menú</p>
+                              <p className="opacity-75">No hay artículo asignado a este centro de producción</p>
                             </div>
                           )}
                         </div>

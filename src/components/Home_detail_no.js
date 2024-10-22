@@ -24,7 +24,6 @@ function Home_detail_no() {
     const navigate = useNavigate()
     const { state } = useLocation();
     console.log(state);
-
     console.log(id);
 
 
@@ -108,7 +107,7 @@ function Home_detail_no() {
     const getItems = async () => {
         setIsProcessing(true);
         try {
-            const response = await axios.get(`${apiUrl}/item/getAll`, {
+            const response = await axios.get(`${apiUrl}/item/getAllDeletedAt`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -205,49 +204,53 @@ function Home_detail_no() {
     //         setError(null)
     // }
     const handleReturn = () => {
-        if (!destination) {
-            setError('Ingrese la dirección de retorno');
-            return;
-        }
 
-        if (!(orderAlldata.some((v) => v.id == destination))) {
-            setError('No se encontró la orden de compra');
-            return;
-        }
+        localStorage.setItem('credit',JSON.stringify(creditNote.id))
+        navigate("/counter");
+        
+        // if (!destination) {
+        //     setError('Ingrese la dirección de retorno');
+        //     return;
+        // }
 
-        setIsProcessing(true);
-        axios
-            .post(
-                `${apiUrl}/order/getCreditUpdate/${creditNote.id}`,
-                {
-                    status: "Completed",
-                    destination: destination
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            )
-            .then((response) => {
-                console.log(response.data);
-                setIsProcessing(false);
+        // if (!(orderAlldata.some((v) => v.id == destination))) {
+        //     setError('No se encontró la orden de compra');
+        //     return;
+        // }
 
-                setShowcreditfinal(true);
-                setTimeout(() => {
-                    setShowcreditfinal(false);
-                    navigate('/home/client/detail', {
-                        replace: true,
-                        state,
-                    });
-                }, 2000);
+        // setIsProcessing(true);
+        // axios
+        //     .post(
+        //         `${apiUrl}/order/getCreditUpdate/${creditNote.id}`,
+        //         {
+        //             status: "Completed",
+        //             destination: destination
+        //         },
+        //         {
+        //             headers: {
+        //                 Authorization: `Bearer ${token}`,
+        //             },
+        //         }
+        //     )
+        //     .then((response) => {
+        //         console.log(response.data);
+        //         setIsProcessing(false);
 
-            })
-            .catch((error) => {
-                console.error(error);
-                setIsProcessing(false);
-                setError('Hubo un error al intentar realizar el retorno');
-            });
+        //         setShowcreditfinal(true);
+        //         setTimeout(() => {
+        //             setShowcreditfinal(false);
+        //             navigate('/home/client/detail', {
+        //                 replace: true,
+        //                 state,
+        //             });
+        //         }, 2000);
+
+        //     })
+        //     .catch((error) => {
+        //         console.error(error);
+        //         setIsProcessing(false);
+        //         setError('Hubo un error al intentar realizar el retorno');
+        //     });
         setError(null)
     }
 
@@ -276,6 +279,37 @@ function Home_detail_no() {
 
     }
 
+    const [paymentData, setPaymentData] = useState();
+
+    useEffect(()=>{
+        if(creditNote)
+        fetchpayment();
+    },[creditNote])
+
+    const fetchpayment = async()=> {
+        setIsProcessing(true);
+        try {
+            const response = await axios.get(`${apiUrl}/getsinglepayments/${creditNote?.order_id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (response.data.success) {
+                setPaymentData(response.data.data);
+            }
+
+
+        } catch (error) {
+            console.error(
+                "Error fetching allOrders:",
+                error.response ? error.response.data : error.message
+            );
+        } finally {
+            setIsProcessing(false);
+        }
+    }
+
 
 
     return (
@@ -297,7 +331,7 @@ function Home_detail_no() {
                             <h5 className='text-white' style={{ fontSize: "18px" }}>Detalles nota de credito</h5>
                         </div>
                         <div className='ms-4 mt-4'>
-                            <h5 className='text-white' style={{ fontSize: "18px" }}>DNI: 0123456789</h5>
+                            <h5 className='text-white' style={{ fontSize: "18px" }}>DNI: {paymentData?.rut}</h5>
                         </div>
                     </div>
 
@@ -331,7 +365,7 @@ function Home_detail_no() {
                                 <div className='d-flex gap-5 mx-4 m b_inputt b_id_input b_home_field'>
                                     <div className='w-100 b_search  text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">DNI</label>
-                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={obj1.id} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={paymentData?.rut} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">Correo electrónico</label>
