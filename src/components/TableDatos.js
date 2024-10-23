@@ -13,6 +13,7 @@ import img2 from "../Image/crispy-fry-chicken.png";
 import img3 from "../Image/Strawberry-gelatin.png";
 import pic2 from "../img/Image(1).jpg";
 import axios from "axios";
+import ElapsedTimeDisplay from "./ElapsedTimeDisplay";
 
 const TableDatos = () => {
   const API = process.env.REACT_APP_IMAGE_URL;
@@ -26,7 +27,7 @@ const TableDatos = () => {
   const queryParams = new URLSearchParams(location.search);
   const id = queryParams.get("id");
   const orderId = queryParams.get("oId");
-
+  const [users, setUsers] = useState([]);
   const {state} = useLocation();
 
   // console.log(id,orderId,state);
@@ -108,6 +109,27 @@ const TableDatos = () => {
     }
 
   };
+  useEffect (()=>{
+    fetchAllUser();
+  },token)
+  const fetchAllUser = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.get(`${apiUrl}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setUsers(response.data);
+    } catch (error) {
+      console.error(
+        "Error fetching users:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    setIsProcessing(false);
+  }
 
   // const decrement = (index) => {
   //   setCountsoup((prevCounts) =>
@@ -394,29 +416,29 @@ const TableDatos = () => {
   };
 
   // timer
-  const [elapsedTime, setElapsedTime] = useState("");
-  const calculateElapsedTime = (createdAt) => {
-    const now = new Date();
-    const created = new Date(createdAt);
-    const diff = now - created;
+  // const [elapsedTime, setElapsedTime] = useState("");
+  // const calculateElapsedTime = (createdAt) => {
+  //   const now = new Date();
+  //   const created = new Date(createdAt);
+  //   const diff = now - created;
 
-    const minutes = Math.floor(diff / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
+  //   const minutes = Math.floor(diff / 60000);
+  //   const seconds = Math.floor((diff % 60000) / 1000);
 
-    return `${minutes} min ${seconds} seg`;
-  };
-  useEffect(
-    () => {
-      if (tableData.length > 0 && tableData[0].created_at) {
-        const timer = setInterval(() => {
-          setElapsedTime(calculateElapsedTime(tableData[0].created_at));
-        }, 1000);
+  //   return `${minutes} min ${seconds} seg`;
+  // };
+  // useEffect(
+  //   () => {
+  //     if (tableData.length > 0 && tableData[0].created_at) {
+  //       const timer = setInterval(() => {
+  //         setElapsedTime(calculateElapsedTime(tableData[0].created_at));
+  //       }, 1000);
 
-        return () => clearInterval(timer);
-      }
-    },
-    [tableData]
-  );
+  //       return () => clearInterval(timer);
+  //     }
+  //   },
+  //   [tableData]
+  // );
   // get product
   const fetchAllItems = async () => {
     try {
@@ -560,7 +582,16 @@ const TableDatos = () => {
     updatedAddNotes[index] = true;
     setAddNotes(updatedAddNotes);
   };
-
+  const getUserName =   (id) => {
+    const user = users.find(user => user.id === id);
+   
+    if (user) {
+      return user.name;
+    } else {
+      console.error(`User with id ${id} not found`);
+      return 'Unknown User';
+    }
+  };
   return (
     <div>
       <Header />
@@ -1080,13 +1111,17 @@ const TableDatos = () => {
                       />
                     </svg>
 
-                    <p className="mb-0 ms-2 me-3 text-white j-tbl-font-6">
-                      {elapsedTime}
-                    </p>
+                    {tableData && tableData.length > 0 ? (
+                          <ElapsedTimeDisplay createdAt={tableData[0].created_at} />
+                        ) : (
+                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1">
+                            00 min 00 sg
+                          </p>
+                        )}
                   </div>
                 </div>
 
-                <div className="j-counter-price-data ">
+                <div className="j-counter-price-data">
                   <div className="j-orders-inputs j_td_inputs ak-w-100">
                     <div className="j-orders-code ak-w-50">
                       <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
@@ -1097,7 +1132,8 @@ const TableDatos = () => {
                           className="j-input-name j_input_name520 ak-input"
                           type="text"
                           placeholder="Lucia Lopez"
-                          value={tableData[0]?.customer_name}
+                          value={getUserName(tableData[0]?.user_id)}
+                          disabled
 
                         />
                       </div>

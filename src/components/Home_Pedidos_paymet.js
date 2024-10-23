@@ -13,7 +13,7 @@ import pic3 from "../img/Image (2).png"
 import { Tabs, Tab } from 'react-bootstrap';
 import { IoMdCloseCircle, IoMdInformationCircle } from 'react-icons/io';
 import img2 from "../Image/addmenu.jpg";
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { BsCalculatorFill } from 'react-icons/bs';
@@ -29,6 +29,7 @@ export default function Home_Pedidos_paymet() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // create family
   const [show, setShow] = useState(false);
@@ -40,6 +41,7 @@ export default function Home_Pedidos_paymet() {
   const [errorReason, setReasonError] = useState(null);
 
   const handleShow12 = async () => {
+
     // ----resons----
     // ===change====
     // console.log(reason);
@@ -183,6 +185,34 @@ export default function Home_Pedidos_paymet() {
     getPaymentsData();
     fetchCredit()
   }, [admin_id, id]);
+  const [creditNote, setCreditNote] = useState(false);
+
+  const fetchCredit = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.post(`${apiUrl}/order/getCredit`, { admin_id: admin_id }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(response.data.data);
+
+
+      const credit = response.data.data?.some((v) => v.order_id == id);
+
+      setCreditNote(credit);
+      // console.log(credit);
+
+    } catch (error) {
+      console.error(
+        "Error fetching allOrder:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    setIsProcessing(false);
+  }
+
 
   const [pamentDone, setPaymentDone] = useState(false)
 
@@ -229,15 +259,13 @@ export default function Home_Pedidos_paymet() {
   const getItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await axios.get(`${apiUrl}/item/getAllDeletedAt`,{headers: {
+        Authorization: `Bearer ${token}`
+      }});
       setItems(response.data.items);
-      setObj1(response.data.items);
+      setObj1(response.data.items.filter(v=> v.deleted_at == null));
       // setFilteredMenuItems(response.data.items);
-      setFilteredItemsMenu(response.data.items);
+      setFilteredItemsMenu(response.data.items.filter(v=> v.deleted_at == null));
     } catch (error) {
       console.error(
         "Error fetching Items:",
@@ -600,12 +628,12 @@ export default function Home_Pedidos_paymet() {
       setShowCancelOrderButton(false);
     }
   };
-console.log(orderData)
+  console.log(orderData)
   const handleCredit = () => {
     if (orderData?.status == 'delivered' || orderData?.status == "cancelled") {
       navigate(`/home/client/crear/${id}`, { replace: true })
     } else {
-      alert('No puedes crear un nuevo pedido si el pedido actual no ha sido entregado')
+      alert('No puedes generar una nota de crédito si el pedido actual no ha sido entregado')
     }
   }
 
@@ -635,43 +663,14 @@ console.log(orderData)
       }
       cartItems.push(obj)
     })
-    localStorage.setItem("tableId", JSON.stringify(orderData?.table_id));
+    localStorage.setItem("tableId", JSON.stringify(orderData?.table_id)); 
     localStorage.setItem("currentOrder", JSON.stringify(currentOrder));
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
     navigate("/home/usa/bhomedelivery/datos");
+
   }
-
-  const [creditNote, setCreditNote] = useState(false);
-
-  const fetchCredit = async () => {
-    setIsProcessing(true);
-    try {
-        const response = await axios.post(`${apiUrl}/order/getCredit`, { admin_id: admin_id }, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        console.log(response.data.data);
-
-
-        const credit = response.data.data?.some((v) => v.order_id == id);
-
-        setCreditNote(credit);
-        // console.log(credit);
-
-    } catch (error) {
-        console.error(
-            "Error fetching allOrder:",
-            error.response ? error.response.data : error.message
-        );
-    }
-    setIsProcessing(false);
-}
-
   // =============== End ============
-
-
   return (
     <div>
       <div className="m_bg_black">
@@ -704,10 +703,12 @@ console.log(orderData)
                       <div className='btn btn-outline-primary b_mar_lef ms-2 py-2 text-nowrap d-flex align-item-center justify-content-center' style={{ borderRadius: "10px" }} onClick={handleShow1Prod}> <FiPlus className='me-2 mt-1' />Agregar Producto</div>
                     </>
                   )}
+
                   {showCancelOrderButton &&
-                    !creditNote && 
+                    !creditNote &&
                     (<div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>)
                   }
+
                 </div>
 
                 {/* cancel order modal */}
@@ -802,7 +803,7 @@ console.log(orderData)
               >
                 <div className='row'>
                   <div className='col-xl-7 ps-0 col-12 overflow-hidden '>
-                    <div className='p-4 m_bgblack text-white '>
+                    <div className='p-4 m_bgblack text-white mb-3'>
                       <p className='' style={{ fontSize: "18px", marginBottom: "36px" }}>Listado</p>
                       <div className='a_deli_infolist p-4'>
                         {
@@ -919,8 +920,8 @@ console.log(orderData)
                       </div>
                     </div>
                   </div>
-                  <div className='col-xl-5 pe-0 col-12 overflow-hidden '>
-                    <div className='p-3 m_bgblack text-white'>
+                  <div className='col-xl-5 px-0 col-12 overflow-hidden '>
+                    <div className='p-3 m_bgblack text-white '>
                       <h5 className='mt-3 ms-2'>Resumen</h5>
                       <div className='deli_infolist p-2'>
                         <div className='d-flex justify-content-end align-items-center ' >
@@ -978,9 +979,10 @@ console.log(orderData)
                         </div>
                         {!orderData?.reason &&
                           <div className='mx-auto text-center mt-3'>
-                            {!pamentDone ?
+                            {console.log(!pamentDone, orderData?.status.toLowerCase() !== 'delivered')}
+                            {!pamentDone || (orderData?.status.toLowerCase() !== 'finalized' && orderData?.status.toLowerCase() !== 'delivered') ?
                               <div className='btn text-white j-btn-primary w-100' style={{ padding: "8px 12px", borderRadius: "8px" }} onClick={handlePayment}>Pagar ahora</div> :
-                              <div className='btn btn-primary w-100 my-4 bj-delivery-text-3' style={{ backgroundColor: "#147bdea8", borderRadius: "8px", padding: "10px 20px", cursor: "not-allowed" }}>Pago completado</div>
+                              ""
                             }
                           </div>
                         }
@@ -1024,7 +1026,7 @@ console.log(orderData)
                     </div>
                   </div>
 
-                  <div className='b_table1 mx-4 mt-2' >
+                  <div className='b_table1 mx-4 mt-2 w-100' >
                     <div className='text-white mt-4'>
                       <h5 style={{ fontSize: "16px" }}>Historial estados</h5>
                     </div>
@@ -1234,6 +1236,7 @@ console.log(orderData)
                             >
                               <Link
                                 to={`/articles/singleatricleproduct/${ele.id}`}
+                                state={{ from: location.pathname }}
                                 className="text-white text-decoration-none"
                               >
                                 <p

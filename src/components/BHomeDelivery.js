@@ -22,7 +22,7 @@ const BHomeDelivery = () => {
   // const [ tId, setTId ] = useState(queryValue);
   const navigate = useNavigate();
   const admin_id = localStorage.getItem("admin_id");
-
+const userName = localStorage.getItem("name");
   const [parentCheck, setParentCheck] = useState([]);
   const [childCheck, setChildCheck] = useState([]);
   const [obj1, setObj1] = useState([]);
@@ -41,7 +41,7 @@ const BHomeDelivery = () => {
   const [orType, setOrType] = useState([]);
   const [cname, setCName] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const [users, setUsers] = useState([]);
   const [orderTypeA, setOrderTypeA] = useState()
   useEffect(() => {
 
@@ -52,6 +52,7 @@ const BHomeDelivery = () => {
         await fetchAllItems();
         await fetchSubFamilyData();
         await fetchLastOrder();
+        await fetchAllUser();
 
         if (parentCheck.length > 0) {
           const todoCategory = { id: "todo", name: "Todo" };
@@ -70,6 +71,25 @@ const BHomeDelivery = () => {
 
     fetchData();
   }, []);
+
+  const fetchAllUser = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.get(`${apiUrl}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setUsers(response.data);
+    } catch (error) {
+      console.error(
+        "Error fetching users:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    setIsProcessing(false);
+  }
 
   const [userId, setUserId] = useState('')
 
@@ -434,7 +454,7 @@ const BHomeDelivery = () => {
   const placeNewOrder = async () => {
     console.log(orderType, cname);
 
-    if (!orderType || !cname) {
+    if (!orderType || !userName) {
       console.log("Dgd");
 
       setOrderTypeError("Por favor ingrese su nombre");
@@ -485,31 +505,7 @@ const BHomeDelivery = () => {
 
 
 
-  const [categories, setCategories] = useState([
-    "Todo",
-    "Bebidas",
-    "Snacks",
-    "Postres",
-    "Almuerzos",
-    "Desayunos",
-    "Cenas",
-    "Gelatinas",
-    "Pasteles",
-    "Frutas con crema",
-  ]);
-
-  const [subcategories, setSubCategories] = useState({
-    "Bebidas": ["Soda", "Juice", "Water"],
-    "Snacks": ["Chips", "Nuts", "Popcorn"],
-    "Postres": ["Soda", "Juice", "Water"],
-    "Almuerzos": ["Chips", "Nuts", "Popcorn"],
-    "Desayunos": ["Soda", "Juice", "Water"],
-    "Cenas": ["Chips", "Nuts", "Popcorn"],
-    "Gelatinas": ["Soda", "Juice", "Water"],
-    "Pasteles": ["Chips", "Nuts", "Popcorn"],
-    "Frutas con crema": ["Soda", "Juice", "Water"],
-
-  });
+  
 
   // const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   // const [selectedSubCategory, setSelectedSubCategory] = useState(null);
@@ -560,107 +556,7 @@ const BHomeDelivery = () => {
 
 
 
-  const item1 = [
-    {
-      image: img1,
-      name: "Sopa de queso",
-      price: "2.00",
-      code: "01234",
-      note: 'Nota: Al clima',
-      subcategory: "Soda"
-    },
-    {
-      image: img1,
-      name: "Sopa de queso",
-      price: "2.00",
-      code: "01234",
-      note: 'Nota: Al clima',
-      subcategory: "Juice"
-    },
-    {
-      image: img1,
-      name: "Sopa de queso",
-      price: "2.00",
-      code: "01234",
-      note: 'Nota: Al clima',
-      subcategory: "Water"
-    }
-  ];
-
-  const item2 = [
-    {
-      image: img2,
-      name: "Pollo frito crujiente",
-      price: "2.00",
-      code: "01234",
-      note: '+ Agregar nota',
-      subcategory: "Chips"
-    },
-    {
-      image: img2,
-      name: "Pollo frito crujiente",
-      price: "2.00",
-      code: "01234",
-      note: '+ Agregar nota',
-      subcategory: "Chips"
-    },
-    {
-      image: img2,
-      name: "Pollo frito crujiente",
-      price: "2.00",
-      code: "01234",
-      note: '+ Agregar nota',
-      subcategory: "Nuts"
-    },
-    {
-      image: img3,
-      name: "Gelatina fresa",
-      price: "2.00",
-      code: "01234",
-      note: 'Con fresas',
-      subcategory: "Nuts"
-    },
-    {
-      image: img3,
-      name: "Gelatina fresa",
-      price: "2.00",
-      code: "01234",
-      note: 'Con fresas',
-      subcategory: "Popcorn"
-    },
-    {
-      image: img3,
-      name: "Gelatina fresa",
-      price: "2.00",
-      code: "01234",
-      note: 'Con fresas',
-      subcategory: "Popcorn"
-    },
-    {
-      image: img3,
-      name: "Gelatina fresa",
-      price: "2.00",
-      code: "01234",
-      note: 'Con fresas',
-      subcategory: "chip"
-    },
-    {
-      image: img3,
-      name: "Gelatina fresa",
-      price: "2.00",
-      code: "01234",
-      note: 'Con fresas',
-      subcategory: "Nuts"
-    },
-    {
-      image: img3,
-      name: "Gelatina fresa",
-      price: "2.00",
-      code: "01234",
-      note: 'Con fresas',
-      subcategory: "Popcorn"
-    },
-  ];
+ 
 
   const handlename = (e) => {
     const value = e.target.value
@@ -669,6 +565,16 @@ const BHomeDelivery = () => {
       setOrderTypeError("")
     }
   }
+  const getUserName =   (id) => {
+    const user = users.find(user => user.id === id);
+   
+    if (user) {
+      return user.name;
+    } else {
+      console.error(`User with id ${id} not found`);
+      return 'Unknown User';
+    }
+  };
 
   // console.log(cname);
 
@@ -822,8 +728,9 @@ const BHomeDelivery = () => {
                   className="form-control b-form-control"
                   id="exampleFormControlInput1"
                   placeholder=""
-                  onChange={handlename}
-                  value={cname}
+                  // onChange={handlename}
+                  value={userName}
+                  disabled
                 />
                 {orderTypeError && <div className="text-danger errormessage">{orderTypeError}</div>}
 
@@ -838,8 +745,11 @@ const BHomeDelivery = () => {
             {cartItems.length === 0 ? (
               <div>
                 <div className="b-product-order text-center">
-                  <MdRoomService className="i-product-order" />
-                  <h6 className="h6-product-order text-white">Empezar pedido</h6>
+                <svg class="w-6 h-6 text-gray-800 dark:text-white i-product-order" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+        <path fillRule="evenodd" d="M20.337 3.664c.213.212.354.486.404.782.294 1.711.657 5.195-.906 6.76-1.77 1.768-8.485 5.517-10.611 6.683a.987.987 0 0 1-1.176-.173l-.882-.88-.877-.884a.988.988 0 0 1-.173-1.177c1.165-2.126 4.913-8.841 6.682-10.611 1.562-1.563 5.046-1.198 6.757-.904.296.05.57.191.782.404ZM5.407 7.576l4-.341-2.69 4.48-2.857-.334a.996.996 0 0 1-.565-1.694l2.112-2.111Zm11.357 7.02-.34 4-2.111 2.113a.996.996 0 0 1-1.69-.565l-.422-2.807 4.563-2.74Zm.84-6.21a1.99 1.99 0 1 1-3.98 0 1.99 1.99 0 0 1 3.98 0Z" clipRule="evenodd" />
+      </svg>
+                  {/* <MdRoomService className="i-product-order" /> */}
+                  <h6 className="h6-product-order text-white">Empezar pedido </h6>
                   <p className="p-product-order">Agregar producto para empezar <br />
                     con el pedido</p>
                 </div>

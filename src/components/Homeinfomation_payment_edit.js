@@ -30,6 +30,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
     const { id } = useParams();
     const { state, replace } = useLocation();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -146,22 +147,23 @@ const Homeinfomation_payment_edit = ({ item }) => {
     };
 
     const getItems = async () => {
+        // setIsProcessing(true);
         try {
-            const response = await axios.get(`${API_URL}/item/getAll`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setItems(response.data.items);
-            setObj1(response.data.items);
-            setFilteredItemsMenu(response.data.items);
+          const response = await axios.get(`${API_URL}/item/getAllDeletedAt`,{headers: {
+            Authorization: `Bearer ${token}`
+          }});
+          setItems(response.data.items);
+          setObj1(response.data.items.filter(v=> v.deleted_at == null));
+          // setFilteredMenuItems(response.data.items);
+          setFilteredItemsMenu(response.data.items.filter(v=> v.deleted_at == null));
         } catch (error) {
-            console.error(
-                "Error fetching Items:",
-                error.response ? error.response.data : error.message
-            );
+          console.error(
+            "Error fetching Items:",
+            error.response ? error.response.data : error.message
+          );
         }
-    };
+        // setIsProcessing(false);
+      };
 
     const getSector = async () => {
         try {
@@ -628,6 +630,8 @@ const Homeinfomation_payment_edit = ({ item }) => {
         }
     };
 
+
+    console.log(orderData);
     useEffect(() => {
         if (id)
           fetchCredit();
@@ -645,7 +649,10 @@ const Homeinfomation_payment_edit = ({ item }) => {
           });
     
           console.log(response.data.data);
+    
+    
           const credit = response.data.data?.some((v) => v.order_id == id);
+    
           setCreditNote(credit);
           // console.log(credit);
     
@@ -657,9 +664,6 @@ const Homeinfomation_payment_edit = ({ item }) => {
         }
         // setIsProcessing(false);
       }
-
-    console.log(orderData);
-
     return (
         <div>
             <div className="m_bg_black">
@@ -767,7 +771,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                             >
                                 <div className='row'>
                                     <div className='col-xl-7 ps-0 col-12 overflow-hidden '>
-                                        <div className='p-4 m_bgblack text-white '>
+                                        <div className='p-4 m_bgblack text-white mb-3 '>
                                             <p className='' style={{ fontSize: "18px", marginBottom: "36px" }}>Listado</p>
                                             <div className='a_deli_infolist p-4'>
                                                 {
@@ -878,8 +882,8 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className='col-xl-5 pe-0 col-12 overflow-hidden '>
-                                        <div className='p-3 m_bgblack text-white'>
+                                    <div className='col-xl-5 px-0 col-12 overflow-hidden '>
+                                        <div className='p-3 m_bgblack text-white '>
                                             <h5 className='mt-3 ms-2'>Resumen</h5>
                                             <div className='deli_infolist p-2'>
                                                 <div className='d-flex justify-content-end align-items-center ' >
@@ -980,11 +984,11 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                         </div>
                                     </div>
 
-                                    <div className='b_table1 mx-4 mt-2' >
+                                    <div className='b_table1 w-100 mx-4 mt-2' >
                                         <div className='text-white mt-4'>
                                             <h5 style={{ fontSize: "16px" }}>Historial estados</h5>
                                         </div>
-                                        <table className='b_table '>
+                                        <table className='b_table overflow-auto'>
                                             <thead>
                                                 <tr className='b_thcolor'>
                                                     <th>Fecha</th>
@@ -1192,6 +1196,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                             <Link
                                                                 to={`/articles/singleatricleproduct/${ele.id}`}
                                                                 className="text-white text-decoration-none"
+                                                                state={{ from: location.pathname }}
                                                             >
                                                                 <p
                                                                     className=" px-1  rounded m-2"

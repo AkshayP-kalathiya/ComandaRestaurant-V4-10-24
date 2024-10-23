@@ -13,6 +13,7 @@ import Header from "./Header";
 import { Button, Modal, Spinner } from "react-bootstrap";
 import axios from "axios";
 import useAudioManager from "./audioManager";
+import ElapsedTimeDisplay from "./ElapsedTimeDisplay";
 //import { enqueueSnackbar  } from "notistack";
 
 const TableCounter1 = () => {
@@ -21,6 +22,7 @@ const TableCounter1 = () => {
 
   const [token] = useState(localStorage.getItem("token"));
   const [role] = useState(localStorage.getItem("role"));
+  const userName = localStorage.getItem("name");
   const userId = localStorage.getItem("userId");
   const admin_id = localStorage.getItem("admin_id");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,7 +40,7 @@ const TableCounter1 = () => {
 
   const [tId, setTId] = useState(id);
   const [parentCheck, setParentCheck] = useState([]);
-  const [isEditing, setIsEditing] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const [childCheck, setChildCheck] = useState([]);
   const [obj1, setObj1] = useState([]);
@@ -85,7 +87,7 @@ const TableCounter1 = () => {
   const getTableData = async (id) => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/table/getStats/${id}`, {
+      const response = await axios.post(`${apiUrl}/table/getStats/${id}`, { admin_id }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -379,6 +381,7 @@ const TableCounter1 = () => {
         fetchFamilyData();
         fetchSubFamilyData();
         fetchAllItems();
+        fetchAllUser()
       }
       // Set initial subcategories for "Drinks"
       const relatedSubfamilies = childCheck.filter(
@@ -394,7 +397,7 @@ const TableCounter1 = () => {
   const fetchFamilyData = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/family/getFamily`,{
+      const response = await axios.get(`${apiUrl}/family/getFamily`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -415,7 +418,7 @@ const TableCounter1 = () => {
   const fetchSubFamilyData = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`,{
+      const response = await axios.get(`${apiUrl}/subfamily/getSubFamily`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -435,12 +438,30 @@ const TableCounter1 = () => {
     }
     setIsProcessing(false);
   };
+  const fetchAllUser = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.get(`${apiUrl}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setUsers(response.data);
+    } catch (error) {
+      console.error(
+        "Error fetching users:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    setIsProcessing(false);
+  }
 
   // get product
   const fetchAllItems = async () => {
     setIsProcessing(true);
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`,{
+      const response = await axios.get(`${apiUrl}/item/getAll`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -482,7 +503,7 @@ const TableCounter1 = () => {
     // Validate fields
     let isValid = true;
 
-    if (!customerName.trim()) {
+    if (!userName.trim()) {
       setCustomerNameError("Por favor, ingrese quién registra");
       isValid = false;
     }
@@ -560,21 +581,21 @@ const TableCounter1 = () => {
           }
         );
         console.log("Table status updated successfully", resTable.data);
-  
+
         // Clear cart items from local storage
         localStorage.removeItem("cartItems");
-  
+
         // Clear cart items from state
         setCartItems([]);
         setCountsoup([]);
         navigate("/table");
-  
+
         // Handle successful order creation (e.g., show success message, redirect, etc.)
       } catch (error) {
         setIsProcessing(false);
         console.log("Table status  Not updated" + error.message);
       }
- 
+
     } catch (err) {
       console.error("Error creating order:", err);
       //enqueueSnackbar (err?.response?.data?.message, { variant: 'error' })
@@ -631,30 +652,30 @@ const TableCounter1 = () => {
     return () => { }; // Return an empty cleanup function if scrollContainer is null
   }, []);
 
-    //   add note
-    const handleNoteChange = (index, newNote) => {
-      setCartItems((prevItems) => {
-        const updatedItems = [...prevItems];
-        updatedItems[index] = { ...updatedItems[index], note: newNote }; // Update the note
-        return updatedItems;
+  //   add note
+  const handleNoteChange = (index, newNote) => {
+    setCartItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index] = { ...updatedItems[index], note: newNote }; // Update the note
+      return updatedItems;
     });
-    };
+  };
   const handleFinishEditing = (index) => {
     const updatedCartItems = cartItems.map(
       (item, i) => (i === index ? { ...item, isEditing: false } : item)
     );
     setCartItems(updatedCartItems);
   };
-    const handleAddNoteClick = (index) => {
-      const updatedCartItems = cartItems.map(
-        (item, i) =>
-          i === index
-            ? { ...item, isEditing: true, note: item.note || "Nota: " }
-            : item
-      );
-      setCartItems(updatedCartItems);
-    };
- 
+  const handleAddNoteClick = (index) => {
+    const updatedCartItems = cartItems.map(
+      (item, i) =>
+        i === index
+          ? { ...item, isEditing: true, note: item.note || "Nota: " }
+          : item
+    );
+    setCartItems(updatedCartItems);
+  };
+
 
   //   other logic
   const [showAll, setShowAll] = useState(false);
@@ -778,18 +799,18 @@ const TableCounter1 = () => {
 
     return `${minutes} min ${seconds} seg`;
   };
-  useEffect(
-    () => {
-      if (tableData.length > 0 && tableData[0].created_at) {
-        const timer = setInterval(() => {
-          setElapsedTime(calculateElapsedTime(tableData[0].created_at));
-        }, 1000);
+  // useEffect(
+  //   () => {
+  //     if (tableData.length > 0 && tableData[0].created_at) {
+  //       const timer = setInterval(() => {
+  //         setElapsedTime(calculateElapsedTime(tableData[0].created_at));
+  //       }, 1000);
 
-        return () => clearInterval(timer);
-      }
-    },
-    [tableData]
-  );
+  //       return () => clearInterval(timer);
+  //     }
+  //   },
+  //   [tableData]
+  // );
 
   const increment = async (proid, item_id, quantity, tableId) => {
     // setIsProcessing(true);
@@ -856,13 +877,13 @@ const TableCounter1 = () => {
   };
 
   // const handleDeleteConfirmation = (id) => {
-  
+
   //   handleCloseEditFam();
-    
+
   // };
 
   const handleDeleteClick = async (itemToDelete) => {
-    
+
     if (itemToDelete) {
       removeAllItemFromCart(itemToDelete);
       handleCloseEditFam();
@@ -876,7 +897,7 @@ const TableCounter1 = () => {
             }
           }
         );
-        if(response.data.success){
+        if (response.data.success) {
           setIsProcessing(false);
           handleShowEditFamDel();
           setTimeout(() => {
@@ -885,7 +906,7 @@ const TableCounter1 = () => {
           getTableData(tId);
         }
         console.log("Product deleted successfully:", response.data);
-        
+
       } catch (error) {
         console.error(
           "Error Delete OrderData:",
@@ -894,6 +915,17 @@ const TableCounter1 = () => {
       } finally {
         setIsProcessing(false);
       }
+    }
+  };
+
+  const getUserName =   (id) => {
+    const user = users.find(user => user.id === id);
+   
+    if (user) {
+      return user.name;
+    } else {
+      console.error(`User with id ${id} not found`);
+      return 'Unknown User';
     }
   };
 
@@ -1018,7 +1050,7 @@ const TableCounter1 = () => {
             className="j-counter-price position-sticky"
             style={{ top: "77px" }}
           >
-            <div className="j_position_fixed j_b_hd_width ak-position">
+            <div className="j_position_fixed j_b_hd_width ak-position" >
               <div className="b-summary-center  align-items-center text-white d-flex justify-content-between">
                 <h2 className="mb-0 j-tbl-font-5">Resumen</h2>
                 <Link to="/table">
@@ -1053,9 +1085,16 @@ const TableCounter1 = () => {
                             clipRule="evenodd"
                           />
                         </svg>
-                        <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1 ak-input">
+                        {tableData && tableData.length > 0 ? (
+                          <ElapsedTimeDisplay createdAt={tableData[0].created_at} />
+                        ) : (
+                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1 ak-input">
+                            00 min 00 sg
+                          </p>
+                        )}
+                        {/* <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1">
                           {elapsedTime}
-                        </p>
+                        </p> */}
                       </div>
                     </div>
                     <div className="j-orders-inputs">
@@ -1068,9 +1107,10 @@ const TableCounter1 = () => {
                             <input
                               className="j-input-name ak-input"
                               type="text"
-                              value={tableData[0].customer_name}
+                              value={getUserName(tableData[0].user_id)}
                               readOnly
                             />
+                           { console.log("name",getUserName(tableData[0].user_id)) }
                           </div>
                           <div className="j-orders-code ak-w-50">
                             <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
@@ -1191,7 +1231,7 @@ const TableCounter1 = () => {
                                       ) : (
                                         <div>
                                           {item.note ? (
-                                            <p className="j-nota-blue" style={{cursor: "pointer"}}  onClick={() => handleAddNoteClick(index)}>
+                                            <p className="j-nota-blue" style={{ cursor: "pointer" }} onClick={() => handleAddNoteClick(index)}>
                                               {item.note}
                                             </p>
                                           ) : (
@@ -1312,11 +1352,12 @@ const TableCounter1 = () => {
                             className="j-input-name ak-input"
                             type="text"
                             placeholder="Lucia Lopez"
-                            value={customerName}
-                            onChange={(e) => {
-                              setCustomerName(e.target.value);
-                              setCustomerNameError("");
-                            }}
+                            value={userName}
+                            // onChange={(e) => {
+                            //   setCustomerName(e.target.value);
+                            //   setCustomerNameError("");
+                            // }}
+                            disabled
                           />
                           {customerNameError && (
                             <div className="text-danger errormessage">
@@ -1332,7 +1373,7 @@ const TableCounter1 = () => {
                             <input
                               className="j-input-name630 ak-input"
                               type="text"
-                              placeholder="5"
+                              placeholder="-"
                               value={person}
                               onChange={(e) => {
                                 setPerson(e.target.value);
@@ -1402,11 +1443,12 @@ const TableCounter1 = () => {
                                 className="j-input-name ak-input"
                                 type="text"
                                 placeholder="Lucia Lopez"
-                                value={customerName}
-                                onChange={(e) => {
-                                  setCustomerName(e.target.value);
-                                  setCustomerNameError("");
-                                }}
+                                value={userName}
+                                // onChange={(e) => {
+                                //   setCustomerName(e.target.value);
+                                //   setCustomerNameError("");
+                                // }}
+                                disabled
                               />
                               {customerNameError && (
                                 <div className="text-danger errormessage">
@@ -1422,7 +1464,7 @@ const TableCounter1 = () => {
                                 <input
                                   className="j-input-name630 ak-input"
                                   type="text"
-                                  placeholder="5"
+                                  placeholder="-"
                                   value={person}
                                   onChange={(e) => {
                                     setPerson(e.target.value);
@@ -1512,7 +1554,7 @@ const TableCounter1 = () => {
                                       ) : (
                                         <div>
                                           {item.note ? (
-                                            <p className="j-nota-blue" style={{cursor: "pointer"}}  onClick={() => handleAddNoteClick(index)}>
+                                            <p className="j-nota-blue" style={{ cursor: "pointer" }} onClick={() => handleAddNoteClick(index)}>
                                               {item.note}
                                             </p>
                                           ) : (

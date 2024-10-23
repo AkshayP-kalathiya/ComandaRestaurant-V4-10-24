@@ -8,7 +8,9 @@
 .row {
   margin: 0;
   padding: 0;
+  /* --bs-gutter-x:0.5px; */
 }
+
 
 /* ..........sandhya change  START
 ........... */
@@ -3139,7 +3141,7 @@ td {
   }
 
   .b_arrow {
-    margin-left: 20px;
+    margin-left: auto;
   }
 
   .b_page_text {
@@ -4465,7 +4467,9 @@ body {
 .j-kds-border-right {
   border-right: 2px solid #374151;
 }
-
+.j-kds-body > .row .col-3:last-child .j-kds-border-right{
+  border-right: none;
+}
 .j-kds-body-btn-1 {
   background-color: #42389d;
   padding: 10px;
@@ -7495,8 +7499,7 @@ select:focus-visible {
   }
 
   .j-input-name-23 {
-    /* width: 247px; */
-    width: 90% !important;
+    width: 247px;
   }
 
   .j_counter_order_final {
@@ -8662,6 +8665,17 @@ input[type="search"]::-webkit-search-cancel-button {
 .bg-alert .j-time{
   color:white !important;
 }
+
+
+.mz999{
+  z-index:999 !important; 
+}
+.mhighlighted {
+  background-color: #2c3e50; /* Change to your desired highlight color */
+  color: #fff; /* Change text color if needed */
+}
+
+
 
 
 

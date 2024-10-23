@@ -516,7 +516,7 @@ const Counter_finalP = () => {
           ...payment,
           amount: totalPaymentAmount,
           type: selectedCheckboxes,
-          order_master_id: orderType.orderId,
+          order_master_id: order_master_id,
           return: customerData.turn,
           admin_id: admin_id,
         };
@@ -1051,7 +1051,7 @@ const Counter_finalP = () => {
                       disabled
                     />
                   </div>
-                  <div className="j-orders-type ak-w-50">
+                  <div className="j-orders-type  ak-w-50">
                     <label className="j-label-name  text-white mb-2 j-tbl-font-6 ">
                       Tipo pedido
                     </label>

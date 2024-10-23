@@ -16,6 +16,7 @@ import pic2 from "../img/Image(1).jpg";
 import axios from "axios";
 import Recipt from "./Recipt";
 import TableLastRecipt from "./TableLastRecipt";
+import ElapsedTimeDisplay from "./ElapsedTimeDisplay";
 
 const TablePago = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -37,6 +38,7 @@ const TablePago = () => {
   const navigate = useNavigate();
   const [tId, setTId] = useState(id);
   const [tableData, setTableData] = useState([]);
+  const [users, setUsers] = useState([]);
   const [obj1, setObj1] = useState([]);
   const [price, setPrice] = useState("");
   const [tipAmount, setTipAmount] = useState(0);
@@ -52,12 +54,31 @@ const TablePago = () => {
           getTableData(id);
           fetchAllItems();
           setIsProcessing(false);
+          fetchAllUser();
         }
       }
     },
     [id, role]
   );
+  console.log("object")
+  const fetchAllUser = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await axios.get(`${apiUrl}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
+      setUsers(response.data);
+    } catch (error) {
+      console.error(
+        "Error fetching users:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    setIsProcessing(false);
+  }
   const getTableData = async (id) => {
     setIsProcessing(true);
     try {
@@ -175,7 +196,7 @@ const TablePago = () => {
   };
 
   const getTotalCost = () => {
-    console.log(cartItems);
+    // console.log(cartItems);
 
     return cartItems.reduce(
       (total, item, index) => total + parseInt(item.price) * parseInt(item.quantity),
@@ -194,7 +215,7 @@ const TablePago = () => {
   // create family success
   const [showCreSuc, setShowCreSuc] = useState(false);
   const handleCloseCreSuc = () => setShowCreSuc(false);
-  const handleShowCreSuc = () => {
+  const handleShowCreSuc = () =>{
     setShowCreSuc(true);
     setTimeout(() => {
       setShowCreSuc(false);
@@ -215,7 +236,7 @@ const TablePago = () => {
   };
 
   const totalCost = getTotalCost();
-  console.log(totalCost);
+  // console.log(totalCost);
 
   const discount = 1.0;
   const propina = 5.0;
@@ -253,7 +274,7 @@ const TablePago = () => {
 
     if (selectedCheckboxes.includes(value)) {
 
-      if (customerData?.[value + "Amount"]) {
+      if (customerData?.[value + "Amount"] ) {
         setCustomerData((prevData) => ({
           ...prevData,
           turn: customerData?.[value + "Amount"] ? parseFloat(customerData?.turn || 0) + parseFloat(-customerData?.[value + "Amount"]) : ""
@@ -281,6 +302,9 @@ const TablePago = () => {
       paymentType: undefined
     }));
   };
+
+
+
   const handleChange = (event) => {
     let { name, value } = event.target;
     value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
@@ -309,7 +333,7 @@ const TablePago = () => {
 
       // New calculation for turn
       console.log(tableData);
-
+      
       const totalAmount = parseFloat(updatedState.cashAmount || 0) + parseFloat(updatedState.debitAmount || 0) + parseFloat(updatedState.creditAmount || 0) + parseFloat(updatedState.transferAmount || 0);
 
       updatedState.turn = totalAmount - (tableData[0].order_total + taxAmount + tipAmount); // Update turn based on total amounts
@@ -322,30 +346,30 @@ const TablePago = () => {
     }));
   };
 
-  // timer
-  const [elapsedTime, setElapsedTime] = useState("");
-  const calculateElapsedTime = (createdAt) => {
-    const now = new Date();
-    const created = new Date(createdAt);
-    const diff = now - created;
+  // // timer
+  // const [elapsedTime, setElapsedTime] = useState("");
+  // const calculateElapsedTime = (createdAt) => {
+  //   const now = new Date();
+  //   const created = new Date(createdAt);
+  //   const diff = now - created;
 
-    const minutes = Math.floor(diff / 60000);
-    const seconds = Math.floor((diff % 60000) / 1000);
+  //   const minutes = Math.floor(diff / 60000);
+  //   const seconds = Math.floor((diff % 60000) / 1000);
 
-    return `${minutes} min ${seconds} seg`;
-  };
-  useEffect(
-    () => {
-      if (tableData.length > 0 && tableData[0].created_at) {
-        const timer = setInterval(() => {
-          setElapsedTime(calculateElapsedTime(tableData[0].created_at));
-        }, 1000);
+  //   return `${minutes} min ${seconds} seg`;
+  // };
+  // useEffect(
+  //   () => {
+  //     if (tableData.length > 0 && tableData[0].created_at) {
+  //       const timer = setInterval(() => {
+  //         setElapsedTime(calculateElapsedTime(tableData[0].created_at));
+  //       }, 1000);
 
-        return () => clearInterval(timer);
-      }
-    },
-    [tableData]
-  );
+  //       return () => clearInterval(timer);
+  //     }
+  //   },
+  //   [tableData]
+  // );
 
 
   //   add note
@@ -447,7 +471,7 @@ const TablePago = () => {
 
     const totalWithTax = tableData[0].order_total + (tableData[0].order_total * 0.19) + tipAmount - tableData[0].discount;
     const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
-    console.log(totalPaymentAmount < totalWithTax, totalPaymentAmount <= 0)
+    // console.log(totalPaymentAmount < totalWithTax, totalPaymentAmount <= 0)
     // Validate payment amount
     if (!totalPaymentAmount || totalPaymentAmount <= 0) {
       errors.amount = "Por favor, introduzca un importe de pago válido";
@@ -483,8 +507,8 @@ const TablePago = () => {
 
   useEffect(() => {
     fetchBoxData();
-    console.log(tableData[0]?.id);
-    console.log(selectedCheckboxes[0]);
+    // console.log(tableData[0]?.id);
+    // console.log(selectedCheckboxes[0]);
 
   }, [userId]);
 
@@ -516,18 +540,18 @@ const TablePago = () => {
       tax: taxAmount,
     };
 
-    console.log(paymentData)
+    // console.log(paymentData)
     setPaymentInfo(paymentData);
     setIsProcessing(true);
-    console.log(boxId?.id);
-    console.log(tableData[0].id);
+    // console.log(boxId?.id);
+    // console.log(tableData[0].id);
 
     try {
       const response = await axios.post(`${apiUrl}/order/orderUpdateItem/${tableData[0].id}`, {
         tip: tipAmount ? tipAmount : 0,
         payment_type: selectedCheckboxes[0],
         box_id: boxId?.id,
-        transaction_code: true
+        transaction_code: true,customer_name:payment.firstname || payment.business_name
       },
         {
           headers: {
@@ -535,7 +559,7 @@ const TablePago = () => {
           }
         })
 
-      console.log(response.status);
+      // console.log(response.status);
       if (response.status == 200) {
         try {
           const responsePayment = await axios.post(
@@ -548,8 +572,8 @@ const TablePago = () => {
             }
           )
 
-          console.log(responsePayment.status == 200);
-          console.log(responsePayment);
+          // console.log(responsePayment.status == 200);
+          // console.log(responsePayment);
           if (responsePayment.status == 200) {
             try {
               const resStatus = await axios.post(`${apiUrl}/table/updateStatus`, {
@@ -562,16 +586,19 @@ const TablePago = () => {
                 }
               })
               setIsProcessing(false);
-              console.log(resStatus);
+              // console.log(resStatus);
               setTipAmount('');
               setFormErrors({});
               setPrice('');
               setCustomerData({});
               setSelectedCheckboxes([]);
               handleShow11();
+
               localStorage.removeItem("cartItems");
               localStorage.removeItem("currentOrder");
               localStorage.removeItem("payment");
+              localStorage.removeItem("tablePayment");
+
             } catch (error) {
               console.log("Table Status not Upadte ," + error.message);
             }
@@ -638,6 +665,16 @@ const TablePago = () => {
     }
   };
   const itemInfo = tableData[0]?.items.map(item => getItemInfo(item.item_id));
+  const getUserName =   (id) => {
+    const user = users.find(user => user.id === id);
+   
+    if (user) {
+      return user.name;
+    } else {
+      console.error(`User with id ${id} not found`);
+      return 'Unknown User';
+    }
+  };
   return (
     <div className="s_bg_dark">
       <Header />
@@ -1068,9 +1105,14 @@ const TablePago = () => {
                     />
                   </svg>
 
-                  <p className="mb-0 ms-2 me-3 text-white j-tbl-font-6 ak-input">
-                    {elapsedTime}
-                  </p>
+                  {tableData && tableData.length > 0 ? (
+                          <ElapsedTimeDisplay createdAt={tableData[0].created_at} />
+
+                        ) : (
+                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1 ak-input">
+                            00 min 00 sg
+                          </p>
+                        )}
                 </div>
               </div>
 
@@ -1085,7 +1127,7 @@ const TablePago = () => {
                         className="j-input-name j_input_name520 ak-input"
                         type="text"
                         placeholder="Lucia Lopez"
-                        value={tableData[0]?.customer_name}
+                        value={getUserName(tableData[0]?.user_id)}
                         readOnly
                       />
                     </div>
@@ -1140,9 +1182,9 @@ const TablePago = () => {
                                 </h5>
                               </div>
                               <div className="d-flex align-items-center">
-                                <div className="j-counter-mix text-center">
+                                <div className="j-counter-mix">
 
-                                  <h3 className="mx-auto"> {item.quantity}</h3>
+                                  <h3> {item.quantity}</h3>
 
                                 </div>
                                 <h4 className="text-white fw-semibold">
@@ -1292,8 +1334,8 @@ const TablePago = () => {
                               paymentAmt={customerData}
                               paymentType={selectedCheckboxes}
                             /> */}
-                    <TableLastRecipt data={tableData} itemInfo={itemInfo} payment={paymentInfo} paymentAmt={customerData} />
-                    {console.log("cust", customerData)}
+                    <TableLastRecipt  data={tableData} itemInfo={itemInfo} payment={paymentInfo} paymentAmt={customerData} />
+                    {/* {console.log("cust", customerData)} */}
                   </Modal.Body>
                   <Modal.Footer className="sjmodenone">
                     <Button

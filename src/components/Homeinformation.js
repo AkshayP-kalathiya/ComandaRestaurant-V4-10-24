@@ -12,7 +12,7 @@ import pic2 from "../img/Image(1).jpg"
 import pic3 from "../img/Image (2).png"
 import { Tabs, Tab } from 'react-bootstrap';
 import { IoMdCloseCircle, IoMdInformationCircle } from 'react-icons/io';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { RiDeleteBin5Fill } from 'react-icons/ri';
 import { BsCalculatorFill } from 'react-icons/bs';
@@ -31,6 +31,7 @@ export default function Homeinformation() {
   const admin_id = localStorage.getItem("admin_id");
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // create family
   const [show, setShow] = useState(false);
@@ -219,24 +220,22 @@ export default function Homeinformation() {
   };
 
   const getItems = async () => {
-    setIsProcessing(true);
+    // setIsProcessing(true);
     try {
-      const response = await axios.get(`${API_URL}/item/getAll`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await axios.get(`${API_URL}/item/getAllDeletedAt`,{headers: {
+        Authorization: `Bearer ${token}`
+      }});
       setItems(response.data.items);
-      setObj1(response.data.items);
+      setObj1(response.data.items.filter(v=> v.deleted_at == null));
       // setFilteredMenuItems(response.data.items);
-      setFilteredItemsMenu(response.data.items);
+      setFilteredItemsMenu(response.data.items.filter(v=> v.deleted_at == null));
     } catch (error) {
       console.error(
         "Error fetching Items:",
         error.response ? error.response.data : error.message
       );
     }
-    setIsProcessing(false);
+    // setIsProcessing(false);
   };
 
   const getSector = async () => {
@@ -650,7 +649,7 @@ export default function Homeinformation() {
         count: v.quantity,
         note: v.notes ? v.notes : "",
         isEditing: false,
-        OdId: v.id
+        OdId:v.id
       }
       cartItems.push(obj)
     })
@@ -659,9 +658,7 @@ export default function Homeinformation() {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
 
     navigate("/home/usa/bhomedelivery/datos");
-
   }
-
   useEffect(() => {
     if (id)
       fetchCredit();
@@ -677,8 +674,12 @@ export default function Homeinformation() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       console.log(response.data.data);
+
+
       const credit = response.data.data?.some((v) => v.order_id == id);
+
       setCreditNote(credit);
       // console.log(credit);
 
@@ -690,7 +691,6 @@ export default function Homeinformation() {
     }
     setIsProcessing(false);
   }
-
 
   return (
     <div>
@@ -721,8 +721,9 @@ export default function Homeinformation() {
                     </>
                   )}
                   {/* <div className='btn btn-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ backgroundColor: "#147BDE", borderRadius: '10px' }}> <MdEditSquare className='me-2' />Editar Pedido</div> */}
-                  {showCancelOrderButton &&
-                    creditNote &&
+                 
+ {showCancelOrderButton &&
+                  creditNote &&
                     (<div onClick={handleCredit} className='btn bj-btn-outline-primary me-2  text-nowrap  me-2 py-2 d-flex align-items-center justify-content-center' style={{ borderRadius: '10px' }}> <BsCalculatorFill className='me-2' />Generar nota de crédito</div>)
                   }
                 </div>
@@ -847,9 +848,9 @@ export default function Homeinformation() {
                 eventKey="home"
                 title="Pedidos"
                 className="m_in text-white m-3 aaaaa rounded">
-                <div className='row'>
+                <div className='row' >
                   <div className='col-xl-7 ps-0 col-12 overflow-hidden '>
-                    <div className='p-4 m_bgblack text-white'>
+                    <div className='p-4 m_bgblack text-white mb-3'>
                       <p className='bj-delivery-text-65' style={{ marginBottom: "36px" }}>Listado</p>
                       <div className='a_deli_infolist p-4'>
                         {console.log(orderDetails)}
@@ -937,7 +938,7 @@ export default function Homeinformation() {
                       </div>
                     </div>
                   </div>
-                  <div className='col-xl-5 col-12 overflow-hidden pe-0 '>
+                  <div className='col-xl-5 col-12 overflow-hidden px-0 '>
                     <div className='p-3 m_bgblack text-white '>
                       <h5 className='mt-3 ms-2 bj-delivery-text-15'>Resumen</h5>
                       <div className='deli_infolist p-2'>
@@ -994,9 +995,10 @@ export default function Homeinformation() {
                         <div className='mx-auto text-center mt-3'>
                           {!(orderData?.[0].status == "cancelled") &&
                             < div className='d-flex text-decoration-none'>
-                              {!pamentDone ?
+                              {console.log("payment",pamentDone)}
+                              {!pamentDone  || (orderData?.[0].status.toLowerCase() !== 'finalized' && orderData?.[0].status.toLowerCase() !== 'delivered') ?
                                 <div className='btn btn-primary w-100 my-4 bj-delivery-text-3' style={{ backgroundColor: "#147BDE", borderRadius: "8px", padding: "10px 20px" }} onClick={handlePayment} >Cobrar ahora</div> :
-                                <div className='btn btn-primary w-100 my-4 bj-delivery-text-3' style={{ backgroundColor: "#147bdea8", borderRadius: "8px", padding: "10px 20px", cursor: "not-allowed" }}>Pago completado</div>
+                                ""
                               }
                             </div>
                           }
@@ -1013,7 +1015,7 @@ export default function Homeinformation() {
                   <div className='text-white ms-4 pt-4' >
                     <h5 >Información del pedido</h5>
                   </div>
-                  {orderData?.[0]?.reason &&
+                {orderData?.[0]?.reason &&
                     <div className='text-white ms-4 pt-4' >
                       <h5 className='bj-delivery-text-15'>Nota anulación</h5>
                       <textarea type="text" className="form-control bg-gray border-0 mt-4 py-2" id="inputPassword2" placeholder={orderData?.[0]?.reason != null ? orderData?.[0]?.reason : "Estaba sin sal"} style={{ backgroundColor: '#242d38', borderRadius: "10px" }} disabled></textarea>
@@ -1032,7 +1034,7 @@ export default function Homeinformation() {
                     </div>
                   </div>
 
-                  <div className='b_table1 mx-4 mt-2' >
+                  <div className='b_table1 mx-4 mt-2 w-100' >
                     <div className='text-white mt-4'>
                       <h5 style={{ fontSize: "16px" }}>Historia del Estado</h5>
                     </div>
@@ -1244,6 +1246,7 @@ export default function Homeinformation() {
                             >
                               <Link
                                 to={`/articles/singleatricleproduct/${ele.id}`}
+                                state={{ from: location.pathname }}
                                 className="text-white text-decoration-none"
                               >
                                 <p

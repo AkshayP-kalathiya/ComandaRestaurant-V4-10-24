@@ -23,6 +23,7 @@ function Home_detail_no() {
     const [isProcessing, setIsProcessing] = useState(false);
     const navigate = useNavigate()
     const { state } = useLocation();
+    const [paymentData, setPaymentData] = useState();
     console.log(state);
     console.log(id);
 
@@ -279,7 +280,6 @@ function Home_detail_no() {
 
     }
 
-    const [paymentData, setPaymentData] = useState();
 
     useEffect(()=>{
         if(creditNote)
@@ -309,9 +309,6 @@ function Home_detail_no() {
             setIsProcessing(false);
         }
     }
-
-
-
     return (
         <div className='b_bg_color'>
             <Header />
@@ -363,7 +360,7 @@ function Home_detail_no() {
                                     </div>
                                 </div>
                                 <div className='d-flex gap-5 mx-4 m b_inputt b_id_input b_home_field'>
-                                    <div className='w-100 b_search  text-white mb-3'>
+                                <div className='w-100 b_search  text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">DNI</label>
                                         <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={paymentData?.rut} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>

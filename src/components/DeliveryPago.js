@@ -19,6 +19,7 @@ import { FaCalendarAlt } from "react-icons/fa";
 const DeliveryPago = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
   const token = localStorage.getItem("token");
+  const userName = localStorage.getItem("name");
   const API = process.env.REACT_APP_IMAGE_URL;
   const userId = localStorage.getItem("userId");
   const admin_id = localStorage.getItem("admin_id");
@@ -33,7 +34,6 @@ const DeliveryPago = () => {
   const [orderType, setOrderType] = useState(
     JSON.parse(localStorage.getItem("currentOrder")) || []
   );
-
   const [tableId] = useState(
     JSON.parse(localStorage.getItem("tableId")) || null
   );
@@ -180,9 +180,10 @@ const DeliveryPago = () => {
   const finalTotal = totalCost - discount;
   const taxAmount = finalTotal * 0.19;
 
+
   const [selectedCheckboxes, setSelectedCheckboxes] = useState([]);
   const [customerData, setCustomerData] = useState(initialCustomerData);
-
+  console.log(selectedCheckboxes);
 
   const handleCheckboxChange = (value) => {
     // console.log(value);
@@ -217,6 +218,7 @@ const DeliveryPago = () => {
   };
 
 
+
   const handleChange = (event) => {
     let { name, value } = event.target;
     value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
@@ -224,7 +226,6 @@ const DeliveryPago = () => {
     const otherbox = selectedCheckboxes.filter(item => !name.includes(item))
     console.log(otherbox);
     setCustomerData((prevState) => {
-
       const currentValue = parseFloat(value) || 0;
       const totalDue = finalTotal + taxAmount + tipAmount;
       const otherAmount = Math.max(totalDue - currentValue, 0);
@@ -313,6 +314,10 @@ const DeliveryPago = () => {
     );
     setCartItems(updatedCartItems);
   };
+
+
+
+
   // ==== Get BOX Data =====
 
   const [boxId, setBoxId] = useState('')
@@ -465,9 +470,8 @@ const DeliveryPago = () => {
       const response = await axios.post(`${apiUrl}${url}`, orderData, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      console.log(response);
-
-      if (response.data.success || response.data[1] == 200) {
+      // console.log(response.data)
+      if (response.data.success) {
 
         try {
           const responsePayment = await axios.post(
@@ -499,11 +503,11 @@ const DeliveryPago = () => {
                 console.log("Table Status not Upadte ," + error.message);
               }
             }
-              localStorage.removeItem("cartItems");
-              localStorage.removeItem("currentOrder");
-              localStorage.removeItem("payment");
-              handleShow11();
-           
+            localStorage.removeItem("cartItems");
+            localStorage.removeItem("currentOrder");
+            localStorage.removeItem("payment");
+            handleShow11();
+
           }
         } catch (error) {
           setIsProcessing(false)
@@ -948,8 +952,9 @@ const DeliveryPago = () => {
                       <input
                         className="j-input-name j_input_name520"
                         type="text"
-                        placeholder={orderType?.name}
-
+                        // placeholder={orderType?.name}
+                        disabled
+                        value={userName}
                       />
                     </div>
                   </div>

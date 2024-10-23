@@ -6,7 +6,7 @@ import Sidenav from "./Sidenav";
 import { BsThreeDots } from "react-icons/bs";
 
 import img2 from "../Image/addmenu.jpg";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import SingleMenu from "./SingleMenu";
 import { Badge, Spinner } from "react-bootstrap";
 import { IoMdInformationCircle } from "react-icons/io";
@@ -41,6 +41,7 @@ export default function Articles() {
   const [selectedItemsMenu, setSelectedItemsMenu] = useState(new Set());
   const [previousFilteredItems, setPreviousFilteredItems] = useState([]);
   const { playNotificationSound } = useAudioManager();
+  const location = useLocation();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate()
@@ -978,8 +979,8 @@ export default function Articles() {
                     {menu.map((item, index) => (
                       <div key={item.id}>
                         <div className="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                          <div className="text-nowrap">
-                            <label className="d-flex align-items-center">
+                          <div className="d-flex align-items-center flex-grow-1">
+                           
                               <input
                                 type="checkbox"
                                 className="me-2 custom-checkbox"
@@ -989,12 +990,12 @@ export default function Articles() {
                                   setMenuId(item.id);
                                 }}
                               />
-                              <p className="text-white mb-0">{item.name}</p>
-                            </label>
+                              <p className="text-white mb-0 text-wrap">{item.name}</p>
+                           
                           </div>
                           { (role == "admin" || role == "cashier") &&
                           <div
-                            className="text-white"
+                            className="text-white ms-3"
                             style={{ cursor: "pointer" }}
                             onClick={() => handleShowEditFam(item)}
                           >
@@ -1172,9 +1173,10 @@ export default function Articles() {
                   <div className="mb-3">
                     <h6 className="mb-0 ">Entradas</h6>
                   </div>
+
                   <div>
                     <div className="d-flex justify-content-between m_property">
-                      <div>
+                      <div className="me-2">
                         <div className="">
                           <div class="m_group">
                             <svg
@@ -1204,7 +1206,7 @@ export default function Articles() {
                           className="btn j-btn-primary j_editor_menu text-white text-nowrap m12 me-2"
                           onClick={handlesaveEdit}
                         >
-                          {showRetirar ? "Guardar" : "+ Editar"}
+                          {showRetirar ? "Guardar"  : "+ Editar"}
                         </button>
                         {(selectedMenus.length == 1 && !showRetirar)  && 
                             <button
@@ -1329,7 +1331,7 @@ export default function Articles() {
                               </div>
                               <div>
                                 <div className="m_property">
-                                  <div>
+                                  <div className="me-2">
                                     <div className="m_margin_bottom">
                                       <div class="m_group ">
                                         <svg
@@ -1428,6 +1430,7 @@ export default function Articles() {
                                             >
                                               <Link
                                                 to={`/articles/singleatricleproduct/${ele.id}`}
+                                                state={{ from: location.pathname }}
                                                 className="text-white text-decoration-none"
                                               >
                                                 <p

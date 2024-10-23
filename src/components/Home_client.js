@@ -65,13 +65,11 @@ function Home_client() {
       const fullName = `${displayName} ${user?.lastname || ''}`.toLowerCase();
       const searchLower = searchTerm?.toLowerCase();
 
-      
       return (
         fullName.includes(searchLower) ||
         displayName?.toLowerCase().includes(searchLower) ||
         (user?.lastname?.toLowerCase().includes(searchLower) || '') ||
-        user?.email?.toLowerCase().includes(searchLower) &&
-        user.email !== "superadmin@gmail.com" ||
+        user?.email?.toLowerCase().includes(searchLower)  ||
         user.rut?.toLowerCase().includes(searchLower)
       );
     });
@@ -180,7 +178,7 @@ function Home_client() {
       // Group users and collect their order_master_ids
       const groupedUsers = groupUsersByDetails(response.data.result);
 
-      setOrderUser(groupedUsers.reverse());
+      setOrderUser(groupedUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -236,11 +234,13 @@ function Home_client() {
           <Sidenav />
         </div>
         <div
-          className="flex-grow-1 sidebar overflow-y-scroll"
+          className="flex-grow-1 sidebar w-50"
           style={{ backgroundColor: "#1F2A37" }}
         >
 
           <div>
+            <div className="overflow-hidden">
+
             <div className="ms-4 mt-4">
               <h4 className="text-white bj-delivery-text-65">Clientes</h4>
             </div>
@@ -392,7 +392,8 @@ function Home_client() {
                 </div>
               </div>
             </div>
-            <div className="b_table1">
+            </div>
+            <div className="b_table1 w-100" >
               <table className="b_table ">
                 <thead>
                   <tr className="b_thcolor">
@@ -403,6 +404,7 @@ function Home_client() {
                   </tr>
                 </thead>
                 <tbody className="text-white b_btnn ">
+                  {console.log(currentFilteredItems)}
 
                   {currentFilteredItems.length > 0 ?
                     currentFilteredItems.map((user) => (
