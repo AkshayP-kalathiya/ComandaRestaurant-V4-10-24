@@ -194,7 +194,7 @@ const TablePago = () => {
   // create family success
   const [showCreSuc, setShowCreSuc] = useState(false);
   const handleCloseCreSuc = () => setShowCreSuc(false);
-  const handleShowCreSuc = () =>{
+  const handleShowCreSuc = () => {
     setShowCreSuc(true);
     setTimeout(() => {
       setShowCreSuc(false);
@@ -253,7 +253,7 @@ const TablePago = () => {
 
     if (selectedCheckboxes.includes(value)) {
 
-      if (customerData?.[value + "Amount"] ) {
+      if (customerData?.[value + "Amount"]) {
         setCustomerData((prevData) => ({
           ...prevData,
           turn: customerData?.[value + "Amount"] ? parseFloat(customerData?.turn || 0) + parseFloat(-customerData?.[value + "Amount"]) : ""
@@ -309,7 +309,7 @@ const TablePago = () => {
 
       // New calculation for turn
       console.log(tableData);
-      
+
       const totalAmount = parseFloat(updatedState.cashAmount || 0) + parseFloat(updatedState.debitAmount || 0) + parseFloat(updatedState.creditAmount || 0) + parseFloat(updatedState.transferAmount || 0);
 
       updatedState.turn = totalAmount - (tableData[0].order_total + taxAmount + tipAmount); // Update turn based on total amounts
@@ -569,7 +569,6 @@ const TablePago = () => {
               setCustomerData({});
               setSelectedCheckboxes([]);
               handleShow11();
-
               localStorage.removeItem("cartItems");
               localStorage.removeItem("currentOrder");
               localStorage.removeItem("payment");
@@ -1042,17 +1041,17 @@ const TablePago = () => {
           className="j-counter-price position-sticky"
           style={{ top: "77px" }}
         >
-          <div className="j_position_fixed j_b_hd_width">
+          <div className="j_position_fixed j_b_hd_width ak-position">
             <h2 className="text-white j-tbl-text-13">Resumen</h2>
             <div className="j-counter-price-data">
               <h3 className="text-white mt-3 j-tbl-text-13">Datos</h3>
-              <div className="j_td_center my-3">
-                <div className="j-busy-table j_busy_table_last d-flex align-items-center">
+              <div className="j_td_center my-3 ak-w-100">
+                <div className="j-busy-table j_busy_table_last d-flex align-items-center ak-w-50">
                   <div className="j-b-table" />
-                  <p className="j-table-color j-tbl-font-6">Ocupado</p>
+                  <p className="j-table-color j-tbl-font-6 ak-input">Ocupado</p>
                 </div>
 
-                <div className="b-date-time b_date_time2  d-flex align-items-center">
+                <div className="b-date-time b_date_time2  d-flex align-items-center ak-w-50">
                   <svg
                     class="j-canvas-svg-i"
                     aria-hidden="true"
@@ -1069,21 +1068,21 @@ const TablePago = () => {
                     />
                   </svg>
 
-                  <p className="mb-0 ms-2 me-3 text-white j-tbl-font-6">
+                  <p className="mb-0 ms-2 me-3 text-white j-tbl-font-6 ak-input">
                     {elapsedTime}
                   </p>
                 </div>
               </div>
 
               <div className="j-counter-price-data">
-                <div className="j-orders-inputs j_td_inputs">
-                  <div className="j-orders-code">
+                <div className="j-orders-inputs j_td_inputs ak-w-100">
+                  <div className="j-orders-code ak-w-50">
                     <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                       Quién registra
                     </label>
                     <div>
                       <input
-                        className="j-input-name j_input_name520"
+                        className="j-input-name j_input_name520 ak-input"
                         type="text"
                         placeholder="Lucia Lopez"
                         value={tableData[0]?.customer_name}
@@ -1091,13 +1090,13 @@ const TablePago = () => {
                       />
                     </div>
                   </div>
-                  <div className="j-orders-code">
+                  <div className="j-orders-code ak-w-50">
                     <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
                       Personas
                     </label>
                     <div>
                       <input
-                        className="j-input-name630"
+                        className="j-input-name630 ak-input"
                         type="text"
                         placeholder="5"
                         value={tableData[0]?.person}
@@ -1141,9 +1140,9 @@ const TablePago = () => {
                                 </h5>
                               </div>
                               <div className="d-flex align-items-center">
-                                <div className="j-counter-mix">
+                                <div className="j-counter-mix text-center">
 
-                                  <h3> {item.quantity}</h3>
+                                  <h3 className="mx-auto"> {item.quantity}</h3>
 
                                 </div>
                                 <h4 className="text-white fw-semibold">
@@ -1199,7 +1198,7 @@ const TablePago = () => {
                       </Link>
                     )}
                   </div>
-                  <div className="j-counter-total">
+                  <div className="j-counter-total ak-counter-total">
                     <h5 className="text-white j-tbl-text-15">Costo total</h5>
                     <div className="j-total-discount d-flex justify-content-between">
                       <p className="j-counter-text-2">Artículos</p>
@@ -1293,7 +1292,7 @@ const TablePago = () => {
                               paymentAmt={customerData}
                               paymentType={selectedCheckboxes}
                             /> */}
-                    <TableLastRecipt  data={tableData} itemInfo={itemInfo} payment={paymentInfo} paymentAmt={customerData} />
+                    <TableLastRecipt data={tableData} itemInfo={itemInfo} payment={paymentInfo} paymentAmt={customerData} />
                     {console.log("cust", customerData)}
                   </Modal.Body>
                   <Modal.Footer className="sjmodenone">

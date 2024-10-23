@@ -635,14 +635,11 @@ console.log(orderData)
       }
       cartItems.push(obj)
     })
-
+    localStorage.setItem("tableId", JSON.stringify(orderData?.table_id));
     localStorage.setItem("currentOrder", JSON.stringify(currentOrder));
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
-
     navigate("/home/usa/bhomedelivery/datos");
-
   }
-
 
   const [creditNote, setCreditNote] = useState(false);
 

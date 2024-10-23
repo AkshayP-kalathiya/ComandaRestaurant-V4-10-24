@@ -34,6 +34,10 @@ const DeliveryPago = () => {
     JSON.parse(localStorage.getItem("currentOrder")) || []
   );
 
+  const [tableId] = useState(
+    JSON.parse(localStorage.getItem("tableId")) || null
+  );
+
   const [tipAmount, setTipAmount] = useState(0);
   const [show11, setShow11] = useState(false);
   const handleClose11 = () => {
@@ -191,10 +195,10 @@ const DeliveryPago = () => {
         }));
       }
       setSelectedCheckboxes((prev) => prev.filter((item) => item !== value));
-     
+
       setCustomerData((prevData) => ({
         ...prevData,
-        [value + "Amount"]: "" 
+        [value + "Amount"]: ""
       }));
     } else {
       setSelectedCheckboxes((prev) => [...prev, value]);
@@ -211,8 +215,8 @@ const DeliveryPago = () => {
       paymentType: undefined
     }));
   };
-  
-  
+
+
   const handleChange = (event) => {
     let { name, value } = event.target;
     value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
@@ -220,7 +224,7 @@ const DeliveryPago = () => {
     const otherbox = selectedCheckboxes.filter(item => !name.includes(item))
     console.log(otherbox);
     setCustomerData((prevState) => {
-      
+
       const currentValue = parseFloat(value) || 0;
       const totalDue = finalTotal + taxAmount + tipAmount;
       const otherAmount = Math.max(totalDue - currentValue, 0);
@@ -233,7 +237,7 @@ const DeliveryPago = () => {
       };
 
       console.log(updatedState);
-      
+
 
       if (otherbox.length > 0) {
         const otherPaymentType = otherbox[0] + 'Amount';
@@ -309,10 +313,6 @@ const DeliveryPago = () => {
     );
     setCartItems(updatedCartItems);
   };
-
- 
-
-
   // ==== Get BOX Data =====
 
   const [boxId, setBoxId] = useState('')
@@ -465,37 +465,56 @@ const DeliveryPago = () => {
       const response = await axios.post(`${apiUrl}${url}`, orderData, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      // console.log(response.data)
-      // if (response.data.success) {
+      console.log(response);
 
-      try {
-        const responsePayment = await axios.post(
-          `${apiUrl}/payment/insert`,
-          paymentData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
+      if (response.data.success || response.data[1] == 200) {
+
+        try {
+          const responsePayment = await axios.post(
+            `${apiUrl}/payment/insert`,
+            paymentData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
             }
+          )
+          setIsProcessing(false)
+          console.log(responsePayment);
+
+          if (responsePayment.data.success) {
+
+            if (tableId) {
+              try {
+                const resStatus = await axios.post(`${apiUrl}/table/updateStatus`, {
+                  table_id: tableId,
+                  status: "available",
+                  admin_id: admin_id
+                }, {
+                  headers: {
+                    Authorization: `Bearer ${token}`
+                  }
+                })
+              } catch (error) {
+                console.log("Table Status not Upadte ," + error.message);
+              }
+            }
+              localStorage.removeItem("cartItems");
+              localStorage.removeItem("currentOrder");
+              localStorage.removeItem("payment");
+              handleShow11();
+           
           }
-        )
-        setIsProcessing(false)
-        // console.log("sbhs",responsePayment);
-        if (responsePayment.status) {
-          localStorage.removeItem("cartItems");
-          localStorage.removeItem("currentOrder");
-          localStorage.removeItem("payment");
-          handleShow11();
+        } catch (error) {
+          setIsProcessing(false)
+          console.log("Payment not done." + error.message);
         }
-        // console.log("payemnt suc", responsePayment.data);
-      } catch (error) {
-        setIsProcessing(false)
-        console.log("Payment not done." + error.message);
+      } else {
+        alert(response.data.message)
       }
-      // }
     } catch (error) {
       setIsProcessing(false)
       console.error("Error creating order : ", error);
-      //enqueueSnackbar (error?.response?.data?.message, { variant: 'error' })
     }
     setIsProcessing(false)
     // localStorage.removeItem("cartItems");

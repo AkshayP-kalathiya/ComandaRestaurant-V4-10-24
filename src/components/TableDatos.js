@@ -1053,17 +1053,17 @@ const TableDatos = () => {
             className="j-counter-price position-sticky"
             style={{ top: "77px" }}
           >
-            <div className="j_position_fixed j_b_hd_width">
+            <div className="j_position_fixed j_b_hd_width ak-position">
               <h2 className="text-white j-tbl-text-13">Resumen</h2>
               <div className="j-counter-price-data">
                 <h3 className="text-white mt-3 j-tbl-text-13">Datos</h3>
-                <div className="j_td_center my-3">
-                  <div className="j-busy-table j_busy_table_last d-flex align-items-center">
+                <div className="j_td_center my-3 ak-w-100">
+                  <div className="j-busy-table j_busy_table_last d-flex align-items-center ak-w-50">
                     <div className="j-b-table" />
                     <p className="j-table-color j-tbl-font-6">Ocupado</p>
                   </div>
 
-                  <div className="b-date-time b_date_time2  d-flex align-items-center">
+                  <div className="b-date-time b_date_time2  d-flex align-items-center ak-w-50">
                     <svg
                       class="j-canvas-svg-i"
                       aria-hidden="true"
@@ -1086,15 +1086,15 @@ const TableDatos = () => {
                   </div>
                 </div>
 
-                <div className="j-counter-price-data">
-                  <div className="j-orders-inputs j_td_inputs">
-                    <div className="j-orders-code">
+                <div className="j-counter-price-data ">
+                  <div className="j-orders-inputs j_td_inputs ak-w-100">
+                    <div className="j-orders-code ak-w-50">
                       <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                         Quién registra
                       </label>
                       <div>
                         <input
-                          className="j-input-name j_input_name520"
+                          className="j-input-name j_input_name520 ak-input"
                           type="text"
                           placeholder="Lucia Lopez"
                           value={tableData[0]?.customer_name}
@@ -1102,13 +1102,13 @@ const TableDatos = () => {
                         />
                       </div>
                     </div>
-                    <div className="j-orders-code">
+                    <div className="j-orders-code ak-w-50">
                       <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
                         Personas
                       </label>
                       <div>
                         <input
-                          className="j-input-name630"
+                          className="j-input-name630 ak-input"
                           type="text"
                           placeholder="5"
                           value={tableData[0]?.person}
@@ -1228,7 +1228,7 @@ const TableDatos = () => {
                         </Link>
                       )}
                     </div>
-                    <div className="j-counter-total">
+                    <div className="j-counter-total ak-counter-total">
                       <h5 className="text-white j-tbl-text-15">Costo total</h5>
                       <div className="j-total-discount d-flex justify-content-between">
                         <p className="j-counter-text-2">Artículos</p>

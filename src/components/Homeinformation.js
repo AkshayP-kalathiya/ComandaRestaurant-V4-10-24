@@ -654,7 +654,7 @@ export default function Homeinformation() {
       }
       cartItems.push(obj)
     })
-
+    localStorage.setItem("tableId", JSON.stringify(orderData[0]?.table_id));
     localStorage.setItem("currentOrder", JSON.stringify(currentOrder));
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
 

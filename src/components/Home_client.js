@@ -180,7 +180,7 @@ function Home_client() {
       // Group users and collect their order_master_ids
       const groupedUsers = groupUsersByDetails(response.data.result);
 
-      setOrderUser(groupedUsers);
+      setOrderUser(groupedUsers.reverse());
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -192,7 +192,9 @@ function Home_client() {
     const groupedUsers = {};
 
     users.forEach(user => {
-      const key = `${user.firstname}|${user.business_name}|${user.email}`;
+      const displayName = user.firstname || user.business_name;
+    const fullName = `${displayName} ${user.lastname || ''}`.trim();
+    const key = `${fullName}|${user.rut}`;
 
       if (!groupedUsers[key]) {
         groupedUsers[key] = {

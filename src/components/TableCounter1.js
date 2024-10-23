@@ -1018,7 +1018,7 @@ const TableCounter1 = () => {
             className="j-counter-price position-sticky"
             style={{ top: "77px" }}
           >
-            <div className="j_position_fixed j_b_hd_width">
+            <div className="j_position_fixed j_b_hd_width ak-position">
               <div className="b-summary-center  align-items-center text-white d-flex justify-content-between">
                 <h2 className="mb-0 j-tbl-font-5">Resumen</h2>
                 <Link to="/table">
@@ -1032,12 +1032,12 @@ const TableCounter1 = () => {
                   // Display table data
                   <div>
                     <h4 className="j-table-co4 j-tbl-text-13">Mesa {tId}</h4>
-                    <div className="d-flex align-items-center justify-content-between my-3">
-                      <div className="j-busy-table d-flex align-items-center">
+                    <div className="d-flex align-items-center justify-content-between my-3 ak-w-100">
+                      <div className="j-busy-table d-flex align-items-center ak-w-50">
                         <div className="j-b-table" />
-                        <p className="j-table-color j-tbl-font-6">Ocupado</p>
+                        <p className="j-table-color j-tbl-font-6 ak-input">Ocupado</p>
                       </div>
-                      <div className="b-date-time d-flex align-items-center">
+                      <div className="b-date-time d-flex align-items-center ak-w-50">
                         <svg
                           className="j-canvas-svg-i"
                           aria-hidden="true"
@@ -1053,32 +1053,32 @@ const TableCounter1 = () => {
                             clipRule="evenodd"
                           />
                         </svg>
-                        <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1">
+                        <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1 ak-input">
                           {elapsedTime}
                         </p>
                       </div>
                     </div>
                     <div className="j-orders-inputs">
                       <div>
-                        <div className="j-orders-inputs">
-                          <div className="j-orders-code">
+                        <div className="j-orders-inputs ak-w-100">
+                          <div className="j-orders-code ak-w-50">
                             <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                               Quién registra
                             </label>
                             <input
-                              className="j-input-name"
+                              className="j-input-name ak-input"
                               type="text"
                               value={tableData[0].customer_name}
                               readOnly
                             />
                           </div>
-                          <div className="j-orders-code">
+                          <div className="j-orders-code ak-w-50">
                             <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
                               Personas
                             </label>
                             <div>
                               <input
-                                className="j-input-name630"
+                                className="j-input-name630 ak-input"
                                 type="text"
                                 value={tableData[0].person}
                                 readOnly
@@ -1218,7 +1218,7 @@ const TableCounter1 = () => {
                               </Link>
                             )}
                           </div>
-                          <div className="j-counter-total">
+                          <div className="j-counter-total ak-counter-total">
                             <h5 className="text-white j-tbl-text-15 ">
                               Costo total
                             </h5>
@@ -1275,14 +1275,14 @@ const TableCounter1 = () => {
                   cartItems.length === 0 ? (
                     <div>
                       <h4 className="j-table-co4 j-tbl-text-13">Mesa {tId}</h4>
-                      <div className="d-flex align-items-center justify-content-between my-3">
-                        <div className="j-busy-table d-flex align-items-center">
+                      <div className="d-flex align-items-center justify-content-between my-3 ak-w-100">
+                        <div className="j-busy-table d-flex align-items-center ak-w-50">
                           <div className="j-a-table" />
-                          <p className="j-table-color j-tbl-btn-font-1">
+                          <p className="j-table-color j-tbl-btn-font-1 ak-input">
                             Disponible
                           </p>
                         </div>
-                        <div className="b-date-time d-flex align-items-center">
+                        <div className="b-date-time d-flex align-items-center ak-w-50">
                           <svg
                             className="j-canvas-svg-i"
                             aria-hidden="true"
@@ -1298,18 +1298,18 @@ const TableCounter1 = () => {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1">
+                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1 ak-input">
                             00 min 00 sg
                           </p>
                         </div>
                       </div>
-                      <div className="j-orders-inputs">
-                        <div className="j-orders-code">
+                      <div className="j-orders-inputs ak-w-100">
+                        <div className="j-orders-code ak-w-50">
                           <label className="j-label-name text-white j-tbl-btn-font-1 mb-2">
                             Quién registra
                           </label>
                           <input
-                            className="j-input-name"
+                            className="j-input-name ak-input"
                             type="text"
                             placeholder="Lucia Lopez"
                             value={customerName}
@@ -1324,13 +1324,13 @@ const TableCounter1 = () => {
                             </div>
                           )}
                         </div>
-                        <div className="j-orders-code">
+                        <div className="j-orders-code ak-w-50">
                           <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
                             Personas
                           </label>
                           <div>
                             <input
-                              className="j-input-name630"
+                              className="j-input-name630 ak-input"
                               type="text"
                               placeholder="5"
                               value={person}
@@ -1363,14 +1363,14 @@ const TableCounter1 = () => {
                     <div>
                       {/* Existing cart items display code */}
                       <h4 className="j-table-co4 j-tbl-text-13">Mesa {tId}</h4>
-                      <div className="d-flex align-items-center justify-content-between my-3">
-                        <div className="j-busy-table d-flex align-items-center">
+                      <div className="d-flex align-items-center justify-content-between my-3 ak-w-100">
+                        <div className="j-busy-table d-flex align-items-center ak-w-50">
                           <div className="j-a-table" />
-                          <p className="j-table-color j-tbl-btn-font-1">
+                          <p className="j-table-color j-tbl-btn-font-1 ak-input">
                             Disponible
                           </p>
                         </div>
-                        <div className="b-date-time d-flex align-items-center">
+                        <div className="b-date-time d-flex align-items-center ak-w-50">
                           <svg
                             className="j-canvas-svg-i"
                             aria-hidden="true"
@@ -1386,20 +1386,20 @@ const TableCounter1 = () => {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1">
+                          <p className="mb-0 ms-2 me-3 text-white j-tbl-btn-font-1 ak-input">
                             {date}
                           </p>
                         </div>
                       </div>
-                      <div className="j-orders-inputs">
-                        <div>
-                          <div className="j-orders-inputs">
-                            <div className="j-orders-code">
+                      <div className="j-orders-inputs ak-w-100">
+                        <div className="w-100">
+                          <div className="j-orders-inputs ak-w-100">
+                            <div className="j-orders-code ak-w-50">
                               <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                                 Quién registra
                               </label>
                               <input
-                                className="j-input-name"
+                                className="j-input-name ak-input"
                                 type="text"
                                 placeholder="Lucia Lopez"
                                 value={customerName}
@@ -1414,13 +1414,13 @@ const TableCounter1 = () => {
                                 </div>
                               )}
                             </div>
-                            <div className="j-orders-code">
+                            <div className="j-orders-code ak-w-50">
                               <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
                                 Personas
                               </label>
                               <div>
                                 <input
-                                  className="j-input-name630"
+                                  className="j-input-name630 ak-input"
                                   type="text"
                                   placeholder="5"
                                   value={person}
@@ -1543,7 +1543,7 @@ const TableCounter1 = () => {
                                 {cartError}
                               </div>
                             )}
-                            <div className="j-counter-total">
+                            <div className="j-counter-total ak-counter-total">
                               <h5 className="text-white j-tbl-text-15">
                                 Costo total
                               </h5>
