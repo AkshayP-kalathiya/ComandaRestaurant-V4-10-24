@@ -120,7 +120,7 @@ const Tables = () => {
   const fetchAllItems = async () => {
     setIsProcessing(true)
     try {
-      const response = await axios.get(`${apiUrl}/item/getAll`, {
+      const response = await axios.get(`${apiUrl}/item/getAllDeletedAt`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -1332,7 +1332,7 @@ const Tables = () => {
                 </div>
               </div>
               <div
-                style={{ flexGrow: "1" }}
+                style={{ flexGrow: "1",width:"min-content" }}
                 className=" col-9 j-card-width2 j-table-position-second m-0 p-0"
               >
                 <div className="m_bgblack j-tbl-font-5 j-block text-white">
@@ -1466,8 +1466,8 @@ const Tables = () => {
                     </Button>
                   </Modal.Footer>
                 </Modal>
-                <div className="j-show-table pb-3">
-                  <div className="j_tables_center ">
+                <div className="j-show-table pb-3 ak-show-table">
+                  <div className="j_tables_center ak-show-table">
                     <div
                       onClick={() => handleFilterChange("available")}
                       className="j-available-table d-flex align-items-center"

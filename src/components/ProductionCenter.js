@@ -24,7 +24,8 @@ export default function ProductionCenter() {
   const admin_id = localStorage.getItem("admin_id");
   const role = localStorage.getItem("role");
   const [productionCenters, setProductionCenters] = useState([]);
-  const [prodName, setProdName] = useState("");
+  const prodNameRef = useRef(null);
+  const [prodName, setProdName] = useState(prodNameRef?.current?.value || "");
   const [printerCode, setPrinterCode] = useState("");
   const [selectedMenu, setSelectedMenu] = useState(null);
   const [selectedMenus, setSelectedMenus] = useState([]);
@@ -64,12 +65,18 @@ export default function ProductionCenter() {
   const navigate = useNavigate();
 
   // Update these handlers
+
   const handleProdNameChange = (e) => {
-    setProdName(e.target.value);
+    const newValue = e.target.value;
+    prodNameRef.current.value = newValue;
+    setProdName(prodNameRef.current.value);
     if (e.target.value.trim()) {
       setProdNameError("");
     }
   };
+
+  console.log("vsdvgs");
+  
 
   const handlePrinterCodeChange = (e) => {
     setPrinterCode(e.target.value);
@@ -437,7 +444,7 @@ export default function ProductionCenter() {
       setObj1(response.data.items);
       setIsProcessing(false);
       setFilteredItemsMenu(response.data.items);
-      setItems(response.data.items);
+      // setItems(response.data.items);
     } catch (error) {
       console.error(
         "Error fetching items:",
@@ -647,7 +654,7 @@ export default function ProductionCenter() {
       setSelectedMenus(prev => prev.filter(menuId => menuId !== id));
 
       // Update the items list to remove items from the deleted production center
-      setItems(prev => prev.filter(item => item.production_center_id !== id));
+      // setItems(prev => prev.filter(item => item.production_center_id !== id));
       fetchMenuData()
       fetchMenuItemData();
       getProductionCenters();
@@ -660,12 +667,12 @@ export default function ProductionCenter() {
   };
 
 
-  useEffect(() => {
-    const filteredItems = selectedProductionCenters.length > 0
-      ? obj1.filter(item => selectedProductionCenters.some(center => center.id === item.production_center_id))
-      : obj1;
-    setItems(filteredItems);
-  }, [selectedProductionCenters, obj1]);
+  // useEffect(() => {
+  //   const filteredItems = selectedProductionCenters.length > 0
+  //     ? obj1.filter(item => selectedProductionCenters.some(center => center.id === item.production_center_id))
+  //     : obj1;
+  //   setItems(filteredItems);
+  // }, [selectedProductionCenters, obj1]);
 
 
 
@@ -689,15 +696,16 @@ export default function ProductionCenter() {
     });
 
     // Filter items based on selected production centers
-    setItems(prev => {
-      const updatedSelectedMenus = selectedMenus.includes(productionCenterId)
-        ? selectedMenus.filter(id => id !== productionCenterId)
-        : [...selectedMenus, productionCenterId];
+    
+    // setItems(prev => {
+    //   const updatedSelectedMenus = selectedMenus.includes(productionCenterId)
+    //     ? selectedMenus.filter(id => id !== productionCenterId)
+    //     : [...selectedMenus, productionCenterId];
 
-      return updatedSelectedMenus.length > 0
-        ? obj1.filter(item => updatedSelectedMenus.includes(item.production_center_id))
-        : obj1;
-    });
+    //   return updatedSelectedMenus.length > 0
+    //     ? obj1.filter(item => updatedSelectedMenus.includes(item.production_center_id))
+    //     : obj1;
+    // });
 
 
     setItemstoUpdate(prev => {
@@ -706,11 +714,15 @@ export default function ProductionCenter() {
         // Remove productionCenterId if it exists
         return prev.filter(v => v.production_id != productionCenterId);
       } else {
+        console.log(obj1);
+        
         const add = {
-          item_ids: menu.find(v => v.id === productionCenterId)?.items.map(item => item.id) || [],
+          item_ids: menu.find(v => v.id === productionCenterId)?.items
+          .map(item => (obj1.some(obj => obj.id === item.id) ? item.id : null))
+          .filter(id => id !== null) || [],
           production_id: productionCenterId
         };
-        // Add productionCenterId if it does not exist
+        
         return [...prev, add];
       }
     });
@@ -724,6 +736,8 @@ export default function ProductionCenter() {
   const handleAddMenu = async () => {
     handleClose1Prod();
     setIsProcessing(true);
+    console.log(itemstoUpdate[0]);
+
     try {
       const response = await axios.post(
         `${apiUrl}/item/updateProduction`, itemstoUpdate[0],
@@ -980,6 +994,7 @@ export default function ProductionCenter() {
                           className="form-control m_input ps-3"
                           id="exampleFormControlInput1"
                           placeholder="Eje.Cocina"
+                          ref={prodNameRef}
                           value={prodName}
                           onChange={handleProdNameChange}
                         />

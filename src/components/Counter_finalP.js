@@ -530,8 +530,6 @@ const Counter_finalP = () => {
               }
             }
           )
-
-
           console.log("payemnt suc", responsePayment.data);
 
           if (creditId) {
@@ -581,6 +579,8 @@ const Counter_finalP = () => {
 
         }
         // handlePrint();
+      }else{
+        alert(response.data.message)
       }
     } catch (error) {
       console.error("Error creating order : ", error);

@@ -204,6 +204,8 @@ function Home_client() {
       }
     });
     setIsProcessing(false);
+    console.log(groupedUsers);
+    
 
     return Object.values(groupedUsers);
   }
