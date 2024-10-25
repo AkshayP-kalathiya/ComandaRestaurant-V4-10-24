@@ -712,12 +712,12 @@ const BHomeDelivery = () => {
             </div>
             <div className="b-date-time d-flex flex-wrap column-gap-3 align-items-center justify-content-end text-white">
               <div>
-                <FaCalendarAlt className="mb-1" />
-                <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleDateString('en-GB')}</p>
+              <FaCalendarAlt className="mb-1" />
+              <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleDateString('en-GB')}</p>
               </div>
               <div>
-                <MdOutlineAccessTimeFilled className="mb-1" />
-                <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <MdOutlineAccessTimeFilled className="mb-1"/>
+              <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
             </div>
             <div className="b-delivery-button mt-2">
@@ -891,7 +891,6 @@ const BHomeDelivery = () => {
 
           </div>
         </div>
-
         {/* processing */}
         <Modal
           show={isProcessing}
@@ -905,6 +904,9 @@ const BHomeDelivery = () => {
             <p className="mt-2">Procesando solicitud...</p>
           </Modal.Body>
         </Modal>
+
+
+
 
         <Modal
           show={showEditFam}

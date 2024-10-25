@@ -352,11 +352,11 @@ function Home_detail_no() {
                                 <div className=' mx-4 mt-4 b_inputt b_home_field'>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2 " className="">Nombre</label>
-                                        <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">Código nota de credito</label>
-                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3" value={creditNote?.code} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3" value={creditNote?.code} id="inputPassword2" placeholder="0123456789" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                 </div>
                                 <div className='d-flex gap-5 mx-4 m b_inputt b_id_input b_home_field'>
@@ -366,7 +366,7 @@ function Home_detail_no() {
                                     </div>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">Correo electrónico</label>
-                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={creditNote?.email} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={creditNote?.email} id="inputPassword2" placeholder="ejemplo@gmail.com" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                 </div>
                             </form>
@@ -434,6 +434,7 @@ function Home_detail_no() {
                                             <div className='me-5 fw-bold'>${returnDetails?.reduce((acc, v) => acc + v.amount * v.quantity, 0) + parseFloat((returnDetails?.reduce((acc, v) => acc + v.amount * v.quantity, 0) * 0.19).toFixed(2))}</div>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                             <div className='text-white ms-4'>

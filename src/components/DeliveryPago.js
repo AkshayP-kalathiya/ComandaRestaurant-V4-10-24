@@ -421,7 +421,7 @@ const DeliveryPago = () => {
         transaction_code: 1,
         order_details: orderDetails,
         box_id: boxId?.id != 'undefined' ? boxId?.id : '',
-        customer_name: payment.firstname || payment.business_name
+        customer_name:payment.firstname || payment.business_name
       }
 
     } else {
@@ -475,7 +475,7 @@ const DeliveryPago = () => {
         headers: { Authorization: `Bearer ${token}` }
       })
       // console.log(response.data)
-      if (response.data) {
+      if (response.data.success) {
 
         try {
           const responsePayment = await axios.post(

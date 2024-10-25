@@ -17,6 +17,11 @@ const Counter_finalP = () => {
   const userId = localStorage.getItem("userId");
   const admin_id = localStorage.getItem("admin_id");
   const navigate = useNavigate();
+  const [orderId, setOrderId] = useState(sessionStorage.getItem("orderId"));
+
+
+
+  console.log("orderId: ", orderId);
   const [cartItems, setCartItems] = useState(
     JSON.parse(localStorage.getItem("cartItems")) || []
   );
@@ -34,7 +39,7 @@ const Counter_finalP = () => {
   const [creditData, setCreditData] = useState({})
   const handleClose11 = () => {
     setShow11(false)
-    if(creditId){
+    if (creditId) {
       localStorage.removeItem("credit");
       navigate(`/home/client/detail_no2/${creditData?.order_id}`);
     }
@@ -81,7 +86,7 @@ const Counter_finalP = () => {
   const [formErrors, setFormErrors] = useState({});
   const [show, setShow] = useState(false);
   const [tipError, setTipError] = useState("");
- 
+
 
   const handleClose = () => {
     setShow(false);
@@ -186,7 +191,7 @@ const Counter_finalP = () => {
 
   const [selectedCheckboxes, setSelectedCheckboxes] = useState([]);
   const [customerData, setCustomerData] = useState(initialCustomerData);
-  console.log(selectedCheckboxes);
+  // console.log(selectedCheckboxes);
 
   const handleCheckboxChange = (value) => {
     // console.log(value);
@@ -223,28 +228,28 @@ const Counter_finalP = () => {
   const handleChange = (event) => {
     let { name, value } = event.target;
     value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
-    console.log(name);
+    // console.log(name);
     const otherbox = selectedCheckboxes.filter(item => !name.includes(item))
-    console.log(otherbox);
+    // console.log(otherbox);
     setCustomerData((prevState) => {
 
       const currentValue = parseFloat(value) || 0;
       const totalDue = finalTotal + taxAmount + tipAmount;
       const otherAmount = Math.max(totalDue - currentValue, 0);
 
-      console.log(otherAmount);
+      // console.log(otherAmount);
 
       const updatedState = {
         ...prevState,
         [name]: value,
       };
 
-      console.log(updatedState);
+      // console.log(updatedState);
       if (otherbox.length > 0) {
         const otherPaymentType = otherbox[0] + 'Amount';
         updatedState[otherPaymentType] = otherAmount.toFixed(2);
       }
-      console.log(updatedState);
+      // console.log(updatedState);
 
       // New calculation for turn
       const totalAmount = parseFloat(updatedState.cashAmount || 0) + parseFloat(updatedState.debitAmount || 0) + parseFloat(updatedState.creditAmount || 0) + parseFloat(updatedState.transferAmount || 0);
@@ -252,7 +257,7 @@ const Counter_finalP = () => {
       return updatedState;
 
     });
-    console.log("Payment", customerData);
+    // console.log("Payment", customerData);
     setFormErrors((prevState) => ({
       ...prevState,
       [name]: undefined
@@ -331,15 +336,15 @@ const Counter_finalP = () => {
         },
       });
 
-      console.log(response.data.data);
+      // console.log(response.data.data);
 
       const credit = response.data.data?.find((v) => v.id == creditId);
-      console.log(credit);
-      
+      // console.log(credit);
+
       const Total = credit.return_items?.reduce((acc, v) => acc + v.amount * v.quantity, 0);
       const creditTotal = parseFloat((Total + Total * 0.19).toFixed(2))
 
-      console.log(Total,creditTotal);
+      // console.log(Total,creditTotal);
 
       setCreditData({ ...credit, creditTotal: creditTotal });
       // console.log(credit);
@@ -353,7 +358,7 @@ const Counter_finalP = () => {
     setIsProcessing(false);
   }
 
-  console.log(creditData);
+  // console.log(creditData);
 
 
   // ==== Get BOX Data =====
@@ -414,7 +419,7 @@ const Counter_finalP = () => {
     const totalWithTax = finalTotal + taxAmount + tipAmount;
 
     const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
-    console.log(totalPaymentAmount < totalWithTax, totalPaymentAmount <= 0)
+    // console.log(totalPaymentAmount < totalWithTax, totalPaymentAmount <= 0)
     // Validate payment amount
     if (!totalPaymentAmount || totalPaymentAmount <= 0) {
       errors.amount = "Por favor, introduzca un importe de pago válido";
@@ -438,7 +443,7 @@ const Counter_finalP = () => {
   const [navigationPath, setNavigationPath] = useState('');
 
   const navigationPage = () => {
-    console.log(navigationPath, "asgaysg ");
+    // console.log(navigationPath, "asgaysg ");
     if (navigationPath) {
       navigate(navigationPath);
     }
@@ -446,7 +451,7 @@ const Counter_finalP = () => {
   };
 
   const handleLinkNavigation = (path) => {
-    console.log("sbhdj", isSubmitted)
+    // console.log("sbhdj", isSubmitted)
     if (!isSubmitted) {
       setNavigationPath(path); // Store the path to navigate after confirmation
       setShowDeleteConfirmation(true); // Show confirmation modal
@@ -477,7 +482,7 @@ const Counter_finalP = () => {
     }));
 
     const totalPaymentAmount = parseFloat(customerData.cashAmount || 0) + parseFloat(customerData.debitAmount || 0) + parseFloat(customerData.creditAmount || 0) + parseFloat(customerData.transferAmount || 0);
-    console.log("payment", payment);
+    // console.log("payment", payment);
     const orderData = {
       order_details: orderDetails,
       admin_id: admin_id,
@@ -503,14 +508,21 @@ const Counter_finalP = () => {
 
     setIsProcessing(true);
     try {
-      const response = await axios.post(`${apiUrl}/order/place_new`, orderData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      if (!orderId) {
 
-      order_master_id = response.data.kdsOrder.order_id
-      console.log("order_master_id", response.data.kdsOrder.id);
+        const response = await axios.post(`${apiUrl}/order/place_new`, orderData, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!response.data.success) {
+          alert(response.data.message)
+        }
+        order_master_id = response.data.kdsOrder.order_id;
+        sessionStorage.setItem('orderId', order_master_id);
+        setOrderId(order_master_id);
+      }
+      // console.log("order_master_id", response.data.kdsOrder.id);
       // alert("sdv");
-      if (response.data) {
+      if (order_master_id || orderId) {
 
         const paymentData = {
           ...payment,
@@ -530,7 +542,9 @@ const Counter_finalP = () => {
               }
             }
           )
-          console.log("payemnt suc", responsePayment.data);
+
+
+          // console.log("payemnt suc", responsePayment.data);
 
           if (creditId) {
             setIsProcessing(true);
@@ -548,7 +562,7 @@ const Counter_finalP = () => {
                 }
               )
               .then((response) => {
-                console.log(response.data);
+                // console.log(response.data);
                 setIsProcessing(false);
                 // setShowcreditfinal(true);
                 // setTimeout(() => {
@@ -568,6 +582,8 @@ const Counter_finalP = () => {
           localStorage.removeItem("cartItems");
           localStorage.removeItem("currentOrder");
           localStorage.removeItem("payment");
+          sessionStorage.removeItem("orderId");
+          setOrderId('');
           setIsSubmitted(true);
           handleShow11();
           // handleClose11();
@@ -579,11 +595,10 @@ const Counter_finalP = () => {
 
         }
         // handlePrint();
-      }else{
-        alert(response.data.message)
       }
     } catch (error) {
       console.error("Error creating order : ", error);
+
       //enqueueSnackbar (error?.response?.data?.message, { variant: 'error' })
       setIsProcessing(false);
       setIsSubmitted(false);
@@ -1245,7 +1260,7 @@ const Counter_finalP = () => {
                               discount={discount}
                               paymentAmt={customerData}
                               paymentType={selectedCheckboxes}
-                              creditTotal ={creditId && creditData.creditTotal}
+                              creditTotal={creditId && creditData.creditTotal}
                             />
                           </Modal.Body>
                           <Modal.Footer className="sjmodenone">

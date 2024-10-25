@@ -572,7 +572,7 @@ const TableCounter1 = () => {
             `${apiUrl}/table/updateStatus`,
             {
               table_id: parseInt(tId),
-              status: "busy",
+              status: "busy", // Set the status you need
               admin_id: admin_id
             },
             {
@@ -582,12 +582,10 @@ const TableCounter1 = () => {
             }
           );
           console.log("Table status updated successfully", resTable.data);
-          // if(resTable.data.success){
             localStorage.removeItem("cartItems");
             setCartItems([]);
             setCountsoup([]);
             navigate("/table");
-          // }
         } catch (error) {
           setIsProcessing(false);
           console.log("Table status  Not updated" + error.message);
@@ -916,9 +914,9 @@ const TableCounter1 = () => {
     }
   };
 
-  const getUserName = (id) => {
+  const getUserName =   (id) => {
     const user = users.find(user => user.id === id);
-
+   
     if (user) {
       return user.name;
     } else {
@@ -1059,7 +1057,7 @@ const TableCounter1 = () => {
               <div className="j-counter-price-data mt-4">
                 <h3 className="text-white j-tbl-text-13 mb-3">Datos</h3>
                 {tableData && Object.keys(tableData).length > 0 ? (
-                  // Display table data 
+                  // Display table data
                   <div>
                     <h4 className="j-table-co4 j-tbl-text-13">Mesa {tId}</h4>
                     <div className="d-flex align-items-center justify-content-between my-3 ak-w-100">
@@ -1096,7 +1094,7 @@ const TableCounter1 = () => {
                       </div>
                     </div>
                     <div className="j-orders-inputs ak-w-100">
-                      <div className="w-100">
+                    <div className="w-100">
                         <div className="j-orders-inputs ak-w-100">
                           <div className="j-orders-code ak-w-50">
                             <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
@@ -1108,7 +1106,7 @@ const TableCounter1 = () => {
                               value={getUserName(tableData[0].user_id)}
                               readOnly
                             />
-                            {console.log("name", getUserName(tableData[0].user_id))}
+                           { console.log("name",getUserName(tableData[0].user_id)) }
                           </div>
                           <div className="j-orders-code ak-w-50">
                             <label className="j-label-name j-tbl-btn-font-1 text-white mb-2">
@@ -1387,7 +1385,7 @@ const TableCounter1 = () => {
                         </div>
                       </div>
                       <div className="b-product-order text-center">
-                        <svg class="w-6 h-6 text-gray-800 dark:text-white mb-2" style={{ color: "white" }} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 text-gray-800 dark:text-white mb-2" style={{color:"white"}} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 24 24">
                           <path fillRule="evenodd" d="M4.857 3A1.857 1.857 0 0 0 3 4.857v4.286C3 10.169 3.831 11 4.857 11h4.286A1.857 1.857 0 0 0 11 9.143V4.857A1.857 1.857 0 0 0 9.143 3H4.857Zm10 0A1.857 1.857 0 0 0 13 4.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 21 9.143V4.857A1.857 1.857 0 0 0 19.143 3h-4.286Zm-10 10A1.857 1.857 0 0 0 3 14.857v4.286C3 20.169 3.831 21 4.857 21h4.286A1.857 1.857 0 0 0 11 19.143v-4.286A1.857 1.857 0 0 0 9.143 13H4.857Zm10 0A1.857 1.857 0 0 0 13 14.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 21 19.143v-4.286A1.857 1.857 0 0 0 19.143 13h-4.286Z" clipRule="evenodd" />
                         </svg>
                         <h6 className="h6-product-order text-white j-tbl-pop-1">
