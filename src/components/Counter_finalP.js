@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "./Header";
 import { FaCircleCheck, FaMinus, FaPlus } from "react-icons/fa6";
 import { Accordion, Button, Modal, Spinner } from "react-bootstrap";
@@ -108,30 +108,101 @@ const Counter_finalP = () => {
   const [isEditing, setIsEditing] = useState(
     Array(cartItems.length).fill(false)
   );
-  const handleNoteChange = (index, note) => {
-    const updatedCartItems = [...cartItems];
-    updatedCartItems[index].note = note;
-    setCartItems(updatedCartItems);
-  };
+  // Add ref for note inputs
+  const noteInputRefs = useRef({});
 
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Enter") {
-      const updatedIsEditing = [...isEditing];
-      updatedIsEditing[index] = false;
-      setIsEditing(updatedIsEditing);
+  // Modified note handling functions
+  const handleNoteChange = (index, newNote) => {
+    // Update the input value directly using ref
+    if (noteInputRefs.current[index]) {
+      noteInputRefs.current[index].value = newNote;
     }
+    
+    // Debounce the state update to reduce re-renders
+    const timeoutId = setTimeout(() => {
+      setCartItems(prevItems => {
+        const updatedItems = [...prevItems];
+        updatedItems[index] = { ...updatedItems[index], note: newNote };
+        return updatedItems;
+      });
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
   };
 
   const handleAddNoteClick = (index) => {
-    const updatedIsEditing = [...isEditing];
-    updatedIsEditing[index] = true;
-    setIsEditing(updatedIsEditing);
-    const updatedCartItems = [...cartItems];
-    if (!updatedCartItems[index].note) {
-      updatedCartItems[index].note = "Nota: ";
-      setCartItems(updatedCartItems);
-    }
+    const updatedCartItems = cartItems.map((item, i) =>
+      i === index
+        ? { ...item, isEditing: true, note: item.note || "Nota: " }
+        : item
+    );
+    setCartItems(updatedCartItems);
+    
+    // Focus the input after state update
+    setTimeout(() => {
+      if (noteInputRefs.current[index]) {
+        noteInputRefs.current[index].focus();
+      }
+    }, 0);
   };
+
+  // const handleFinishEditing = (index) => {
+  //   // Get final value from ref
+  //   const finalNote = noteInputRefs.current[index]?.value || "";
+    
+  //   setCartItems(prevItems => {
+  //     const updatedItems = [...prevItems];
+  //     updatedItems[index] = {
+  //       ...updatedItems[index],
+  //       isEditing: false,
+  //       note: finalNote
+  //     };
+  //     return updatedItems;
+  //   });
+  // };
+
+  // Modified render section for the note input
+  const renderNoteInput = (item, index) => {
+    if (item.isEditing) {
+      return (
+        <div>
+          <input
+            className="j-note-input"
+            type="text"
+            defaultValue={item.note}
+            ref={el => noteInputRefs.current[index] = el}
+            onChange={e => handleNoteChange(index, e.target.value)}
+            onBlur={() => handleFinishEditing(index)}
+            onKeyDown={e => {
+              if (e.key === "Enter") handleFinishEditing(index);
+            }}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        {item.note ? (
+          <p 
+            className="j-nota-blue" 
+            style={{ cursor: "pointer" }} 
+            onClick={() => handleAddNoteClick(index)}
+          >
+            {item.note}
+          </p>
+        ) : (
+          <button
+            className="j-note-final-button"
+            onClick={() => handleAddNoteClick(index)}
+          >
+            + Agregar nota
+          </button>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (!(role == "admin" || role == "cashier")) {
       navigate('/dashboard')
@@ -1136,37 +1207,7 @@ const Counter_finalP = () => {
                                 key={index}
                                 className="text-white j-order-count-why"
                               >
-                                {item.isEditing ? (
-                                  <div>
-                                    <input
-                                      className="j-note-input"
-                                      type="text"
-                                      value={item.note}
-                                      onChange={(e) =>
-                                        handleNoteChange(index, e.target.value)}
-                                      onBlur={() => handleFinishEditing(index)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter")
-                                          handleFinishEditing(index);
-                                      }}
-                                      autoFocus
-                                    />
-                                  </div>
-                                ) : (
-                                  <div>
-                                    {item.note ? (
-                                      <p className="j-nota-blue">{item.note}</p>
-                                    ) : (
-                                      <button
-                                        className="j-note-final-button"
-                                        onClick={() =>
-                                          handleAddNoteClick(index)}
-                                      >
-                                        + Agregar nota
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
+                                {renderNoteInput(item, index)}
                               </div>
                             </div>
                           ))}

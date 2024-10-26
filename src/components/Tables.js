@@ -1332,7 +1332,7 @@ const Tables = () => {
                 </div>
               </div>
               <div
-                style={{ flexGrow: "1" }}
+                style={{ flexGrow: "1", width: "min-content" }}
                 className=" col-9 j-card-width2 j-table-position-second m-0 p-0"
               >
                 <div className="m_bgblack j-tbl-font-5 j-block text-white">
@@ -2154,6 +2154,7 @@ const Tables = () => {
                     {/* <p className="mb-0 ms-2 me-3 text-white j-tbl-font-6">
                       {elapsedTime}
                     </p> */}
+                    {console.log(tableData)}
                   </div>
                 </div>
                 <div className="j-counter-price-data">

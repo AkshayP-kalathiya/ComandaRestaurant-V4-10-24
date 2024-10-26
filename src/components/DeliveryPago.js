@@ -218,7 +218,6 @@ const DeliveryPago = () => {
   };
 
 
-
   const handleChange = (event) => {
     let { name, value } = event.target;
     value = value.replace(/[^0-9.]/g, ""); // Allow only numbers and decimal points
@@ -421,7 +420,7 @@ const DeliveryPago = () => {
         transaction_code: 1,
         order_details: orderDetails,
         box_id: boxId?.id != 'undefined' ? boxId?.id : '',
-        customer_name:payment.firstname || payment.business_name
+        customer_name: payment.firstname || payment.business_name
       }
 
     } else {
@@ -901,11 +900,21 @@ const DeliveryPago = () => {
             className="j-counter-price bg_gay bg_margin position-sticky"
             style={{ top: "77px" }}
           >
-            <div className="j_position_fixed j_b_hd_width">
+            <div className="j_position_fixed j_b_hd_width ak-position">
               <h2 className="text-white j-kds-body-text-1000">Resumen</h2>
-              <div className="j-counter-price-data">
-                <h3 className="text-white j-kds-body-text-1000">Datos</h3>
-                <div className="j_td_center my-3">
+              <div className="j-counter-price-data ak-w-100">
+                <h3 className="text-white j-kds-body-text-1000 w-100">Datos</h3>
+                <div className="b-date-time b_date_time2 d-flex flex-wrap column-gap-3 me-2 justify-content-end text-white">
+                  <div>
+                    <FaCalendarAlt className="mb-2" />
+                    <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleDateString('en-GB')}</p>
+                  </div>
+                  <div>
+                    <MdOutlineAccessTimeFilled className="mb-2" />
+                    <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                </div>
+                <div className="j_td_center">
                   <div className="j-busy-table j_busy_table_last d-flex align-items-center">
                     <div className=''>
                       <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
@@ -917,12 +926,12 @@ const DeliveryPago = () => {
                     {/* <p className="j-table-color j-tbl-font-6">Ocupado</p> */}
                   </div>
 
-                  <div className="b-date-time b_date_time2 d-flex align-items-center justify-content-end text-white">
+                  {/* <div className="b-date-time b_date_time2 d-flex align-items-center justify-content-end text-white">
                     <FaCalendarAlt />
                     <p className="mb-0 ms-2 me-3">{new Date().toLocaleDateString('en-GB')}</p>
                     <MdOutlineAccessTimeFilled />
                     <p className="mb-0 ms-2">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                  </div>
+                  </div> */}
 
                   {/* <div className="b-date-time b_date_time2  d-flex align-items-center">
                     <svg
@@ -947,14 +956,14 @@ const DeliveryPago = () => {
                   </div> */}
                 </div>
 
-                <div className="j-orders-inputs j_td_inputs">
-                  <div className="j-orders-code">
+                <div className="j-orders-inputs j_td_inputs ak-w-100">
+                  <div className="j-orders-code ak-w-100">
                     <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                       Quién registra
                     </label>
                     <div>
                       <input
-                        className="j-input-name j_input_name520"
+                        className="j-input-name j_input_name520 ak-w-100"
                         type="text"
                         // placeholder={orderType?.name}
                         disabled
@@ -1019,9 +1028,9 @@ const DeliveryPago = () => {
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <div className="j-counter-order">
-                      <h3 className="text-white j-tbl-font-5">Pedido </h3>
+                  <div className="ak-w-100">
+                    <div className="j-counter-order ak-w-100">
+                      <h3 className="text-white j-tbl-font-5 ak-w-100">Pedido </h3>
                       <div
                         className={`j-counter-order-data ${cartItems.length ===
                           0
@@ -1047,7 +1056,7 @@ const DeliveryPago = () => {
                                 </div>
                                 <div className="d-flex align-items-center">
                                   <div className="j-counter-mix j-counter-mix-remove">
-                                    <h3>{item.count}</h3>
+                                    <h3 className="mx-auto ps-2">{item.count}</h3>
                                   </div>
                                   <h4 className="text-white fw-semibold j_item_price d-flex">
                                     ${parseInt(item.price) * item.count}
@@ -1101,7 +1110,7 @@ const DeliveryPago = () => {
                           </Link>
                         )}
                       </div>
-                      <div className="j-counter-total">
+                      <div className="j-counter-total ak-counter-total">
                         <h5 className="text-white j-tbl-text-15">
                           Costo total
                         </h5>

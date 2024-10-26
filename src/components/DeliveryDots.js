@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "./Header";
 import { FaCalendarAlt, FaMinus, FaPlus } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
@@ -213,31 +213,65 @@ const DeliveryDots = () => {
     const [rut2, setRut2] = useState("");
     const [rut3, setRut3] = useState("");
 
-    // const handleRutChange = (e, setRut) => {
-    //   let value = e.target.value.replace(/[^0-9kK-]/g, ""); // Remove any existing hyphen
-    //   if (value.length > 6) {
-    //     value = value.slice(0, 6) + "-" + value.slice(6);
-    //   }
-    //   setRut(value);
-    //   // Clear the RUT error
-    //   setErrors((prevErrors) => ({
-    //     ...prevErrors,
-    //     rut: undefined
-    //   }));
-    // };
+    // Create refs for form inputs
+    const formRefs = {
+        fname: useRef(),
+        lname: useRef(),
+        tour: useRef(),
+        address: useRef(),
+        email: useRef(),
+        number: useRef(),
+        bname: useRef(),
+        rut1: useRef(),
+        rut2: useRef(),
+        rut3: useRef()
+    };
 
-    const handleRutChange = (e, setRut) => {
+    // Create a ref to store errors without causing re-renders
+    const errorsRef = useRef({});
+    // const [errors, setErrors] = useState({});
+
+    // Update handleInputChange to clear errors immediately
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        formRefs[name].current.value = value;
+        
+        // Clear error for this field in the ref
+        errorsRef.current = {
+            ...errorsRef.current,
+            [name]: undefined,
+            business_name: name === "bname" ? undefined : errorsRef.current.business_name,
+            ltda: name === "ltda" ? undefined : errorsRef.current.ltda
+        };
+        
+        // Update error state only if there was an error before
+        if (errors[name] || (name === "bname" && errors.business_name) || (name === "ltda" && errors.ltda)) {
+            setErrors(errorsRef.current);
+        }
+    };
+
+    console.log("ddfsdf");
+    
+
+    // Update handleRutChange to clear RUT errors
+    const handleRutChange = (e, rutRef) => {
         let value = e.target.value.replace(/[^0-9]/g, "");
         if (value.length > 6) {
             value = value.slice(0, 6) + "-" + value.slice(6);
         }
-        setRut(value);
-        setErrors((prevErrors) => ({
-            ...prevErrors,
-            rut: undefined,
-        }));
+        rutRef.current.value = value;
+        
+        // Clear RUT error in the ref
+        errorsRef.current = {
+            ...errorsRef.current,
+            rut: undefined
+        };
+        
+        // Update error state only if there was a RUT error before
+        if (errors.rut) {
+            setErrors(errorsRef.current);
+        }
     };
-
 
     // ***************************************************API**************************************************
     // form
@@ -252,49 +286,26 @@ const DeliveryDots = () => {
         bname: "",
         tipoEmpresa: "0"
     });
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevState) => ({
-            ...prevState,
-            [name]: value
-        }));
-        // Clear the specific error for business_name and ltda when typing
-        if (name === "bname") {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                business_name: undefined
-            }));
-        } else if (name === "ltda") {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                ltda: undefined
-            }));
-        } else {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                [name]: undefined
-            }));
-        }
-    };
 
     const collectAccordionData = () => {
         const commonData = {
             receiptType: selectedRadio,
-            rut: selectedRadio === "1" ? rut1 : selectedRadio === "2" ? rut2 : rut3,
-            firstname: formData.fname,
-            lastname: formData.lname,
-            tour: formData.tour,
-            address: formData.address,
-            email: formData.email,
-            phone: formData.number
+            rut: selectedRadio === "1" ? formRefs.rut1.current.value : 
+                 selectedRadio === "2" ? formRefs.rut2.current.value : 
+                 formRefs.rut3.current.value,
+            firstname: formRefs.fname.current.value,
+            lastname: formRefs.lname.current.value,
+            tour: formRefs.tour.current.value,
+            address: formRefs.address.current.value,
+            email: formRefs.email.current.value,
+            phone: formRefs.number.current.value
         };
 
         let specificData = {};
-
         if (selectedRadio === "3") {
             specificData = {
-                business_name: formData.bname,
-                ltda: formData.ltda
+                business_name: formRefs.bname.current.value,
+                ltda: formData.ltda // Keep this in state since it's a select
             };
         }
 
@@ -494,8 +505,9 @@ const DeliveryDots = () => {
                                                             <input
                                                                 type="text"
                                                                 name="rut"
-                                                                value={rut1}
-                                                                onChange={(e) => handleRutChange(e, setRut1)}
+                                                                ref={formRefs.rut1}
+                                                                defaultValue={rut1}
+                                                                onChange={(e) => handleRutChange(e, formRefs.rut1)}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
                                                             {errors.rut && <div className="text-danger errormessage">{errors.rut}</div>}
@@ -507,7 +519,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="fname"
                                                                 name="fname"
-                                                                value={formData.fname}
+                                                                ref={formRefs.fname}
+                                                                defaultValue={formData.fname}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -520,7 +533,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="lname"
-                                                                value={formData.lname}
+                                                                ref={formRefs.lname}
+                                                                defaultValue={formData.lname}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -533,7 +547,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="tour"
-                                                                value={formData.tour}
+                                                                ref={formRefs.tour}
+                                                                defaultValue={formData.tour}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -546,7 +561,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="address"
-                                                                value={formData.address}
+                                                                ref={formRefs.address}
+                                                                defaultValue={formData.address}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -558,7 +574,8 @@ const DeliveryDots = () => {
                                                             <input
                                                                 type="text"
                                                                 id="id" name="email"
-                                                                value={formData.email}
+                                                                ref={formRefs.email}
+                                                                defaultValue={formData.email}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -571,7 +588,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="number"
-                                                                value={formData.number}
+                                                                ref={formRefs.number}
+                                                                defaultValue={formData.number}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -617,8 +635,9 @@ const DeliveryDots = () => {
                                                             <input
                                                                 type="text"
                                                                 name="rut"
-                                                                value={rut2}
-                                                                onChange={(e) => handleRutChange(e, setRut2)}
+                                                                ref={formRefs.rut2}
+                                                                defaultValue={rut2}
+                                                                onChange={(e) => handleRutChange(e, formRefs.rut2)}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
                                                             {errors.rut && <div className="text-danger errormessage">{errors.rut}</div>}
@@ -630,7 +649,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="fname"
-                                                                value={formData.fname}
+                                                                ref={formRefs.fname}
+                                                                defaultValue={formData.fname}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -643,7 +663,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="lname"
-                                                                value={formData.lname}
+                                                                ref={formRefs.lname}
+                                                                defaultValue={formData.lname}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -656,7 +677,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="tour"
-                                                                value={formData.tour}
+                                                                ref={formRefs.tour}
+                                                                defaultValue={formData.tour}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -669,7 +691,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="address"
-                                                                value={formData.address}
+                                                                ref={formRefs.address}
+                                                                defaultValue={formData.address}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -682,7 +705,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="email"
-                                                                value={formData.email}
+                                                                ref={formRefs.email}
+                                                                defaultValue={formData.email}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -695,7 +719,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="number"
-                                                                value={formData.number}
+                                                                ref={formRefs.number}
+                                                                defaultValue={formData.number}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -741,8 +766,9 @@ const DeliveryDots = () => {
                                                             <input
                                                                 type="text"
                                                                 name="rut"
-                                                                value={rut3}
-                                                                onChange={(e) => handleRutChange(e, setRut3)}
+                                                                ref={formRefs.rut3}
+                                                                defaultValue={rut3}
+                                                                onChange={(e) => handleRutChange(e, formRefs.rut3)}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
                                                             {errors.rut && <div className="text-danger errormessage">{errors.rut}</div>}
@@ -754,7 +780,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="bname"
-                                                                value={formData.bname}
+                                                                ref={formRefs.bname}
+                                                                defaultValue={formData.bname}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -782,7 +809,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="lname"
-                                                                value={formData.lname}
+                                                                ref={formRefs.lname}
+                                                                defaultValue={formData.lname}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -795,7 +823,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="tour"
-                                                                value={formData.tour}
+                                                                ref={formRefs.tour}
+                                                                defaultValue={formData.tour}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -808,7 +837,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="address"
-                                                                value={formData.address}
+                                                                ref={formRefs.address}
+                                                                defaultValue={formData.address}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -821,7 +851,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="email"
-                                                                value={formData.email}
+                                                                ref={formRefs.email}
+                                                                defaultValue={formData.email}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -834,7 +865,8 @@ const DeliveryDots = () => {
                                                                 type="text"
                                                                 id="id"
                                                                 name="number"
-                                                                value={formData.number}
+                                                                ref={formRefs.number}
+                                                                defaultValue={formData.number}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white"
                                                             />
@@ -1046,11 +1078,21 @@ const DeliveryDots = () => {
                         className="j-counter-price position-sticky"
                         style={{ top: "77px" }}
                     >
-                        <div className="j_position_fixed j_b_hd_width">
+                        <div className="j_position_fixed j_b_hd_width ak-position">
                             <h2 className="text-white j-tbl-text-13">Resumen</h2>
-                            <div className="j-counter-price-data">
-                                <h3 className="text-white mt-3 j-tbl-text-13">Datos</h3>
-                                <div className="j_td_center my-3">
+                            <div className="j-counter-price-data ak-w-100">
+                                <h3 className="text-white mt-3 j-tbl-text-13 ak-w-100">Datos</h3>
+                                <div className="b-date-time b_date_time2 d-flex flex-wrap column-gap-3 me-2 justify-content-end text-white">
+                                    <div>
+                                        <FaCalendarAlt className="mb-2" />
+                                        <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleDateString('en-GB')}</p>
+                                    </div>
+                                    <div>
+                                        <MdOutlineAccessTimeFilled className="mb-2" />
+                                        <p className="mb-0 ms-2 d-inline-block">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    </div>
+                                </div>
+                                <div className="j_td_center ak-w-100">
                                     <div className="j-busy-table j_busy_table_last d-flex align-items-center">
                                         <div className=''>
                                             <div style={{ fontWeight: "600", borderRadius: "10px" }} className={`bj-delivery-text-2  b_btn1 mb-3  p-0 text-nowrap d-flex  align-items-center justify-content-center 
@@ -1062,12 +1104,7 @@ const DeliveryDots = () => {
                                         {/* <p className="j-table-color j-tbl-font-6">Ocupado</p> */}
                                     </div>
 
-                                    <div className="b-date-time b_date_time2 d-flex align-items-center justify-content-end text-white">
-                                        <FaCalendarAlt />
-                                        <p className="mb-0 ms-2 me-3">{new Date().toLocaleDateString('en-GB')}</p>
-                                        <MdOutlineAccessTimeFilled />
-                                        <p className="mb-0 ms-2">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                    </div>
+
 
                                     {/* <div className="b-date-time b_date_time2  d-flex align-items-center">
                                         <svg
@@ -1091,20 +1128,20 @@ const DeliveryDots = () => {
                                         </p>
                                     </div> */}
                                 </div>
-                                <div className="j-counter-price-data">
-                                    <div className="j-orders-inputs j_td_inputs">
-                                        <div className="j-orders-code">
+                                <div className="j-counter-price-data ak-w-100">
+                                    <div className="j-orders-inputs j_td_inputs ak-w-100">
+                                        <div className="j-orders-code ak-w-100">
                                             <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                                                 Quién registra
                                             </label>
                                             <div>
                                                 <input
-                                                    className="j-input-name j_input_name520"
+                                                    className="j-input-name j_input_name520 ak-w-100"
                                                     type="text"
                                                     value={userName}
                                                     disabled
-                                                    // placeholder={orderType?.name}
-                                                    // value={orderType?.name}
+                                                // placeholder={orderType?.name}
+                                                // value={orderType?.name}
                                                 />
                                             </div>
                                         </div>
@@ -1123,7 +1160,7 @@ const DeliveryDots = () => {
                                             </div>
                                         </div> */}
                                     </div>
-                                    <div className="j-counter-order">
+                                    <div className="j-counter-order ak-w-100">
                                         {cartItems.length === 0 ? (
                                             <div>
                                                 <div className="b-product-order text-center">
@@ -1138,10 +1175,10 @@ const DeliveryDots = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="j-counter-order j_counter_width">
+                                            <div className="j-counter-order j_counter_width ak-w-100">
                                                 <h3 className="text-white j-tbl-font-5">Pedido </h3>
 
-                                                <div className={`j-counter-order-data `}>
+                                                <div className={`j-counter-order-data`}>
                                                     {(showAllItems
                                                         ? cartItems
                                                         : cartItems.slice(0, 3)).map((item, index) => (
@@ -1226,7 +1263,7 @@ const DeliveryDots = () => {
                                                         </Link>
                                                     )}
                                                 </div>
-                                                <div className="j-counter-total">
+                                                <div className="j-counter-total ak-counter-total">
                                                     <h5 className="text-white j-tbl-text-15">Costo total</h5>
                                                     <div className="j-total-discount d-flex justify-content-between">
                                                         <p className="j-counter-text-2">Artículos</p>

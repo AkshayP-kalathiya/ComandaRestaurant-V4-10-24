@@ -47,6 +47,8 @@ export default function ProductionCenter() {
   );
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const prodNameref = useRef(null)
+
   const location = useLocation();
 
   const [menu, setMenu] = useState([]);
@@ -65,7 +67,9 @@ export default function ProductionCenter() {
 
   // Update these handlers
   const handleProdNameChange = (e) => {
-    setProdName(e.target.value);
+    
+    prodNameref.current.value = e.target.value
+    // setProdName(e.target.value);
     if (e.target.value.trim()) {
       setProdNameError("");
     }
@@ -101,7 +105,7 @@ export default function ProductionCenter() {
   const validateProductionCenter = () => {
     let isValid = true;
 
-    if (!prodName.trim()) {
+    if (!prodNameref.current.value.trim()) {
       setProdNameError("El nombre es requerido");
       isValid = false;
     } else {
@@ -314,6 +318,9 @@ export default function ProductionCenter() {
     setCount(count + 1);
   };
 
+  console.log(prodNameref);
+  
+
   // ****************************************API***************************************
   const [productionAllData, setProductionAllData] = useState([])
 
@@ -456,7 +463,7 @@ export default function ProductionCenter() {
         const response = await axios.post(
           `${apiUrl}/create/production-centers`,
           {
-            name: prodName,
+            name: prodNameref?.current?.value,
             printer_code: printerCode,
             admin_id,
           },
@@ -980,11 +987,12 @@ export default function ProductionCenter() {
                           Nombre
                         </label>
                         <input
+                          ref={prodNameref}
                           type="text"
                           className="form-control m_input ps-3"
                           id="exampleFormControlInput1"
                           placeholder="Eje.Cocina"
-                          value={prodName}
+                          value={prodNameref?.current?.value}
                           onChange={handleProdNameChange}
                         />
                         {prodNameError && (
