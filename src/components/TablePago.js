@@ -1190,13 +1190,8 @@ const TablePago = () => {
                               </div>
                             </div>
                             <div className="text-white j-order-count-why">
-                              {item.notes ? (
-                                <span className="j-nota-blue">
-                                  Nota: {item.notes}
-                                </span>
-                              ) : (
-                                <div>
-                                  {addNotes[index] ? (
+                            {item.notes ? (
+                                  addNotes[index] ? (
                                     <form
                                       onSubmit={(e) =>
                                         handleSubmitNote(e, index, item.id)}
@@ -1209,20 +1204,60 @@ const TablePago = () => {
                                         type="text"
                                         defaultValue={item.notes || ""}
                                         autoFocus
+                                        onBlur={(e) => {
+                                          const syntheticEvent = {
+                                            preventDefault: () => {},
+                                            target: {
+                                              elements: [e.target]
+                                            }
+                                          };
+                                          handleSubmitNote(syntheticEvent, index, item.id);
+                                        }}
                                       />
                                     </form>
                                   ) : (
-                                    <button
-                                      type="button"
-                                      className="j-note-final-button"
-                                      onClick={() =>
-                                        handleAddNoteClick(index)}
-                                    >
-                                      + Agregar nota
-                                    </button>
-                                  )}
-                                </div>
-                              )}
+                                    <span className="j-nota-blue" style={{cursor:'pointer'}} onClick={() =>
+                                      handleAddNoteClick(index)}>
+                                      Nota: {item.notes}
+                                    </span>
+                                  )
+                                ) : (
+                                  <div>
+                                    {addNotes[index] ? (
+                                      <form
+                                        onSubmit={(e) =>
+                                          handleSubmitNote(e, index, item.id)}
+                                      >
+                                        <span className="j-nota-blue">
+                                          Nota:{" "}
+                                        </span>
+                                        <input
+                                          className="j-note-input"
+                                          type="text"
+                                          defaultValue={item.notes || ""}
+                                          autoFocus
+                                          onBlur={(e) => {const syntheticEvent = {
+                                              preventDefault: () => {},
+                                              target: {
+                                                elements: [e.target]
+                                              }
+                                            };
+                                            handleSubmitNote(syntheticEvent, index, item.id);
+                                          }}
+                                        />
+                                      </form>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        className="j-note-final-button"
+                                        onClick={() =>
+                                          handleAddNoteClick(index)}
+                                      >
+                                        + Agregar nota
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
                             </div>
                           </div>
                         );

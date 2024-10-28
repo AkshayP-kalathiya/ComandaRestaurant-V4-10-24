@@ -16,7 +16,7 @@ const DeliveryDots = () => {
     const API = process.env.REACT_APP_IMAGE_URL;
     const token = localStorage.getItem("token");
     const userName = localStorage.getItem("name");
-    const [errors, setErrors] = useState({});
+    const noteInputRefs = useRef({});
     const [cartItems, setCartItems] = useState(
         JSON.parse(localStorage.getItem("cartItems")) || []
     );
@@ -43,10 +43,22 @@ const DeliveryDots = () => {
     const [isEditing, setIsEditing] = useState(
         Array(cartItems.length).fill(false)
     );
-    const handleNoteChange = (index, note) => {
-        const updatedCartItems = [...cartItems];
-        updatedCartItems[index].note = note;
-        setCartItems(updatedCartItems);
+    const handleNoteChange = (index, newNote) => {
+        // Update the input value directly using ref
+        if (noteInputRefs.current[index]) {
+            noteInputRefs.current[index].value = newNote;
+        }
+        
+        // Debounce the state update to reduce re-renders
+        const timeoutId = setTimeout(() => {
+            setCartItems(prevItems => {
+                const updatedItems = [...prevItems];
+                updatedItems[index] = { ...updatedItems[index], note: newNote };
+                return updatedItems;
+            });
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
     };
 
     const handleKeyDown = (index, e) => {
@@ -57,25 +69,20 @@ const DeliveryDots = () => {
         }
     };
 
-    // const handleAddNoteClick = (index) => {
-    //     const updatedIsEditing = [...isEditing];
-    //     updatedIsEditing[index] = true;
-    //     setIsEditing(updatedIsEditing);
-    //     const updatedCartItems = [...cartItems];
-    //     if (!updatedCartItems[index].note) {
-    //         updatedCartItems[index].note = "Nota: ";
-    //         setCartItems(updatedCartItems);
-    //     }
-    // };
-
     const handleAddNoteClick = (index) => {
-        const updatedCartItems = cartItems.map(
-            (item, i) =>
-                i === index
-                    ? { ...item, isEditing: true, note: item.note || "Nota: " }
-                    : item
+        const updatedCartItems = cartItems.map((item, i) =>
+            i === index
+                ? { ...item, isEditing: true, note: item.note || "Nota: " }
+                : item
         );
         setCartItems(updatedCartItems);
+        
+        // Focus the input after state update
+        setTimeout(() => {
+            if (noteInputRefs.current[index]) {
+                noteInputRefs.current[index].focus();
+            }
+        }, 0);
     };
 
     // cart
@@ -193,10 +200,58 @@ const DeliveryDots = () => {
     //   };
 
     const handleFinishEditing = (index) => {
-        const updatedCartItems = cartItems.map(
-            (item, i) => (i === index ? { ...item, isEditing: false } : item)
+        // Get final value from ref
+        const finalNote = noteInputRefs.current[index]?.value || "";
+        
+        setCartItems(prevItems => {
+            const updatedItems = [...prevItems];
+            updatedItems[index] = {
+                ...updatedItems[index],
+                isEditing: false,
+                note: finalNote
+            };
+            return updatedItems;
+        });
+    };
+    const renderNoteInput = (item, index) => {
+        if (item.isEditing) {
+            return (
+                <div>
+                    <input
+                        className="j-note-input"
+                        type="text"
+                        defaultValue={item.note}
+                        ref={el => noteInputRefs.current[index] = el}
+                        onChange={e => handleNoteChange(index, e.target.value)}
+                        onBlur={() => handleFinishEditing(index)}
+                        onKeyDown={e => {
+                            if (e.key === "Enter") handleFinishEditing(index);
+                        }}
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <div>
+                {item.note ? (
+                    <p 
+                        className="j-nota-blue" 
+                        style={{ cursor: "pointer" }} 
+                        onClick={() => handleAddNoteClick(index)}
+                    >
+                        {item.note}
+                    </p>
+                ) : (
+                    <button
+                        className="j-note-final-button"
+                        onClick={() => handleAddNoteClick(index)}
+                    >
+                        + Agregar nota
+                    </button>
+                )}
+            </div>
         );
-        setCartItems(updatedCartItems);
     };
 
     const getTotalCost = () => {
@@ -224,36 +279,42 @@ const DeliveryDots = () => {
         bname: useRef(),
         rut1: useRef(),
         rut2: useRef(),
-        rut3: useRef()
+        rut3: useRef(),
+        ltda: useRef()  // Added ltda ref
     };
 
     // Create a ref to store errors without causing re-renders
     const errorsRef = useRef({});
-    // const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState({});
 
-    // Update handleInputChange to clear errors immediately
+    // Update handleInputChange to properly handle select elements
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        formRefs[name].current.value = value;
         
-        // Clear error for this field in the ref
-        errorsRef.current = {
-            ...errorsRef.current,
-            [name]: undefined,
-            business_name: name === "bname" ? undefined : errorsRef.current.business_name,
-            ltda: name === "ltda" ? undefined : errorsRef.current.ltda
-        };
+        // Update formData state for select elements
+        if (name === 'ltda') {
+            setFormData(prevData => ({
+                ...prevData,
+                ltda: value
+            }));
+        }
         
-        // Update error state only if there was an error before
-        if (errors[name] || (name === "bname" && errors.business_name) || (name === "ltda" && errors.ltda)) {
-            setErrors(errorsRef.current);
+        // Check if the ref exists before accessing current
+        if (formRefs[name]) {
+            formRefs[name].current.value = value;
+            
+            // Clear errors for the specific field
+            if (errors[name] || (name === 'bname' && errors.business_name)) {
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    [name]: undefined,
+                    business_name: name === 'bname' ? undefined : prevErrors.business_name
+                }));
+            }
         }
     };
 
-    console.log("ddfsdf");
-    
-
-    // Update handleRutChange to clear RUT errors
+    // Update handleRutChange to only clear RUT error
     const handleRutChange = (e, rutRef) => {
         let value = e.target.value.replace(/[^0-9]/g, "");
         if (value.length > 6) {
@@ -261,17 +322,17 @@ const DeliveryDots = () => {
         }
         rutRef.current.value = value;
         
-        // Clear RUT error in the ref
-        errorsRef.current = {
-            ...errorsRef.current,
-            rut: undefined
-        };
-        
-        // Update error state only if there was a RUT error before
+        // Only clear RUT error if it exists
         if (errors.rut) {
-            setErrors(errorsRef.current);
+            setErrors(prevErrors => ({
+                ...prevErrors,
+                rut: undefined
+            }));
         }
     };
+
+    console.log("sasdasd");
+    
 
     // ***************************************************API**************************************************
     // form
@@ -298,61 +359,65 @@ const DeliveryDots = () => {
             tour: formRefs.tour.current.value,
             address: formRefs.address.current.value,
             email: formRefs.email.current.value,
-            phone: formRefs.number.current.value
+            phone: formRefs.number.current.value,
+            // ltda: formRefs.ltda.current.value  // Added ltda ref
         };
 
         let specificData = {};
         if (selectedRadio === "3") {
             specificData = {
                 business_name: formRefs.bname.current.value,
-                ltda: formData.ltda // Keep this in state since it's a select
+                ltda: formRefs.ltda.current.value  // Keep this in state since it's a select
             };
         }
 
         return { ...commonData, ...specificData };
     };
-    const validateForm = (data) => {
-        const errors = {};
+
+    const validateForm = () => {
+        const data = collectAccordionData();
+        const newErrors = {};
 
         // RUT validation
         if (!data.rut || data.rut.length < 7) {
-            errors.rut = "El RUT debe tener al menos 7 caracteres";
+            newErrors.rut = "El RUT debe tener al menos 7 caracteres";
         }
 
         // Name validation
         if (data.receiptType !== "3") {
             if (!data.firstname || data.firstname.trim() === "") {
-                errors.fname = "Se requiere el primer nombre";
+                newErrors.fname = "Se requiere el primer nombre";
             }
         }
-        console.log(data)
+        // console.log(data)
         // Business name validation for receipt type 4
         if (data.receiptType === "3") {
             if (!data.business_name || data.business_name.trim() === "") {
-                errors.business_name = "Se requiere el nombre de la empresa";
+                newErrors.business_name= "Se requiere el nombre de la empresa";
             }
             if (!data.ltda || data.ltda === "0") {
-                errors.ltda = "Seleccione una opción";
+                newErrors.ltda = "Seleccione una opción";
             }
         }
 
         // Last name validation
         if (!data.lastname || data.lastname.trim() === "") {
-            errors.lname = "El apellido es obligatorio";
+            newErrors.lname = "El apellido es obligatorio";
         }
 
         // Tour validation
         if (!data.tour || data.tour.trim() === "") {
-            errors.tour = "Se requiere tour";
+            newErrors.tour = "Se requiere tour";
         }
 
         // Address validation
         if (!data.address || data.address.trim() === "") {
-            errors.address = "La dirección es necesaria";
+            newErrors.address = "La dirección es necesaria";
         }
 
-
-        return errors;
+        setErrors(newErrors);
+        return newErrors;
+        // return errors;
     };
     const handleSubmit = () => {
         const collectedData = collectAccordionData();
@@ -792,7 +857,8 @@ const DeliveryDots = () => {
                                                             <label className="mb-2">Sa, Ltda, Spa </label>
                                                             <select
                                                                 name="ltda"
-                                                                value={formData.ltda}
+                                                                defaultValue={formData.ltda}// Add fallback to "0"
+                                                                ref={formRefs.ltda}
                                                                 onChange={handleInputChange}
                                                                 className="sj_bg_dark sj_width_input ps-2 pe-4 py-2 text-white form-select">
                                                                 <option value="0">Seleccionar opción</option>
@@ -1081,7 +1147,7 @@ const DeliveryDots = () => {
                         <div className="j_position_fixed j_b_hd_width ak-position">
                             <h2 className="text-white j-tbl-text-13">Resumen</h2>
                             <div className="j-counter-price-data ak-w-100">
-                                <h3 className="text-white mt-3 j-tbl-text-13 ak-w-100">Datos</h3>
+                            <h3 className="text-white mt-3 j-tbl-text-13 ak-w-100">Datos</h3>
                                 <div className="b-date-time b_date_time2 d-flex flex-wrap column-gap-3 me-2 justify-content-end text-white">
                                     <div>
                                         <FaCalendarAlt className="mb-2" />
@@ -1103,9 +1169,6 @@ const DeliveryDots = () => {
                                         {/* <div className="j-b-table" /> */}
                                         {/* <p className="j-table-color j-tbl-font-6">Ocupado</p> */}
                                     </div>
-
-
-
                                     {/* <div className="b-date-time b_date_time2  d-flex align-items-center">
                                         <svg
                                             class="j-canvas-svg-i"
@@ -1127,9 +1190,10 @@ const DeliveryDots = () => {
                                             {elapsedTime}
                                         </p>
                                     </div> */}
+
                                 </div>
-                                <div className="j-counter-price-data ak-w-100">
-                                    <div className="j-orders-inputs j_td_inputs ak-w-100">
+                                <div className="j-counter-price-data">
+                                <div className="j-orders-inputs j_td_inputs ak-w-100">
                                         <div className="j-orders-code ak-w-100">
                                             <label className="j-label-name text-white mb-2 j-tbl-btn-font-1">
                                                 Quién registra
@@ -1178,7 +1242,7 @@ const DeliveryDots = () => {
                                             <div className="j-counter-order j_counter_width ak-w-100">
                                                 <h3 className="text-white j-tbl-font-5">Pedido </h3>
 
-                                                <div className={`j-counter-order-data`}>
+                                                <div className={`j-counter-order-data `}>
                                                     {(showAllItems
                                                         ? cartItems
                                                         : cartItems.slice(0, 3)).map((item, index) => (
@@ -1224,36 +1288,7 @@ const DeliveryDots = () => {
                                                                 </div>
 
                                                                 <div className="text-white j-order-count-why">
-                                                                    {item.isEditing ? (
-                                                                        <div>
-                                                                            <input
-                                                                                className="j-note-input"
-                                                                                type="text"
-                                                                                value={item.note}
-                                                                                onChange={(e) =>
-                                                                                    handleNoteChange(index, e.target.value)}
-                                                                                onBlur={() => handleFinishEditing(index)}
-                                                                                onKeyDown={(e) => {
-                                                                                    if (e.key === "Enter")
-                                                                                        handleFinishEditing(index);
-                                                                                }}
-                                                                                autoFocus
-                                                                            />
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div>
-                                                                            {item.note ? (
-                                                                                <p className="j-nota-blue" style={{ cursor: "pointer" }} onClick={() => handleAddNoteClick(index)}>{item.note}</p>
-                                                                            ) : (
-                                                                                <button
-                                                                                    className="j-note-final-button"
-                                                                                    onClick={() => handleAddNoteClick(index)}
-                                                                                >
-                                                                                    + Agregar nota
-                                                                                </button>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
+                                                                    {renderNoteInput(item, index)}
                                                                 </div>
                                                             </div>
                                                         ))}
