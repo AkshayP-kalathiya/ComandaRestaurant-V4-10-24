@@ -12,7 +12,7 @@ const Home_ChatBubble = ({ details, receiver }) => {
         flexDirection: "row",
         alignItems: "flex-start",
         justifyContent: "flex-start",
-        padding: "0px 680px 0px 0px",
+        // padding: "0px 680px 0px 0px",
         boxSizing: "border-box",
         gap: "10px",
         maxWidth: "100%",
@@ -35,6 +35,7 @@ const Home_ChatBubble = ({ details, receiver }) => {
           justifyContent: "flex-start",
           gap: "4px",
           minWidth: "125px",
+          maxWidth: "60%",
         }}
       >
         <div
@@ -53,7 +54,9 @@ const Home_ChatBubble = ({ details, receiver }) => {
               fontWeight: "600",
               display: "inline-block",
 
+
             }}
+            
           >
             {details.sender_name}
           </div>
@@ -92,7 +95,7 @@ const Home_ChatBubble = ({ details, receiver }) => {
               padding: "16px",
             }}
           >
-            <div style={{ position: "relative", lineHeight: "150%" }}>
+            <div className="p-2" style={{ position: "relative", lineHeight: "150%" }}>
               {details.message}
             </div>
           </div>

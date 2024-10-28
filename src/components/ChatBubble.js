@@ -11,7 +11,7 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                 flexDirection: "row",
                 alignItems: "flex-start",
                 justifyContent: "flex-end",
-                padding: "0px 10px 0px 668px",
+                padding: "0px ",
                 gap: "10px",
                 textAlign: "left",
                 fontSize: "14px",
@@ -29,6 +29,7 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                     justifyContent: "flex-start",
                     gap: "4px",
                     minWidth: "133px",
+                    maxWidth: "60%"
                 }}
             >
                 <div
@@ -67,7 +68,7 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                 <div
                     style={{
                         alignSelf: "stretch",
-                        display: "flex",
+                        // display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "flex-start",
@@ -98,119 +99,11 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                             padding: "16px",
                         }}
                     >
-                        <div
-                            style={{
-                                borderRadius: "8px",
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "center",
-                                justifyContent: "flex-start",
-                                padding: "8px",
-                                gap: "16px",
-                            }}
-                        >
-                            <div
-                                style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "flex-start",
-                                    justifyContent: "center",
-                                    gap: "8px",
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                        justifyContent: "flex-start",
-                                        gap: "8px",
-                                    }}
-                                >
-                                    <img
-                                        style={{
-                                            height: "20px",
-                                            width: "20px",
-                                            position: "relative",
-                                            overflow: "hidden",
-                                            flexShrink: "0",
-                                            display: "none",
-                                        }}
-                                        alt=""
-                                        src="/pdf.svg"
-                                    />
-                                    <div className="j-font-size-chat-final"
-                                        style={{
-                                            position: "relative",
-                                            lineHeight: "150%",
-                                            fontWeight: "500",
-                                        }}
-                                    >
-                                        {details.message}
-                                    </div>
-                                </div>
-                                <div
-                                    style={{
-                                        width: "149px",
-                                        display: "none",
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                        justifyContent: "flex-start",
-                                        gap: "8px",
-                                        fontSize: "12px",
-                                        color: "#6b7280",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            height: "18px",
-                                            flex: "1",
-                                            position: "relative",
-                                            lineHeight: "150%",
-                                            display: "inline-block",
-                                        }}
-                                    >
-                                        12 Pages
-                                    </div>
-                                    <div
-                                        style={{
-                                            height: "3px",
-                                            width: "3px",
-                                            position: "relative",
-                                            borderRadius: "50%",
-                                            backgroundColor: "#6b7280",
-                                        }}
-                                    />
-                                    <div style={{ position: "relative", lineHeight: "150%" }}>
-                                        18 MB
-                                    </div>
-                                    <div
-                                        style={{
-                                            height: "3px",
-                                            width: "3px",
-                                            position: "relative",
-                                            borderRadius: "50%",
-                                            backgroundColor: "#6b7280",
-                                        }}
-                                    />
-                                    <div style={{ position: "relative", lineHeight: "150%" }}>
-                                        PDF
-                                    </div>
-                                </div>
-                            </div>
-                            <img
-                                style={{
-                                    height: "16px",
-                                    width: "16px",
-                                    position: "relative",
-                                    overflow: "hidden",
-                                    flexShrink: "0",
-                                    display: "none",
-                                }}
-                                alt=""
-                                src="/download.svg"
-                            />
-                        </div>
+                        <p className="m-0 p-2">
+
+                            {details.message}
+                        </p>
+
                     </div>
                 </div>
                 <div
@@ -227,7 +120,7 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
             </div>
 
             <div className="sjavatar me-2" roundedCircle width="35px" height="35px" style={{ backgroundColor: "#ab7171", textAlign: "center", alignContent: "center", fontWeight: "bold" }}>
-                                        {details.sender_name.split(' ').map((word,i) => i<2 ? word.charAt(0).toUpperCase() : "").join('')}
+                {details.sender_name.split(' ').map((word, i) => i < 2 ? word.charAt(0).toUpperCase() : "").join('')}
             </div>
             {/* <img
                 style={{
