@@ -23,9 +23,19 @@ const Home_ChatBubble = ({ details, receiver }) => {
       }}
       className="j-right-padding"
     >
-      <div className="sjavatar me-2" roundedCircle width="35px" height="35px" style={{ backgroundColor: "#ab7171", textAlign: "center", alignContent: "center", fontWeight: "bold" }}>
-        {details.sender_name.split(' ').map((word, i) => i < 2 ? word.charAt(0).toUpperCase() : "").join('')}
-      </div>
+      <div 
+                className={`sjavatar me-2 ${details.showTime ? 'roundedCircle' : ''}`} 
+                style={{ 
+                    backgroundColor: details.showTime ? "#ab7171" : "transparent", 
+                    textAlign: "center", 
+                    alignContent: "center", 
+                    fontWeight: "bold", 
+                    width: "35px", 
+                    height: "35px" 
+                }}
+            >
+                {details.showTime && details.sender_name.split(' ').map((word, i) => i < 2 ? word.charAt(0).toUpperCase() : "").join('')}
+            </div>
       <div
         style={{
           flex: "1",
@@ -58,7 +68,7 @@ const Home_ChatBubble = ({ details, receiver }) => {
             }}
             
           >
-            {details.sender_name}
+            {details.showTime && details.sender_name}
           </div>
           <div
             style={{
@@ -70,7 +80,15 @@ const Home_ChatBubble = ({ details, receiver }) => {
               whiteSpace: "nowrap",
             }}
           >
-            {new Date(details.created_at).getHours() + ":" + new Date(details.created_at).getMinutes()}
+            {details.showTime && (
+                <div className="message-time">
+                    {new Date(details.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    })}
+                </div>
+            )}
           </div>
         </div>
         <div

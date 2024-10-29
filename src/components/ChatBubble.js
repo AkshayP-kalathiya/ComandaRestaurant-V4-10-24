@@ -2,7 +2,9 @@ import PropTypes from "prop-types";
 import avatar from '../Image/usuario 1.png'
 
 const ChatBubble = ({ className = "j-left-padding", details }) => {
+
     // console.log("sds",details)
+
     return (
         <div
             style={{
@@ -50,7 +52,8 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                             // minWidth: "98px",
                         }}
                     >
-                        {details.sender_name}
+
+                        {details.showTime && details.sender_name}
                     </div>
                     <div
                         style={{
@@ -62,7 +65,15 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                             whiteSpace: "nowrap",
                         }}
                     >
-                        {new Date(details.created_at).getHours() + ":" + new Date(details.created_at).getMinutes()}
+                        {details.showTime && (
+                            <div className="message-time">
+                                {new Date(details.created_at).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div
@@ -87,7 +98,7 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                         alt=""
                         src="/dotsvertical1.svg"
                     />
-                    <div className="j-remove-padding-box"
+                    <div className="j-remove-padding-box text-break"
                         style={{
                             flex: "1",
                             borderRadius: "20px 0px 20px 20px",
@@ -118,9 +129,20 @@ const ChatBubble = ({ className = "j-left-padding", details }) => {
                     Seen
                 </div>
             </div>
+           
 
-            <div className="sjavatar me-2" roundedCircle width="35px" height="35px" style={{ backgroundColor: "#ab7171", textAlign: "center", alignContent: "center", fontWeight: "bold" }}>
-                {details.sender_name.split(' ').map((word, i) => i < 2 ? word.charAt(0).toUpperCase() : "").join('')}
+            <div 
+                className={`sjavatar me-2 ${details.showTime ? 'roundedCircle' : ''}`} 
+                style={{ 
+                    backgroundColor: details.showTime ? "#ab7171" : "transparent", 
+                    textAlign: "center", 
+                    alignContent: "center", 
+                    fontWeight: "bold", 
+                    width: "35px", 
+                    height: "35px" 
+                }}
+            >
+                {details.showTime && details.sender_name.split(' ').map((word, i) => i < 2 ? word.charAt(0).toUpperCase() : "").join('')}
             </div>
             {/* <img
                 style={{
