@@ -52,6 +52,7 @@ import ChatComponent from "./com/ChatComponent";
 import Chat from "./components/Chat";
 import { MaterialDesignContent, SnackbarProvider } from "notistack";
 import styled from 'styled-components';
+import { NotificationProvider } from "./contexts/NotificationContext";
 function App() {
   const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
     '&.notistack-MuiContent-success': {
@@ -67,6 +68,7 @@ function App() {
         success: StyledMaterialDesignContent,
         error: StyledMaterialDesignContent,
       }} autoHideDuration={2000}>
+        <NotificationProvider>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/dd" element={<ChatComponent />} />
@@ -119,6 +121,7 @@ function App() {
           <Route path="/home/usa/information/:id" element={<Homeinformation />} />
           <Route path="/home/usa/information/payment_edit/:id" element={<Homeinfomation_payment_edit />} />
         </Routes>
+        </NotificationProvider>
       </SnackbarProvider>
     </div>
   );

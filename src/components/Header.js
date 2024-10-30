@@ -6,6 +6,7 @@ import { IoCloudUpload, IoNotifications } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import useAudioManager from "./audioManager";
+import { useNotifications } from "../contexts/NotificationContext";
 
 export default function Header() {
 
@@ -20,56 +21,66 @@ export default function Header() {
   const [showA, setShowA] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
-  const [notificationCount, setNotificationCount] = useState(0);
+
+  // const [notifications, setNotifications] = useState([]);
+  // const [notificationCount, setNotificationCount] = useState();
   const echo = useSocket();
   const { playNotificationSound } = useAudioManager();
-  const [prevNotificationCount, setPrevNotificationCount] = useState(() => {
-    return parseInt(sessionStorage.getItem('prevNotificationCount') || '0');
-  });
-  const [isFetching, setIsFetching] = useState(false); // Add a state to track fetching status
+  // const [prevNotificationCount, setPrevNotificationCount] = useState(() => {
+  //   const storedData = JSON.parse(localStorage.getItem('prevNotificationCount')) || [];
+  //   return storedData;
+  // });
+  const { notifications, notificationCount, handleRead } = useNotifications(); // Use the context
+  // console.log(notifications, notificationCount);
 
-  const fetchNotifications = useCallback(async () => {
-    if (isFetching) return; // Prevent multiple fetches
-    setIsFetching(true); // Set fetching status to true
-    try {
-      const response = await axios.post(`${apiUrl}/notification/getAll`, { admin_id: admin_id, user_id: user_id }, { headers: { Authorization: `Bearer ${token}` } });
-      // console.log(response.data);
-      const newCount = response.data.length;
-      setNotifications(response.data.reverse());
-      setNotificationCount(newCount);
 
-      // Check if the notification count has increased
-      if (newCount > prevNotificationCount) {
-        // console.log(newCount,prevNotificationCount);
-        // playNotificationSound(); // Play sound if count increased
-        setPrevNotificationCount(newCount);
-        sessionStorage.setItem('prevNotificationCount', newCount.toString());
-      }
-      // Update previous count
-      // console.log(newCount, prevNotificationCount);
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-      return null;
-    } finally {
-      setIsFetching(false); // Reset fetching status
-    }
-  }, [apiUrl, admin_id, user_id, token, prevNotificationCount]);
+  // const [isFetching, setIsFetching] = useState(false); // Add a state to track fetching status
+  // const fetchNotifications = useCallback(async () => {
+  //   if (isFetching) return; 
+  //   setIsFetching(true); 
+  //   try {
+  //     const response = await axios.post(`${apiUrl}/notification/getAll`, { admin_id: admin_id, user_id: user_id }, { headers: { Authorization: `Bearer ${token}` } });
+  //     // console.log(response.data);
+  //     const newCount = response.data.length;
+  //     setNotifications(response.data.reverse());
+  //     setNotificationCount(newCount);
 
-  const debounceFetchNotifications = useRef(null); // Create a ref for debounce
+  //     const existingUser = prevNotificationCount.find(item => item.id === user_id);
+  //     if (existingUser) {
+  //       setNotificationCount(newCount - existingUser.count); 
+  //       // if (newCount > existingUser.count) {
+  //       //   existingUser.count = newCount;
+  //       //   // localStorage.setItem('prevNotificationCount', JSON.stringify(prevNotificationCount));
+  //       // }
+  //     } else {
+  //       setNotificationCount(newCount); 
+  //       const updatedCounts = [...prevNotificationCount, { id: user_id, count: newCount }];
+  //       setPrevNotificationCount(updatedCounts);
+  //       localStorage.setItem('prevNotificationCount', JSON.stringify(updatedCounts));
+  //     }
+  //     // console.log(newCount, prevNotificationCount);zzzz
+  //   } catch (error) {
+  //     console.error("Failed to fetch notifications:", error);
+  //     return null;
+  //   } finally {
+  //     setIsFetching(false); // Reset fetching status
+  //   }
+  // }, [apiUrl, admin_id, user_id, token, prevNotificationCount]);
 
-  if (echo) {
-    echo.channel('notifications')
-      .listen('NotificationMessage', (event) => {
-        // console.log('New notification received:', event.notification);
-        if (debounceFetchNotifications.current) clearTimeout(debounceFetchNotifications.current); // Clear previous timeout
-        debounceFetchNotifications.current = setTimeout(fetchNotifications, 1000); // Set a new timeout
-        // playNotificationSound();; // Play sound when a new notification is received
-      });
-    // console.log("Socket connection established")
-  }
+  // const debounceFetchNotifications = useRef(null); // Create a ref for debounce
+
+  // if (echo) {
+  //   echo.channel('notifications')
+  //     .listen('NotificationMessage', (event) => {
+  //       // console.log('New notification received:', event.notification);
+  //       if (debounceFetchNotifications.current) clearTimeout(debounceFetchNotifications.current); // Clear previous timeout
+  //       debounceFetchNotifications.current = setTimeout(fetchNotifications, 1000); // Set a new timeout
+  //       // playNotificationSound();; // Play sound when a new notification is received
+  //     });
+  //   // console.log("Socket connection established")
+  // }
+
   useEffect(() => {
-    fetchNotifications();
     const token = localStorage.getItem("token");
     if (!token) {
       navigate('/', { state: { from: location } });
@@ -83,9 +94,6 @@ export default function Header() {
   if (role == "superadmin") {
     navigate('/enlaceAdmin');
   }
-
-
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -112,6 +120,14 @@ export default function Header() {
         localStorage.removeItem("role");
         localStorage.removeItem("token");
         localStorage.removeItem("name");
+        localStorage.removeItem("admin_id");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("tableId");
+        localStorage.removeItem("lastOrder");
+        localStorage.removeItem("countsoup");
+        localStorage.removeItem("tablePayment");
+        localStorage.removeItem("selectedTable");
+        localStorage.removeItem("removedItems");
         window.location.href = "/";
       }
     } catch (error) {
@@ -164,6 +180,13 @@ export default function Header() {
     });
     return Object.entries(grouped).sort(([a], [b]) => b - a); // Sort by date, most recent first
   };
+
+  const handleNotification = () => {
+    handleShow();
+    setTimeout(() => {
+      handleRead();
+    }, 300)
+  }
   // console.log(location.pathname+location.search,location.state,location)
 
   return (
@@ -173,17 +196,17 @@ export default function Header() {
           <img src={require("../Image/logo.png")} alt="" />
         </div>
         <div className="m_header d-flex align-items-center ">
-          <div className="m_bell position-relative" style={{ cursor: "pointer" }} onClick={() => setShow(true)}>
+          <div className="m_bell position-relative" style={{ cursor: "pointer" }} onClick={handleNotification}>
             <span className="m_grey" >
               <IoNotifications />
-              {prevNotificationCount > 0 && (
+              {notificationCount > 0 && (
                 <span
                   className="position-absolute translate-middle badge rounded-pill bg-danger"
                   style={{
                     fontSize: '0.6rem',
                     padding: '0.25em 0.4em',
                     top: '7px',
-                   left:'95%',
+                    left: '95%',
                     border: '2px solid #282828', // Adjust the color to match your background
                     minWidth: '20px',
                     height: '20px',
@@ -192,8 +215,8 @@ export default function Header() {
                     justifyContent: 'center'
                   }}
                 >
-                  {prevNotificationCount}
-                  <span className="visually-hidden">unread notifications</span>
+                  {notificationCount}
+                  <span className="visually-hidden">new notifications</span>
                 </span>
               )}
             </span>
