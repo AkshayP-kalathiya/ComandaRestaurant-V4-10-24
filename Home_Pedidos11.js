@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Sidenav from './Sidenav';
 import Header from './Header';
-import { Button, Dropdown, Modal, Spinner } from 'react-bootstrap';
+import { Alert, Button, Dropdown, Modal, Spinner } from 'react-bootstrap';
 import { FaAngleLeft, FaAngleRight, FaFilter } from 'react-icons/fa';
 import { MdClose } from 'react-icons/md';
 import { Link } from 'react-router-dom';
@@ -39,6 +39,10 @@ const Home_Pedidos = () => {
         Finalizado: false,
     });
 
+    const iframeRef = useRef(null);
+    const [printers, setPrinters] = useState([]);
+    const [selectedPrinter, setSelectedPrinter] = useState(null);
+    const [printError, setPrintError] = useState(null);
 
     useEffect(() => {
         getBox();
@@ -166,7 +170,7 @@ const Home_Pedidos = () => {
                 let flages = 0;
                 let flageb = 0;
                 sectordata.map(s => s.tables.map((a) => {
-                    console.log("order", s);
+                    // console.log("order", s);
 
                     if (a.id === v.table_id) { // Changed '==' to '===' for strict equality
                         obj.sector = s.name;
@@ -337,22 +341,92 @@ const Home_Pedidos = () => {
     };
     const handlePrint = async () => {
         const printContent = document.getElementById("receipt-content");
-        if (printContent) {
+        if (!printContent) {
+            console.error("Receipt content not found");
+            return;
+        }
 
+        const generateHTMLContent = () => {
+            return `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <title>Print Receipt</title>
+                        <style>
+                            @page {
+                                margin: 0;
+                                size: 80mm 297mm;
+                            }
+                            body { 
+                                font-family: Arial, sans-serif;
+                                font-size: 12px;
+                                margin: 0;
+                                padding: 10px;
+                                width: 80mm;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent.innerHTML}
+                    </body>
+                </html>
+            `;
+        };
+
+        const printViaWebAPI = async () => {
+            try {
+                if (!selectedPrinter) {
+                    throw new Error('No printer selected');
+                }
+
+                const iframe = document.createElement("iframe");
+                iframe.style.display = "none";
+                document.body.appendChild(iframe);
+
+                // Write content to iframe
+                const iframeWindow = iframe.contentWindow;
+                iframeWindow.document.open();
+                iframeWindow.document.write(generateHTMLContent());
+                iframeWindow.document.close();
+
+                // Wait for iframe to load
+                await new Promise(resolve => {
+                    iframe.onload = resolve;
+                });
+
+                // Create print job
+                const printJob = await window.navigator.printing.createPrintJob();
+                
+                // Configure print settings
+                const settings = {
+                    printer: selectedPrinter,
+                    paperSize: 'receipt',
+                    quality: 'high',
+                    silent: true
+                };
+
+                // Print
+                await printJob.print(settings, iframeWindow.document);
+
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 500);
+
+            } catch (err) {
+                console.error('Web API printing failed:', err);
+                throw err;
+            }
+        };
+
+        const printViaIframe = () => {
             const iframe = document.createElement("iframe");
             iframe.style.display = "none";
             document.body.appendChild(iframe);
 
-
             iframe.contentWindow.document.open();
-            iframe.contentWindow.document.write("<html><head><title>Print Receipt</title>");
-            iframe.contentWindow.document.write("<style>body { font-family: Arial, sans-serif; }</style>");
-            iframe.contentWindow.document.write("</head><body>");
-            iframe.contentWindow.document.write(printContent.innerHTML);
-
-            iframe.contentWindow.document.write("</body></html>");
+            iframe.contentWindow.document.write(generateHTMLContent());
             iframe.contentWindow.document.close();
-
 
             iframe.onload = function () {
                 try {
@@ -360,16 +434,53 @@ const Home_Pedidos = () => {
                     iframe.contentWindow.print();
                 } catch (e) {
                     console.error("Printing failed", e);
+                    setPrintError("Printing failed: " + e.message);
                 }
                 setTimeout(() => {
                     document.body.removeChild(iframe);
                 }, 500);
             };
-        } else {
-            console.error("Receipt content not found");
+        };
+
+        try {
+            // alert("try")
+            // Try Web Printing API first
+            if (window.navigator.printing && selectedPrinter) {
+                await printViaWebAPI();
+            } 
+            // Fallback to traditional iframe printing
+            else {
+                // alert("fallback")
+                printViaIframe();
+            }
+        } catch (err) {
+            // alert('Printing error:', err)
+            console.error('Printing error:', err);
+            setPrintError("Printing failed: " + err.message);
+            // Fallback to iframe printing if Web API fails
+            printViaIframe();
         }
     };
 
+    useEffect(() => {
+        // alert("navigator")
+        console.log(window.navigator.printing);
+        
+        if (window.navigator.printing) {
+            // alert("navigator")
+            navigator.printing.getPrinters()
+                .then(availablePrinters => {
+                    // alert("availablePrinters")
+                    setPrinters(availablePrinters);
+                    setSelectedPrinter(availablePrinters[0]); // Select first printer by default
+                })
+                .catch(err => {
+                    // alert("err")
+                    console.error('Unable to get printer list:', err);
+                    setPrintError('Unable to get printer list: ' + err.message);
+                });
+        }
+    }, []);
 
     return (
         <div>
@@ -582,7 +693,7 @@ const Home_Pedidos = () => {
                                                     </td>
                                                 </Link>
                                                 <td>
-                                                    <button className={`b_edit  ${(order.status === 'delivered') ? 'b_Enew' : 'b_Eold'}`} onClick={() => handleRecipe(order)}>
+                                                    <button className={`b_edit  ${(order.status === 'delivered' ) ? 'b_Enew' : 'b_Eold'}`} onClick={() => handleRecipe(order)}>
                                                         <svg className="text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                                             <path fillRule="evenodd" d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z" clipRule="evenodd" />
                                                         </svg>

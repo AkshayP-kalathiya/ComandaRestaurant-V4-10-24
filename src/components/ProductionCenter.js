@@ -1514,7 +1514,7 @@ export default function ProductionCenter() {
                                         <img
                                           src={`${API}/images/${ele.image}`}
                                           className="card-img-top object-fit-cover rounded"
-                                          alt="..."
+                                          alt={ele.name}
                                           style={{ height: "162px" }}
                                         />
                                         <div className="card-body">

@@ -1394,7 +1394,7 @@ export default function Articles() {
                                             <img
                                               src={`${API}/images/${ele.image}`}
                                               className="card-img-top object-fit-cover rounded"
-                                              alt="..."
+                                              alt={item.name}
                                               style={{ height: "162px" }}
                                             />
                                             <div className="card-body">

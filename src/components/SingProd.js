@@ -45,7 +45,7 @@ export default function SingProd({ image, price, name, code, id }) {
         <img
           src={`${API}/images/${image}`}
           class="card-img-top object-fit-cover rounded"
-          alt="..."
+          alt={name}
           style={{ height: "200px", objectFit: "cover" }}
         />
         <div class="card-body">

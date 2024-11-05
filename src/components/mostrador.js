@@ -978,7 +978,7 @@ const Mostrador = () => {
                     </label>
                     <input
                       type="text"
-                      className="form-control b-form-control"
+                      className="form-control b-form-control ak-input"
                       id="exampleFormControlInput1"
                       placeholder=""
                       // onChange={handlename}
@@ -1028,7 +1028,7 @@ const Mostrador = () => {
                           <div className="j-counter-order-border-fast">
                             <div className="j-counter-order-img j_counter_order_final" key={item.id}>
                               <div className="j_d_flex_aic">
-                                <img src={`${API}/images/${item.image}`} alt="" />
+                                <img src={`${API}/images/${item.image}`} alt={item.name} />
                                 <h5 className="text-white j-tbl-pop-1">
                                   {item.name}
                                 </h5>

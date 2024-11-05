@@ -548,7 +548,7 @@ const Counter = () => {
         <div className="j-sidebar-nav j-bg-color">
           <Sidenav />
         </div>
-        <div className="j-counter-menu sidebar">
+        <div className="j-counter-menu sidebar" style={{overflow:"hidden"}}>
           <div className="j-counter-header j_counter_header_last_change">
             <h2 className="text-white mb-3 sjfs-18">Mostrador</h2>
             <div className="j-menu-bg-color ">
@@ -686,7 +686,7 @@ const Counter = () => {
                   </label>
                   <input
                     type="text"
-                    className="form-control b-form-control"
+                    className="form-control b-form-control ak-input"
                     id="exampleFormControlInput1"
                     placeholder=""
                     // onChange={handlename}
@@ -736,7 +736,7 @@ const Counter = () => {
                         <div className="j-counter-order-border-fast j_border_width">
                           <div className="j-counter-order-img j_counter_order_final" key={item.id}>
                             <div className="j_d_flex_aic">
-                              <img src={`${API}/images/${item.image}`} alt="" />
+                              <img src={`${API}/images/${item.image}`} alt={item.name} />
                               <h5 className="text-white j-tbl-font-5">
                                 {item.name}
                               </h5>

@@ -904,7 +904,7 @@ export default function Homeinformation() {
                                   <div className='row'>
                                     <div className=' col-sm-8 '>
                                       <div className='d-flex '>
-                                        <img src={`${API}/images/${v.image}`} alt='pic' className='ms-4' height={70} width={80} />
+                                        <img src={`${API}/images/${v.image}`} alt={v.name} className='ms-4' height={70} width={80} />
                                         <div className='ms-4 '>
                                           <div className='text-nowrap j-caja-text-2'>{v.name}</div>
                                           <div className='mt-3 a_mar_new '>{v.description}</div>
@@ -1254,7 +1254,7 @@ export default function Homeinformation() {
                             <img
                               src={`${API}/images/${ele.image}`}
                               class="card-img-top object-fit-fill rounded"
-                              alt="..."
+                              alt={ele.name}
                               style={{ height: "162px" }}
                             />
                             <div class="card-body">

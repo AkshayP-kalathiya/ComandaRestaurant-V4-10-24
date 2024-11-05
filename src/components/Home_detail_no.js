@@ -204,56 +204,7 @@ function Home_detail_no() {
 
     //         setError(null)
     // }
-    const handleReturn = () => {
-
-        localStorage.setItem('credit', JSON.stringify(creditNote.id))
-        navigate("/counter");
-
-        // if (!destination) {
-        //     setError('Ingrese la dirección de retorno');
-        //     return;
-        // }
-
-        // if (!(orderAlldata.some((v) => v.id == destination))) {
-        //     setError('No se encontró la orden de compra');
-        //     return;
-        // }
-
-        // setIsProcessing(true);
-        // axios
-        //     .post(
-        //         `${apiUrl}/order/getCreditUpdate/${creditNote.id}`,
-        //         {
-        //             status: "Completed",
-        //             destination: destination
-        //         },
-        //         {
-        //             headers: {
-        //                 Authorization: `Bearer ${token}`,
-        //             },
-        //         }
-        //     )
-        //     .then((response) => {
-        //         console.log(response.data);
-        //         setIsProcessing(false);
-
-        //         setShowcreditfinal(true);
-        //         setTimeout(() => {
-        //             setShowcreditfinal(false);
-        //             navigate('/home/client/detail', {
-        //                 replace: true,
-        //                 state,
-        //             });
-        //         }, 2000);
-
-        //     })
-        //     .catch((error) => {
-        //         console.error(error);
-        //         setIsProcessing(false);
-        //         setError('Hubo un error al intentar realizar el retorno');
-        //     });
-        setError(null)
-    }
+    
 
 
 
@@ -309,6 +260,26 @@ function Home_detail_no() {
             setIsProcessing(false);
         }
     }
+    const handleReturn = () => {
+
+        localStorage.setItem('credit', JSON.stringify(creditNote.id))
+
+        const payment = {
+            rut: paymentData?.rut,
+            firstname: paymentData?.firstname || "",
+            lastname:paymentData?.lastname || "",
+            tour:paymentData?.tour || "",
+            address:paymentData?.address || "",
+            email:paymentData?.email || "",
+            phone:paymentData?.phone || "",
+            business_name:paymentData?.business_name || "",
+            ltda:paymentData?.ltda,
+            receiptType: paymentData?.firstname? "1" : "3"
+        }
+        localStorage.setItem("payment", JSON.stringify(payment));
+        navigate("/counter");
+        setError(null)
+    }
     return (
         <div className='b_bg_color'>
             <Header />
@@ -352,11 +323,11 @@ function Home_detail_no() {
                                 <div className=' mx-4 mt-4 b_inputt b_home_field'>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2 " className="">Nombre</label>
-                                        <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.name} id="inputPassword2" placeholder="4" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.name} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">Código nota de credito</label>
-                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3" value={creditNote?.code} id="inputPassword2" placeholder="0123456789" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3" value={creditNote?.code} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                 </div>
                                 <div className='d-flex gap-5 mx-4 m b_inputt b_id_input b_home_field'>
@@ -366,7 +337,7 @@ function Home_detail_no() {
                                     </div>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2" className="">Correo electrónico</label>
-                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={creditNote?.email} id="inputPassword2" placeholder="ejemplo@gmail.com" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
+                                        <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={creditNote?.email} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                     </div>
                                 </div>
                             </form>
@@ -381,7 +352,7 @@ function Home_detail_no() {
 
                                     <div className='ms-4 d-flex text-white b_borderrr py-3 '>
                                         <div>
-                                            <img src={`${API}/images/${item.image}`} alt="" height={50} width={75} className='rounded-3' />
+                                            <img src={`${API}/images/${item.image}`} alt={item.name} height={50} width={75} className='rounded-3' />
                                         </div>
                                         <div className='d-flex justify-content-between align-items-center w-100'>
                                             <div className='ms-3'>

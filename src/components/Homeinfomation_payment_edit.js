@@ -791,7 +791,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                                     <div className="row j-payment-edit-center">
                                                                         <div className="col-sm-8">
                                                                             <div className="d-flex align-content-center">
-                                                                                <img src={`${API}/images/${item.image}`} alt="pic" height={70} width={80} />
+                                                                                <img src={`${API}/images/${item.image}`} alt={item.name} height={70} width={80} />
                                                                                 <div className="ms-4">
                                                                                     <div className="text-nowrap">{item.name}</div>
                                                                                     <div className="mt-3 a_mar_new">{item.description}</div>
@@ -1158,7 +1158,7 @@ const Homeinfomation_payment_edit = ({ item }) => {
                                                         <img
                                                             src={`${API}/images/${ele.image}`}
                                                             class="card-img-top object-fit-fill rounded"
-                                                            alt="..."
+                                                            alt={ele.name}
                                                             style={{ height: "162px" }}
                                                         />
                                                         <div class="card-body">

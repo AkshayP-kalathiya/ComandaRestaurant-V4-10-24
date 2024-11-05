@@ -793,7 +793,7 @@ export default function Home_crear({ item }) {
                                                                                             onClick={() => handleReturnItems(item)}
                                                                                             checked={selectedItems.some((v) => v.id == item.id)}
                                                                                         />
-                                                                                        <img src={`${API}/images/${item.image}`} alt="pic" height={60} width={60} />
+                                                                                        <img src={`${API}/images/${item.image}`} alt={item.name} height={60} width={60} />
                                                                                         <div className="ms-4">
                                                                                             <div className="text-nowrap">{item.name}</div>
                                                                                             <div className="mt-3 a_mar_new">{item.description}</div>
@@ -1008,7 +1008,7 @@ export default function Home_crear({ item }) {
                                                                     {selectedItems.map((ele, index) => (
                                                                         <div key={index} className="mt-5 mx-1 d-flex justify-content-between">
                                                                             <div>
-                                                                                <img src={`${API}/images/${ele.image}`} alt="pic" height={50} width={50} className='rounded-3' />
+                                                                                <img src={`${API}/images/${ele.image}`} alt={ele.name} height={50} width={50} className='rounded-3' />
                                                                                 <span className='ms-3'>{ele.disc}</span>
                                                                             </div>
                                                                             <div className="ms-3 mt-2">
@@ -1083,7 +1083,7 @@ export default function Home_crear({ item }) {
                                                                     {selectedItems.map((ele, index) => (
                                                                         <div key={index} className="mt-5 mx-1 d-flex justify-content-between">
                                                                             <div>
-                                                                                <img src={`${API}/images/${ele.image}`} alt="pic" height={50} width={50} className='rounded-3' />
+                                                                                <img src={`${API}/images/${ele.image}`} alt={ele.name} height={50} width={50} className='rounded-3' />
                                                                                 <span className='ms-3'>{ele.disc}</span>
                                                                             </div>
                                                                             <div className="ms-3 mt-2">

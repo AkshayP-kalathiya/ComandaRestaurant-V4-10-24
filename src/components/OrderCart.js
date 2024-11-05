@@ -17,7 +17,7 @@ const OrderCart = ({ image, name, price, code, addItemToCart ,id }) => {
         <img
         src={`${API}/images/${image}`}
           class="card-img-top object-fit-cover"
-          alt="..."
+          alt={name}
           style={{ height: "200px" }}
         />
         <div class="card-body">

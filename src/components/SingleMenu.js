@@ -60,7 +60,7 @@ export default function SingleMenu({
         <img
           src={`${API}/images/${image}`}
           className="card-img-top object-fit-cover rounded"
-          alt="..."
+          alt={name}
           style={{ height: "200px", objectFit: "cover" }}
         />
         <div className="card-body">

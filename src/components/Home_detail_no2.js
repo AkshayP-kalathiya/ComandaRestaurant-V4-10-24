@@ -226,22 +226,21 @@ function Home_detail_no2() {
                             <div className='mx-4 mt-4 b_inputt b_home_field'>
                                 <div className='w-100 b_search text-white mb-3'>
                                     <label htmlFor="name">Nombre</label>
-                                    <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.name} id="name" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} readOnly />
+                                    <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.name} placeholder='-' id="name" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} readOnly />
                                 </div>
                                 <div className='w-100 b_search text-white mb-3'>
                                     <label htmlFor="credCode">Código nota de credito</label>
-                                    <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.code} id="credCode" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} readOnly />
+                                    <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.code} id="credCode" placeholder='-' style={{ backgroundColor: '#242d38', borderRadius: "10px" }} readOnly />
                                 </div>
                             </div>
                             <div className='d-flex gap-5 mx-4 b_inputt b_id_input b_home_field'>
-
                                 <div className='w-100 b_search  text-white mb-3'>
                                     <label htmlFor="inputPassword2" className="">DNI</label>
                                     <input type="text" className="form-control bg-gray  border-0 mt-2 py-3 " value={paymentData?.rut} id="inputPassword2" placeholder="-" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} />
                                 </div>
                                 <div className='w-100 b_search text-white mb-3'>
                                     <label htmlFor="email">Correo electrónico</label>
-                                    <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.email} id="email" style={{ backgroundColor: '#242d38', borderRadius: "10px" }} readOnly />
+                                    <input type="text" className="form-control bg-gray border-0 mt-2 py-3" value={creditNote?.email} id="email" placeholder='-' style={{ backgroundColor: '#242d38', borderRadius: "10px" }} readOnly />
                                 </div>
                             </div>
                         </form>
@@ -255,7 +254,7 @@ function Home_detail_no2() {
 
                                 <div className='ms-4 d-flex text-white b_borderrr py-3 '>
                                     <div>
-                                        <img src={`${API}/images/${item.image}`} alt="" height={50} width={75} className='rounded-3' />
+                                        <img src={`${API}/images/${item.image}`} alt={item.name} height={50} width={75} className='rounded-3' />
                                     </div>
                                     <div className='d-flex justify-content-between align-items-center w-100'>
                                         <div className='ms-3'>
