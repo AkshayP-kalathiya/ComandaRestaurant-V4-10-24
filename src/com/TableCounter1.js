@@ -770,7 +770,7 @@ console.log(tId)
                                 <div className="j_d_flex_aic">
                                   <img
                                     src={`${API}/images/${item.image}`}
-                                    alt={item.name}
+                                    alt=""
                                   />
                                   <h5 className="text-white j-tbl-font-5">
                                     {item.name}

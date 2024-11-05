@@ -985,6 +985,7 @@ const Mostrador = () => {
                       value={userName}
                       disabled
                     />
+
                     {/* {orderTypeError && <div className="text-danger errormessage">{orderTypeError}</div>} */}
                   </div>
                   {/* <div className="j-orders-type ak-w-50">
@@ -1028,7 +1029,7 @@ const Mostrador = () => {
                           <div className="j-counter-order-border-fast">
                             <div className="j-counter-order-img j_counter_order_final" key={item.id}>
                               <div className="j_d_flex_aic">
-                                <img src={`${API}/images/${item.image}`} alt={item.name} />
+                                <img src={`${API}/images/${item.image}`} alt="" />
                                 <h5 className="text-white j-tbl-pop-1">
                                   {item.name}
                                 </h5>

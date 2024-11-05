@@ -43,7 +43,7 @@ const Counter = () => {
   const [orType, setOrType] = useState([]);
   const location = useLocation();
   const redirect = location?.state?.from
-  
+
   const [admin_id, setAdminId] = useState(localStorage.getItem("admin_id"));
   // Add ref for note inputs
   const noteInputRefs = useRef({});
@@ -123,7 +123,7 @@ const Counter = () => {
     if (noteInputRefs.current[index]) {
       noteInputRefs.current[index].value = newNote;
     }
-    
+
     // Debounce the state update to reduce re-renders
     const timeoutId = setTimeout(() => {
       setCartItems(prevItems => {
@@ -143,7 +143,7 @@ const Counter = () => {
         : item
     );
     setCartItems(updatedCartItems);
-    
+
     // Focus the input after state update
     setTimeout(() => {
       if (noteInputRefs.current[index]) {
@@ -155,7 +155,7 @@ const Counter = () => {
   const handleFinishEditing = (index) => {
     // Get final value from ref
     const finalNote = noteInputRefs.current[index]?.value || "";
-    
+
     setCartItems(prevItems => {
       const updatedItems = [...prevItems];
       updatedItems[index] = {
@@ -190,9 +190,9 @@ const Counter = () => {
     return (
       <div>
         {item.note ? (
-          <p 
-            className="j-nota-blue" 
-            style={{ cursor: "pointer" }} 
+          <p
+            className="j-nota-blue"
+            style={{ cursor: "pointer" }}
             onClick={() => handleAddNoteClick(index)}
           >
             {item.note}
@@ -548,7 +548,7 @@ const Counter = () => {
         <div className="j-sidebar-nav j-bg-color">
           <Sidenav />
         </div>
-        <div className="j-counter-menu sidebar" style={{overflow:"hidden"}}>
+        <div className="j-counter-menu sidebar" style={{ overflow: "hidden" }}>
           <div className="j-counter-header j_counter_header_last_change">
             <h2 className="text-white mb-3 sjfs-18">Mostrador</h2>
             <div className="j-menu-bg-color ">
@@ -679,7 +679,7 @@ const Counter = () => {
                   />
                 </div>
                 <div className="mb-3 b-input-registers ak-w-50">
-                  <label
+                <label
                     htmlFor="exampleFormControlInput1"
                     className="form-label text-white"
                   >Quién lo registra
@@ -693,6 +693,7 @@ const Counter = () => {
                     value={userName}
                     disabled
                   />
+
                   {orderTypeError && <div className="text-danger errormessage">{orderTypeError}</div>}
                 </div>
                 {/* <div className="j-orders-type ak-w-50">
@@ -736,7 +737,7 @@ const Counter = () => {
                         <div className="j-counter-order-border-fast j_border_width">
                           <div className="j-counter-order-img j_counter_order_final" key={item.id}>
                             <div className="j_d_flex_aic">
-                              <img src={`${API}/images/${item.image}`} alt={item.name} />
+                              <img src={`${API}/images/${item.image}`} alt="" />
                               <h5 className="text-white j-tbl-font-5">
                                 {item.name}
                               </h5>

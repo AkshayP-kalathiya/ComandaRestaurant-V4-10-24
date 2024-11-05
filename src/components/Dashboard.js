@@ -60,7 +60,6 @@ const Dashboard = () => {
       type: "bar",
       height: 10,
       stacked: true,
-      // stackType: '100%',
       toolbar: {
         show: false
       }
@@ -68,12 +67,14 @@ const Dashboard = () => {
     plotOptions: {
       bar: {
         horizontal: true,
-        borderRadius: 4,
-        borderRadiusApplication: 'end', // 'around', 'end'
-        borderRadiusWhenStacked: 'last', // 'all', 'last'
         dataLabels: {
           enabled: false
         },
+        borderRadius: 4, // Apply rounded corners to the bars
+        // borderRadiusApplication: "start", // Apply border radius to all sides
+        // borderRadiusWhenStacked: "all" 
+        borderRadiusApplication: "start",
+
       }
     },
     dataLabels: {

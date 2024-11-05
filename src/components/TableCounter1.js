@@ -249,7 +249,6 @@ const TableCounter1 = () => {
         `${apiUrl}/order/addItem`,
         {
           order_id: tableData[0].id,
-          admin_id,
           order_details: [
             {
               item_id: item.id,
@@ -1250,7 +1249,7 @@ const TableCounter1 = () => {
                                       <div className="j_d_flex_aic">
                                         <img
                                           src={`${API}/images/${itemInfo.image}`}
-                                          alt={itemInfo.name}
+                                          alt=""
                                         />
                                         <h5 className="text-white j-tbl-font-5">
                                           {itemInfo.name}
@@ -1591,7 +1590,7 @@ const TableCounter1 = () => {
                                       <div className="j_d_flex_aic">
                                         <img
                                           src={`${API}/images/${item.image}`}
-                                          alt={item.name}
+                                          alt=""
                                         />
                                         <h5 className="text-white j-tbl-font-5">
                                           {item.name}

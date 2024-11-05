@@ -204,7 +204,26 @@ function Home_detail_no() {
 
     //         setError(null)
     // }
-    
+    const handleReturn = () => {
+
+        localStorage.setItem('credit', JSON.stringify(creditNote.id))
+
+        const payment = {
+            rut: paymentData?.rut,
+            firstname: paymentData?.firstname || "",
+            lastname:paymentData?.lastname || "",
+            tour:paymentData?.tour || "",
+            address:paymentData?.address || "",
+            email:paymentData?.email || "",
+            phone:paymentData?.phone || "",
+            business_name:paymentData?.business_name || "",
+            ltda:paymentData?.ltda,
+            receiptType: paymentData?.firstname? "1" : "3"
+        }
+        localStorage.setItem("payment", JSON.stringify(payment));
+        navigate("/counter");
+        setError(null)
+    }
 
 
 
@@ -260,26 +279,6 @@ function Home_detail_no() {
             setIsProcessing(false);
         }
     }
-    const handleReturn = () => {
-
-        localStorage.setItem('credit', JSON.stringify(creditNote.id))
-
-        const payment = {
-            rut: paymentData?.rut,
-            firstname: paymentData?.firstname || "",
-            lastname:paymentData?.lastname || "",
-            tour:paymentData?.tour || "",
-            address:paymentData?.address || "",
-            email:paymentData?.email || "",
-            phone:paymentData?.phone || "",
-            business_name:paymentData?.business_name || "",
-            ltda:paymentData?.ltda,
-            receiptType: paymentData?.firstname? "1" : "3"
-        }
-        localStorage.setItem("payment", JSON.stringify(payment));
-        navigate("/counter");
-        setError(null)
-    }
     return (
         <div className='b_bg_color'>
             <Header />
@@ -319,7 +318,7 @@ function Home_detail_no() {
                         <div>
 
 
-                            <form action="">
+                        <form action="">
                                 <div className=' mx-4 mt-4 b_inputt b_home_field'>
                                     <div className='w-100 b_search text-white mb-3'>
                                         <label htmlFor="inputPassword2 " className="">Nombre</label>
@@ -341,6 +340,7 @@ function Home_detail_no() {
                                     </div>
                                 </div>
                             </form>
+
                             <div className='ms-4'>
                                 <h6 className='text-white my-4 '>Productos</h6>
 
@@ -352,7 +352,7 @@ function Home_detail_no() {
 
                                     <div className='ms-4 d-flex text-white b_borderrr py-3 '>
                                         <div>
-                                            <img src={`${API}/images/${item.image}`} alt={item.name} height={50} width={75} className='rounded-3' />
+                                            <img src={`${API}/images/${item.image}`} alt="" height={50} width={75} className='rounded-3' />
                                         </div>
                                         <div className='d-flex justify-content-between align-items-center w-100'>
                                             <div className='ms-3'>

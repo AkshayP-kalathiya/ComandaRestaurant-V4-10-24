@@ -1114,7 +1114,7 @@ const DeliveryDots = () => {
                                     </div>
 
                                 </div> */}
-                                <div className="j-counter-price-data ak-w-100">
+                                <div className="j-counter-price-data">
                                     <form className="d-flex flex-wrap w-100">
                                         <div className="j-orders-type ak-w-50">
                                             <label className="j-label-name  text-white mb-2 j-tbl-font-6 ">
@@ -1215,7 +1215,7 @@ const DeliveryDots = () => {
                                                             <div className="j-counter-order-border-fast">
                                                                 <div className="j-counter-order-img" key={item.id}>
                                                                     <div className="d-flex align-items-center justify-content-between">
-                                                                        <img src={`${API}/images/${item.image}`} alt={item.name} />
+                                                                        <img src={`${API}/images/${item.image}`} alt="" />
                                                                         <h5 className="text-white j-tbl-pop-1">
                                                                             {item.name}
                                                                         </h5>
