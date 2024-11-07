@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-bootstrap";
 import {
   BiSolidDashboard,
@@ -30,6 +30,8 @@ import { HiClipboardList } from "react-icons/hi";
 import { Link, useLocation } from "react-router-dom";
 import { AiFillPieChart } from "react-icons/ai";
 import artical from "../Image/Artical.png"
+import axios from "axios";
+import {useChat } from "../contexts/ChatContext";
 
 const Sidenav = ({ children, onNavigate }) => {
   // console.log(onNavigate);
@@ -37,6 +39,11 @@ const Sidenav = ({ children, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClose, setIsClose] = useState(false);
   const role = localStorage.getItem('role');
+  const admin_id = localStorage.getItem('admin_id');
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const apiUrl = process.env.REACT_APP_API_URL;
+
+  const {allUser,msgCount} = useChat();
   // const path = usePathname();
   const menuItem = [
     {
@@ -82,6 +89,7 @@ const Sidenav = ({ children, onNavigate }) => {
         <path fillRule="evenodd" d="M4 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1v2a1 1 0 0 0 1.707.707L9.414 13H15a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4Z" clipRule="evenodd" />
         <path fillRule="evenodd" d="M8.023 17.215c.033-.03.066-.062.098-.094L10.243 15H15a3 3 0 0 0 3-3V8h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-1v2a1 1 0 0 1-1.707.707L14.586 18H9a1 1 0 0 1-.977-.785Z" clipRule="evenodd" />
       </svg>,
+      badge: msgCount
     },
     {
       path: "/home_Pedidos",
@@ -131,8 +139,8 @@ const Sidenav = ({ children, onNavigate }) => {
         path: "/usuarios",
         name: "Usuarios",
         icon: <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-        <path fillRule="evenodd" d="M8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4H6Zm7.25-2.095c.478-.86.75-1.85.75-2.905a5.973 5.973 0 0 0-.75-2.906 4 4 0 1 1 0 5.811ZM15.466 20c.34-.588.535-1.271.535-2v-1a5.978 5.978 0 0 0-1.528-4H18a4 4 0 0 1 4 4v1a2 2 0 0 1-2 2h-4.535Z" clipRule="evenodd" />
-      </svg>,
+          <path fillRule="evenodd" d="M8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4H6Zm7.25-2.095c.478-.86.75-1.85.75-2.905a5.973 5.973 0 0 0-.75-2.906 4 4 0 1 1 0 5.811ZM15.466 20c.34-.588.535-1.271.535-2v-1a5.978 5.978 0 0 0-1.528-4H18a4 4 0 0 1 4 4v1a2 2 0 0 1-2 2h-4.535Z" clipRule="evenodd" />
+        </svg>,
       }
     ] : []);
 
@@ -162,7 +170,7 @@ const Sidenav = ({ children, onNavigate }) => {
           <div className="j-sidebar-content m_bgblack">
             {menuItem.map((item, index) => (
               <Link
-                to= {onNavigate ? "#" : item.path } 
+                to={onNavigate ? "#" : item.path}
                 key={index}
                 onClick={onNavigate ? () => onNavigate(item.path) : undefined}
                 // className={`j-link ${location.pathname === item.path ? 'j-active' : ''}`}
@@ -183,7 +191,7 @@ const Sidenav = ({ children, onNavigate }) => {
         <div className="j-sidebar-content">
           {menuItem.map((item, index) => (
             <Link
-              to= {onNavigate ? "#" : item.path } 
+              to={onNavigate ? "#" : item.path}
               key={index}
               onClick={onNavigate ? () => onNavigate(item.path) : undefined}
               // className={`j-link ${location.includes(pathname) === item.path ? 'j-active' : ''}`}
@@ -192,7 +200,8 @@ const Sidenav = ({ children, onNavigate }) => {
               className={`j-link ${location.pathname.includes(item.path) ? 'j-active' : ''}`}
             >
               <div className="j-icon sjtextsidbar">{item.icon}</div>
-              <div className="j-link_text">{item.name}</div>
+              <div className="j-link_text me-auto">{item.name}</div>
+              {item.badge > 0 && <div className="mt-1" style={{ width: '20px', height: "20px", borderRadius: "50%", background: "#147BDE", color: "white", textAlign: 'center', lineHeight: '20px', fontSize: '12px' }}>{item.badge}</div>}
             </Link>
           ))}
         </div>
