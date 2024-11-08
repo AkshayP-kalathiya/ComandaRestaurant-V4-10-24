@@ -6,8 +6,8 @@ import { IoCloudUpload, IoNotifications } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import { useNotifications } from "../contexts/NotificationContext";
-
 export default function Header() {
+
   const [email] = useState(localStorage.getItem("email"));
   const [role] = useState(localStorage.getItem("role"));
   const [token] = useState(localStorage.getItem("token"));
@@ -19,8 +19,8 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const echo = useSocket();
-  const { notifications, notificationCount, handleRead } = useNotifications();
-  const [visibleNotifications, setVisibleNotifications] = useState(100);
+  const { notifications, notificationCount, handleRead } = useNotifications(); // Use the context
+  const [visibleNotifications, setVisibleNotifications] = useState(100); // New state for visible notifications
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -29,17 +29,18 @@ export default function Header() {
     }
   }, [token, navigate, location]);
 
+
   if (!token) {
     return null;
   }
   if (role == "superadmin") {
     navigate('/enlaceAdmin');
   }
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
-  const toggleShowA = () => setShowA(!showA);
 
+
+  const toggleShowA = () => setShowA(!showA);
   const handleLogout = async () => {
     try {
       const response = await axios.post(
@@ -58,7 +59,6 @@ export default function Header() {
       console.error("Error updating user status:", error.message);
     }
   };
-
   const roleTranslations = {
     admin: "Admin",
     cashier: "Cajero",
@@ -67,22 +67,23 @@ export default function Header() {
   };
   const translatedRole = roleTranslations[role] || role;
 
+  // Function to format date as DD/MM/YYYY
   const formatDate = (date) => {
     const d = new Date(date);
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
   };
 
+  // New function to group notifications by date
   const groupNotificationsByDate = (notifications) => {
     const grouped = {};
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); // Set to midnight for date comparison
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Only process the visible number of notifications
-    notifications.slice(0, visibleNotifications).forEach(notification => {
+    notifications.forEach(notification => {
       const notificationDate = new Date(notification.created_at);
-      notificationDate.setHours(0, 0, 0, 0);
+      notificationDate.setHours(0, 0, 0, 0); // Set to midnight for comparison
       const dateKey = notificationDate.getTime();
 
       let dateString;
@@ -102,31 +103,30 @@ export default function Header() {
       }
       grouped[dateKey].notifications.push(notification);
     });
-    return Object.entries(grouped).sort(([a], [b]) => b - a);
+    return Object.entries(grouped).sort(([a], [b]) => b - a); // Sort by date, most recent first
   };
 
   const handleNotification = () => {
     handleShow();
     setTimeout(() => {
       handleRead();
-    }, 300);
-  };
+    }, 300)
+  }
 
+  // Function to load more notifications
   const loadMoreNotifications = () => {
-    setVisibleNotifications(prev => prev + 50);
+    setVisibleNotifications(prev => prev + 100); // Increase visible notifications by 100
   };
-
-  const hasMoreNotifications = notifications && notifications.length > visibleNotifications;
 
   return (
     <section className="m_bgblack m_borbot position-sticky top-0 z-3">
-      <div className="p-3 d-flex align-items-center justify-content-between">
+      <div className=" p-3 d-flex align-items-center justify-content-between ">
         <div>
           <img src={require("../Image/logo.png")} alt="" />
         </div>
-        <div className="m_header d-flex align-items-center">
+        <div className="m_header d-flex align-items-center ">
           <div className="m_bell position-relative" style={{ cursor: "pointer" }} onClick={handleNotification}>
-            <span className="m_grey">
+            <span className="m_grey" >
               <IoNotifications />
               {notificationCount > 0 && (
                 <span
@@ -136,7 +136,7 @@ export default function Header() {
                     padding: '0.25em 0.4em',
                     top: '7px',
                     left: '95%',
-                    border: '2px solid #282828',
+                    border: '2px solid #282828', // Adjust the color to match your background
                     minWidth: '20px',
                     height: '20px',
                     display: 'flex',
@@ -159,24 +159,21 @@ export default function Header() {
           >
             <Offcanvas.Header closeButton>
               <Offcanvas.Title className="text-white">
-                <h2 className="j-canvas-title-text mb-0">Notificaciones</h2>
+                <h2 className="j-canvas-title-text mb-0 ">Notificaciones</h2>
               </Offcanvas.Title>
             </Offcanvas.Header>
             <Offcanvas.Body>
-              {notifications && groupNotificationsByDate(notifications).map(([dateKey, { dateString, notifications }]) => (
+              {notifications && groupNotificationsByDate(notifications).slice(0, visibleNotifications).map(([dateKey, { dateString, notifications }]) => (
                 <React.Fragment key={dateKey}>
                   <p className="j-canvas-text mb-3">{dateString}</p>
                   {notifications.map(notification => (
-                    <Link
-                      key={notification.id}
-                      to={notification.path || `${location.pathname}${location.search}`}
-                      state={location.state}
-                      className="text-decoration-none"
-                    >
+                    <Link to={notification.path || `${location.pathname}${location.search}`} state={location.state} className="text-decoration-none">
                       <div
                         className={`offcanvas-box-1 w-100 mb-3 ${notification.notification_type === "notification" ? "bg-notification" : "bg-alert"}`}
                         style={{ height: "auto" }}
+                        key={notification.id}
                       >
+
                         <div className="j-canvas-icon-data mb-2">
                           <svg
                             className="j-canvas-icon-small me-1"
@@ -193,9 +190,8 @@ export default function Header() {
                               clipRule="evenodd"
                             />
                           </svg>
-                          <h5 className="j-canvas-data-h2 mb-0">
-                            {notification.notification_type === "notification" ? "Notificación" : "Alerta"}
-                          </h5>
+                          <h5 className="j-canvas-data-h2 mb-0">{notification.notification_type == "notification" ? "Notificación" : "Alerta"}</h5>
+
                         </div>
                         <p className="j-canvas-data-p ms-1">{notification.notification}</p>
                         <div className="j-canvas-date-time">
@@ -218,22 +214,17 @@ export default function Header() {
                             {new Date(notification.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
+
                       </div>
                     </Link>
                   ))}
+                  {visibleNotifications < notifications.length && ( // Check if there are more notifications to load
+                    <Button onClick={loadMoreNotifications} className="load-more-button">
+                      Load More
+                    </Button>
+                  )}
                 </React.Fragment>
               ))}
-              {hasMoreNotifications && (
-                <div className="text-center mt-3 mb-3">
-                  <Button
-                    onClick={loadMoreNotifications}
-                    variant="outline-primary"
-                    className="w-75"
-                  >
-                    Cargar más notificaciones
-                  </Button>
-                </div>
-              )}
             </Offcanvas.Body>
           </Offcanvas>
 
@@ -258,7 +249,7 @@ export default function Header() {
           >
             <Toast.Header className="j-toast-bgcolor border-0">
               <span className="">
-                <IoCloudUpload className="j-toast-size" />
+                <IoCloudUpload className="j-toast-size " />
               </span>
               <strong className="me-auto j-toast-text">Datos</strong>
             </Toast.Header>
@@ -294,7 +285,7 @@ export default function Header() {
                 className="j-profile-logout mt-2"
               >
                 <svg
-                  className="me-1 j-profile-icons"
+                  class="me-1 j-profile-icons"
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"

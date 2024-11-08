@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useCallback } from "react";
 import axios from 'axios';
 
 
@@ -13,7 +13,15 @@ export const ChatProvider = ({ children }) => {
     const [groupChats, setgroupChats] = useState([]);
     const [onlineUsers, setOnlineUsers] = useState();
     const [msgCount, setMsgCout] = useState(0)
+    const userId = localStorage.getItem("userId");
 
+    useEffect(() => {
+        setToken(localStorage.getItem("token"));
+        if (token) {
+            fetchOnlineUsers();
+            fetchAllUsers();
+        }
+    }, [admin_id, apiUrl, token]);
     const fetchOnlineUsers = async () => {
         // setIsProcessing(true);
         try {
@@ -37,7 +45,7 @@ export const ChatProvider = ({ children }) => {
             setgroupChats(response.data.groupChats);
             let count = 0;
             response.data.users.forEach(user => {
-                count += user.messages.filter(message => message.read_by == "no").length;
+                count += user.messages.filter(message => message.receiver_id == userId && message.read_by == "no").length;
             });
             setMsgCout(count);
 
@@ -47,11 +55,12 @@ export const ChatProvider = ({ children }) => {
             // setIsProcessing(false);
         }
     };
-
-    useEffect(() => {
-        fetchOnlineUsers();
-        fetchAllUsers();
-    }, [admin_id, apiUrl, token]);
+    const updateToken = useCallback((newToken) => {
+        console.log(token, newToken);
+        if (!token) {
+            setToken(newToken);
+        }
+    });
 
     return (
         <ChatContext.Provider value={{
@@ -62,6 +71,8 @@ export const ChatProvider = ({ children }) => {
             msgCount,
             fetchOnlineUsers,
             fetchAllUsers,
+            updateToken,
+
         }}>
             {children}
         </ChatContext.Provider>

@@ -1,50 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-bootstrap";
-import {
-  BiSolidDashboard,
-  BiSolidFoodMenu,
-  BiSolidMessageSquareDetail,
-} from "react-icons/bi";
-import {
-  FaBars,
-  FaBox,
-  FaClipboardCheck,
-  FaDigitalOcean,
-  FaPlusCircle,
-  FaUser,
-} from "react-icons/fa";
-import { FaLayerGroup, FaRocket, FaXmark } from "react-icons/fa6";
-import { ImPieChart, ImUsers } from "react-icons/im";
-import {
-  MdArticle,
-  MdCountertops,
-  MdOutlineProductionQuantityLimits,
-} from "react-icons/md";
-import { SiDatabricks } from "react-icons/si";
-import { Offcanvas, Button } from "react-bootstrap";
-import { PiGridFourFill, PiUsersFill } from "react-icons/pi";
-import { HiChatBubbleLeftRight, HiCheckBadge } from "react-icons/hi2";
-import { BsPatchCheckFill } from "react-icons/bs";
-import { IoCart, IoGrid, IoLayersSharp } from "react-icons/io5";
-import { HiClipboardList } from "react-icons/hi";
+import {FaBars} from "react-icons/fa";
+import {  FaXmark } from "react-icons/fa6";
+import { Offcanvas } from "react-bootstrap";
 import { Link, useLocation } from "react-router-dom";
-import { AiFillPieChart } from "react-icons/ai";
-import artical from "../Image/Artical.png"
-import axios from "axios";
 import {useChat } from "../contexts/ChatContext";
 
 const Sidenav = ({ children, onNavigate }) => {
-  // console.log(onNavigate);
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isClose, setIsClose] = useState(false);
   const role = localStorage.getItem('role');
-  const admin_id = localStorage.getItem('admin_id');
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const apiUrl = process.env.REACT_APP_API_URL;
-
-  const {allUser,msgCount} = useChat();
-  // const path = usePathname();
+  const {msgCount} = useChat();
   const menuItem = [
     {
       path: "/dashboard",
@@ -143,13 +109,11 @@ const Sidenav = ({ children, onNavigate }) => {
         </svg>,
       }
     ] : []);
-
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
     setIsClose(!isClose);
   };
   const [show, setShow] = useState(false);
-
   const handleClose = () => setShow(false);
   const toggleShow = () => setShow((s) => !s);
   return (
@@ -173,8 +137,6 @@ const Sidenav = ({ children, onNavigate }) => {
                 to={onNavigate ? "#" : item.path}
                 key={index}
                 onClick={onNavigate ? () => onNavigate(item.path) : undefined}
-                // className={`j-link ${location.pathname === item.path ? 'j-active' : ''}`}
-                // className={`j-link ${location.includes(pathname) && pathname === item.path ? 'j-active' : ''}`}
                 className={`j-link ${location === item.path ? 'j-active' : ''}`}
               >
                 <div className="j-icon">{item.icon}</div>
@@ -194,9 +156,6 @@ const Sidenav = ({ children, onNavigate }) => {
               to={onNavigate ? "#" : item.path}
               key={index}
               onClick={onNavigate ? () => onNavigate(item.path) : undefined}
-              // className={`j-link ${location.includes(pathname) === item.path ? 'j-active' : ''}`}
-              // className={`j-link ${location.includes(pathname) && pathname === item.path ? 'j-active' : ''}`}
-              // className={`j-link ${location === item.path ? 'j-active' : ''}`}
               className={`j-link ${location.pathname.includes(item.path) ? 'j-active' : ''}`}
             >
               <div className="j-icon sjtextsidbar">{item.icon}</div>
